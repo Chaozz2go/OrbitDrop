@@ -78,7 +78,7 @@ def playlist_summary(info):
     entries=[]
     for number,entry in enumerate(info.get('entries') or [],1):
         if number>10000:raise ValueError('Die Playlist enthält mehr als 10.000 Einträge. Bitte eine kleinere Liste verwenden.')
-        entry=entry or {};title=entry.get('title') or 'Nicht verfügbar';url=media_link(entry.get('webpage_url')) or media_link(entry.get('url'))
+        entry=entry or {};title=entry.get('title') or 'Nicht verfügbar';url=media_link(entry.get('url')) or media_link(entry.get('webpage_url'))
         youtube='youtube' in str(entry.get('ie_key') or entry.get('extractor_key') or info.get('extractor_key') or info.get('extractor') or '').lower()
         identifier=str(entry.get('id') or '')
         if youtube and re.fullmatch(r'[A-Za-z0-9_-]{11}',identifier):url='https://www.youtube.com/watch?v='+identifier

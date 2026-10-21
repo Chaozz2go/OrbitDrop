@@ -1,6 +1,6 @@
 import os
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
-import json,tempfile,unittest
+import json,tempfile,unittest,shutil,subprocess
 from pathlib import Path
 from unittest.mock import patch,Mock
 from PySide6.QtWidgets import QApplication
@@ -50,6 +50,25 @@ class PlaylistTests(unittest.TestCase):
         job=DownloadJob('https://example.org/playlist','audio','.',0,entries)
         with patch('downloader.download_link',side_effect=[ValueError('Not available'),['third.mp3']]) as download:job.run()
         self.assertEqual(download.call_count,2);self.assertEqual(job.outputs,['third.mp3']);self.assertIn('Erster Song',job.errors[0]);self.assertIn('Not available',job.errors[0])
+    @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'),'FFmpeg missing')
+    def test_real_playlist_downloads_only_selected_media(self):
+        import functools,http.server,threading
+        from downloader import inspect_link
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);output=root/'out';output.mkdir();requests=[]
+            for name,length in [('one',.5),('two',.9)]:
+                subprocess.run([shutil.which('ffmpeg'),'-v','error','-f','lavfi','-i',f'color=s=96x64:r=10:d={length}','-f','lavfi','-i',f'sine=duration={length}','-c:v','libx264','-c:a','aac','-shortest',str(root/(name+'.mp4'))],check=True)
+            (root/'index.html').write_text('<title>Local playlist</title><video src="one.mp4" controls></video><video src="two.mp4" controls></video>')
+            class Handler(http.server.SimpleHTTPRequestHandler):
+                def log_message(self,*args):pass
+                def do_GET(self):requests.append(self.path);super().do_GET()
+            server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=d));thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+            try:
+                url=f'http://127.0.0.1:{server.server_port}/index.html';info=inspect_link(url);self.assertEqual(len(info['entries']),2);self.assertTrue(info['entries'][1]['url'].endswith('/two.mp4'));requests.clear()
+                job=DownloadJob(url,'audio',str(output),0,[info['entries'][1]]);job.run();self.assertFalse(job.errors);self.assertEqual(len(job.outputs),1)
+                self.assertIn('/two.mp4',requests);self.assertNotIn('/one.mp4',requests);self.assertEqual(len(list(output.iterdir())),1)
+            finally:server.shutdown();server.server_close();thread.join()
+
     def test_cancel_preserves_completed_tracks_and_skips_remaining(self):
         entries=[{'url':'https://example.org/'+str(i),'title':str(i)} for i in range(3)];job=DownloadJob('https://example.org/playlist','audio','.',0,entries)
         def download(url,*args):
