@@ -7,7 +7,7 @@ import subprocess
 import sys
 import tempfile
 
-DEFAULTS={'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
+DEFAULTS={'favorite_actions':[],'workflows':[],'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
           'convert_key':'Shift','edit_key':'Strg','files_key':'Alt','autostart':False,'check_backends':True}
 KEY_CODES={'Shift':0x10,'Strg':0x11,'Alt':0x12}
 
@@ -40,6 +40,11 @@ class Preferences:
         if len(set(keys))!=3:raise ValueError('Konvertieren, Bearbeiten und Tools benötigen drei unterschiedliche Tasten.')
         from quick_actions import validate_presets
         result['quick_actions']=validate_presets(result['quick_actions'])
+        from workflows import validate_workflows
+        result['workflows']=validate_workflows(result['workflows'])
+        favorites=result['favorite_actions']
+        if not isinstance(favorites,list) or len(favorites)>120 or any(not isinstance(key,str) or len(key)>100 or ':' not in key for key in favorites):raise ValueError('Ungültige Favoritenliste.')
+        result['favorite_actions']=list(dict.fromkeys(favorites))
         hidden=result['hidden_formats']
         if not isinstance(hidden,list) or len(hidden)>100 or any(not isinstance(value,str) or len(value)>40 for value in hidden):raise ValueError('Ungültige Formatliste.')
         result['hidden_formats']=sorted(set(hidden))

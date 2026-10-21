@@ -7,7 +7,7 @@ from circle_menu import direct_color
 from radial_style import rounded_sector,surface
 from menu_icons import draw_icon
 
-NAMES={'KOMPRIMIEREN':'Komprimieren','MARKIEREN':'Schwärzen &\nBeschriften','SCHNELLAKTIONEN':'Schnellaktionen','BILD EDITOR':'Bild bearbeiten','ZURÜCK':'Zurück','ZUSCHNEIDEN':'Zuschneiden','SCHWARZWEISS':'Schwarz\nweiß','GRÖSSE':'Bildgröße','90° LINKS':'90° links','90° RECHTS':'90° rechts','BITMAP':'Bitmap','SVG SCHNELL':'SVG\nSchnell','SVG ERWEITERT':'SVG\nErweitert','PDF VERBINDEN':'PDFs\nverbinden','PDF TEILEN':'PDF\nteilen','LINK LADEN':'Link\neinfügen','EINSTELLUNGEN':'Einstellungen','STANDBILD':'Standbild','AUFTRÄGE':'Aufträge','DEBUGGING':'Debugging','HILFE':'Hilfe','KONVERTER':'Konverter','VERSCHIEBEN':'Verschieben','KOPIEREN':'Kopieren','TERMINAL':'Terminal','EXPLORER':'Explorer','ABLAGE':'Ablage','ENTPACKEN':'Entpacken','SCHNEIDEN':'Schneiden','PFAD':'Pfad','ZIP':'ZIP','AUDIO LADEN':'Audio\nladen','VIDEO LADEN':'Video\nladen'}
+NAMES={'AKTIONSSUCHE':'Aktion suchen','BILDABLÄUFE':'Bildabläufe','PDF SEITEN':'PDF-Seiten','UMBENENNEN':'Umbenennen','KOMPRIMIEREN':'Komprimieren','MARKIEREN':'Schwärzen &\nBeschriften','SCHNELLAKTIONEN':'Schnellaktionen','BILD EDITOR':'Bild bearbeiten','ZURÜCK':'Zurück','ZUSCHNEIDEN':'Zuschneiden','SCHWARZWEISS':'Schwarz\nweiß','GRÖSSE':'Bildgröße','90° LINKS':'90° links','90° RECHTS':'90° rechts','BITMAP':'Bitmap','SVG SCHNELL':'SVG\nSchnell','SVG ERWEITERT':'SVG\nErweitert','PDF VERBINDEN':'PDFs\nverbinden','PDF TEILEN':'PDF\nteilen','LINK LADEN':'Link\neinfügen','EINSTELLUNGEN':'Einstellungen','STANDBILD':'Standbild','AUFTRÄGE':'Aufträge','DEBUGGING':'Debugging','HILFE':'Hilfe','KONVERTER':'Konverter','VERSCHIEBEN':'Verschieben','KOPIEREN':'Kopieren','TERMINAL':'Terminal','EXPLORER':'Explorer','ABLAGE':'Ablage','ENTPACKEN':'Entpacken','SCHNEIDEN':'Schneiden','PFAD':'Pfad','ZIP':'ZIP','AUDIO LADEN':'Audio\nladen','VIDEO LADEN':'Video\nladen'}
 
 def geometry(w):
     size=w.circle_size;center=size/2;outer=center-18;labels=w.labels
@@ -41,6 +41,8 @@ def paint_direct(w):
         label_width=max(46,min(124,2*radius*math.sin(math.pi/max(2,count))-14))
         p.setPen(QPen(accent if selected else QColor('#adc2d6'),1.7,Qt.PenStyle.SolidLine,Qt.PenCapStyle.RoundCap,Qt.PenJoinStyle.RoundJoin))
         draw_icon(p,label,point.x(),point.y()-15,23)
+        if key in getattr(getattr(w.controller,'prefs',None),'values',{}).get('favorite_actions',[]):
+            p.setFont(QFont('Segoe UI',10));p.setPen(QColor('#ffbe8a'));p.drawText(QRectF(point.x()+15,point.y()-29,20,20),Qt.AlignmentFlag.AlignCenter,'★')
         font=QFont('Segoe UI',10 if label_width>=72 else 8,QFont.Weight.DemiBold);
         longest=max(text.split('\n'),key=len);advance=QFontMetrics(font).horizontalAdvance(longest)
         if advance>label_width:font.setPointSizeF(max(8,font.pointSizeF()*label_width/advance))
@@ -60,7 +62,7 @@ def paint_direct(w):
     p.setFont(QFont('Segoe UI',9))
     for index,(color,text) in enumerate([('#7ed9ba','Konvertieren'),('#ffbe83','Bearbeiten'),('#83baff','Tools')]):
         x=center-180+index*130;p.setPen(Qt.PenStyle.NoPen);p.setBrush(QColor(color));p.drawEllipse(QPointF(x,y+10),4,4);p.setPen(QColor('#c2d4e6'));p.drawText(QRectF(x+10,y,115,22),Qt.AlignmentFlag.AlignVCenter,text)
-    message=w.message+' · Esc: schließen' if w.selected<0 else ('Gespeicherte Einstellungen: '+w.action_titles[w.labels[w.selected]] if w.labels[w.selected] in w.action_titles else action_hint(w.labels[w.selected]))
+    message=w.message+' · Rechtsklick: Suche' if w.selected<0 else ('Gespeicherte Einstellungen: '+w.action_titles[w.labels[w.selected]] if w.labels[w.selected] in w.action_titles else action_hint(w.labels[w.selected]))
     p.drawText(QRectF(10,y+27,w.circle_size-20,23),Qt.AlignmentFlag.AlignCenter,message);p.end()
 
 

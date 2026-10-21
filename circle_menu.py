@@ -13,6 +13,7 @@ def edit_actions(files,kind):
     elif kind=='Audio' and len(files)==1:actions+=['SCHNEIDEN']
     elif kind=='PDF':
         actions.append('PDF TEILEN')
+        if len(files)==1:actions.append('PDF SEITEN')
         if len(files)>1:actions.append('PDF VERBINDEN')
     if kind in ('Bild','PDF'):actions.append('KOMPRIMIEREN')
     elif kind in ('Video','Audio'):
@@ -27,7 +28,7 @@ def action_color(node,label):
     return COLORS.get(node,COLORS['tools'])
 
 
-def direct_actions(files,kind,formats,hidden=(),files_only=False,presets=()):
+def direct_actions(files,kind,formats,hidden=(),files_only=False,presets=(),workflows=()):
     from file_actions import available_file_actions
     actions=[]
     if not files_only:
@@ -40,8 +41,9 @@ def direct_actions(files,kind,formats,hidden=(),files_only=False,presets=()):
             else:actions.append('edit:'+action)
     if not files_only and 'edit:KOMPRIMIEREN' in actions:
         actions+=['edit:quick:'+item['id'] for item in presets if item['kind']==kind]
+    if not files_only and kind=='Bild':actions+=['edit:flow:'+item['id'] for item in workflows]
     if files:actions+=['tool:'+action for action in available_file_actions(files)]
-    actions+=['app:SCHNELLAKTIONEN','app:LINK LADEN','app:AUFTRÄGE','app:EINSTELLUNGEN','app:KONVERTER','app:DEBUGGING','app:HILFE']
+    actions+=['app:AKTIONSSUCHE','app:BILDABLÄUFE','app:SCHNELLAKTIONEN','app:LINK LADEN','app:AUFTRÄGE','app:EINSTELLUNGEN','app:KONVERTER','app:DEBUGGING','app:HILFE']
     return actions
 
 

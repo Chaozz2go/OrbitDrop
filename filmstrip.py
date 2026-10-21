@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QWidget
 from edit_models import read_frame
 from image_editor import pil_qimage
 from ui_theme import CANVAS,paint_excluded
+from timeline_view import visible_ticks
 
 class ThumbnailSignals(QObject):ready=Signal(int,object)
 class ThumbnailJob(QRunnable):
@@ -45,13 +46,12 @@ class Filmstrip(QWidget):
             painter.setPen(QColor('#aab4c9'));painter.drawText(self.rect(),Qt.AlignmentFlag.AlignCenter,'Videoleiste wird geladen …');return
         left,width=10,max(1,self.width()-20);top,height=30,88
         painter.setFont(QFont('Segoe UI',8));painter.setPen(QColor('#b7c1d4'))
-        for tick in range(9):
-            seconds=model.duration*tick/8;x=left+width*tick/8
-            label=f'{int(seconds//60):02}:{seconds%60:04.1f}'
+        for seconds,x,label in visible_ticks(model.duration,left,width,event.rect().left(),event.rect().right()):
             painter.drawText(QRectF(max(0,min(self.width()-56,x-28)),2,56,22),Qt.AlignmentFlag.AlignCenter,label)
         painter.setClipRect(QRectF(left,top,width,height))
         for index in range(self.count):
             rect=QRectF(left+width*index/self.count,top,width/self.count+1,height)
+            if not rect.intersects(QRectF(event.rect())):continue
             if index in self.thumbnails:
                 pixmap=QPixmap.fromImage(self.thumbnails[index]);size=pixmap.size().scaled(int(rect.width()),height,Qt.AspectRatioMode.KeepAspectRatioByExpanding)
                 pixmap=pixmap.scaled(size,Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation)

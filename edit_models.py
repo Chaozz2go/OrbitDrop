@@ -6,7 +6,15 @@ from pathlib import Path
 
 class CutModel:
     def __init__(self,duration):
-        self.duration=float(duration);self.cuts=[];self.segments=[(0.0,self.duration,True)]
+        self.duration=float(duration);self.cuts=[];self.segments=[(0.0,self.duration,True)];self.undo_stack=[];self.redo_stack=[]
+    def snapshot(self):return (list(self.cuts),list(self.segments))
+    def remember(self):self.undo_stack.append(self.snapshot());self.undo_stack=self.undo_stack[-100:];self.redo_stack.clear()
+    def undo(self):
+        if not self.undo_stack:return False
+        self.redo_stack.append(self.snapshot());self.cuts,self.segments=self.undo_stack.pop();return True
+    def redo(self):
+        if not self.redo_stack:return False
+        self.undo_stack.append(self.snapshot());self.cuts,self.segments=self.redo_stack.pop();return True
     def _rebuild(self):
         old=self.segments;bounds=[0.0]+self.cuts+[self.duration];self.segments=[]
         for start,end in zip(bounds,bounds[1:]):
@@ -16,12 +24,14 @@ class CutModel:
         position=float(position)
         if not 1e-6<position<self.duration-1e-6:return False
         if any(abs(position-existing)<1e-6 for existing in self.cuts):return False
-        self.cuts=sorted(self.cuts+[position]);self._rebuild();return True
+        self.remember();self.cuts=sorted(self.cuts+[position]);self._rebuild();return True
     def remove(self,index):
         if not 0<=index<len(self.cuts):return
-        self.cuts.pop(index);self._rebuild()
+        self.remember();self.cuts.pop(index);self._rebuild()
     def keep(self,index,keep):
-        start,end,_=self.segments[index];self.segments[index]=(start,end,bool(keep))
+        start,end,old=self.segments[index]
+        if old==bool(keep):return
+        self.remember();self.segments[index]=(start,end,bool(keep))
     def ranges(self):return [(start,end) for start,end,keep in self.segments if keep]
 
 

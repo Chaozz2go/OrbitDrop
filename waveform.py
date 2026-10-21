@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt,QObject,Signal,QRunnable,QThreadPool,QRectF
 from PySide6.QtGui import QPainter,QColor,QPen,QFont
 from PySide6.QtWidgets import QWidget
 from ui_theme import CANVAS,paint_excluded
+from timeline_view import visible_ticks
 
 class WaveformCancelled(RuntimeError):pass
 
@@ -95,14 +96,13 @@ class Waveform(QWidget):
         if not model:return
         left,width,top,bottom=10,max(1,self.width()-20),48 if self.large else 27,self.height()-9
         if self.large:
-            for tick in range(9):
-                time=model.duration*tick/8;x=left+width*tick/8
-                p.drawText(QRectF(max(0,min(self.width()-56,x-28)),23,56,20),Qt.AlignmentFlag.AlignCenter,f'{int(time//60):02}:{time%60:04.1f}')
+            for time,x,label in visible_ticks(model.duration,left,width,event.rect().left(),event.rect().right()):
+                p.drawText(QRectF(max(0,min(self.width()-56,x-28)),23,56,20),Qt.AlignmentFlag.AlignCenter,label)
         lanes=max(1,len(self.peaks));height=(bottom-top)/lanes
         for lane,peaks in enumerate(self.peaks):
             center=top+(lane+.5)*height;p.setPen(QPen(QColor('#7ed9ba' if lane==0 else '#74b8ee'),1))
             p.drawLine(left,round(center),left+width,round(center))
-            for pixel in range(width):
+            for pixel in range(max(0,event.rect().left()-left),min(width,event.rect().right()-left+1)):
                 a=int(pixel/width*len(peaks));b=max(a+1,int((pixel+1)/width*len(peaks)));amplitude=max(peaks[a:b],default=0.);extent=max(.5,min(1.,amplitude*self.display_gain)*(height/2-3))
                 p.drawLine(left+pixel,round(center-extent),left+pixel,round(center+extent))
         for index,(start,end,keep) in enumerate(model.segments):

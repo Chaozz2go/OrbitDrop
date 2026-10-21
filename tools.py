@@ -37,6 +37,13 @@ def tool_outputs(action,files,parameters,options):
     checkpoint(0,'Werkzeug wird vorbereitet …')
     created=[]
     try:
+        if action=='Bildablauf':
+            from workflows import run_workflow
+            return run_workflow(sources,parameters['steps'],options)
+        if action=='PDF-Seiten':
+            from pdf_pages import export_pages
+            if len(sources)!=1:raise ValueError('Bitte ein PDF wählen.')
+            return export_pages(sources[0],parameters['entries'],options,parameters.get('signature'))
         if action=='Komprimieren':
             from orbit_compression import compress_files
             return compress_files(sources,parameters,options)

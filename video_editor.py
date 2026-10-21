@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QDialog,QWidget,QVBoxLayout,QHBoxLayout,QPushButto
 from editor_chrome import EDITOR_STYLE,heading,toolbar,action_button
 from ui_theme import CANVAS,BACKGROUND,icon
 from waveform import Waveform
+from timeline_view import TimelineView
 from edit_models import CutModel,read_frame
 from image_editor import pil_qimage
 from filetypes import backend
@@ -19,7 +20,7 @@ def stamp(seconds):
 
 class VideoCanvas(QWidget):
     def __init__(self):
-        super().__init__();self.setMinimumSize(400,180);self.image=None;self.angle=0
+        super().__init__();self.setMinimumSize(400,170);self.image=None;self.angle=0
     def paintEvent(self,event):
         painter=QPainter(self);painter.setRenderHint(QPainter.RenderHint.Antialiasing);painter.fillRect(self.rect(),QColor(BACKGROUND));clip=QPainterPath();clip.addRoundedRect(QRectF(self.rect()),12,12);painter.fillPath(clip,QColor(CANVAS));painter.setClipPath(clip)
         if self.image and not self.image.isNull():
@@ -66,11 +67,14 @@ class VideoEditor(QDialog):
         self.remove_segment_button=action_button('Entfernen Entf','delete');self.remove_segment_button.setEnabled(False);self.remove_segment_button.clicked.connect(lambda:self.set_selected_keep(False));controls.addWidget(self.remove_segment_button)
         self.restore_segment_button=action_button('Wiederherstellen','undo',tooltip='Entfernten Abschnitt wiederherstellen');self.restore_segment_button.setEnabled(False);self.restore_segment_button.clicked.connect(lambda:self.set_selected_keep(True));controls.addWidget(self.restore_segment_button)
         controls.addStretch();self.time_label=QLabel('Video wird geöffnet …');self.time_label.setObjectName('timeReadout');controls.addWidget(self.time_label)
-        self.timeline=Filmstrip(self);layout.addWidget(self.timeline);self.timeline.seekRequested.connect(self.seek);self.timeline.segmentSelected.connect(self.select_segment)
-        self.waveform=Waveform(self);layout.addWidget(self.waveform);self.waveform.seekRequested.connect(self.seek);self.waveform.segmentSelected.connect(self.select_segment)
-        segment_row=QHBoxLayout();layout.addLayout(segment_row);self.selected_label=QLabel('Abschnitt in einer Spur anklicken');segment_row.addWidget(self.selected_label,1)
+        self.timeline=Filmstrip(self);self.timeline.seekRequested.connect(self.seek);self.timeline.segmentSelected.connect(self.select_segment)
+        self.waveform=Waveform(self);self.timeline_view=TimelineView([self.timeline,self.waveform]);layout.addWidget(self.timeline_view);self.waveform.seekRequested.connect(self.seek);self.waveform.segmentSelected.connect(self.select_segment)
+        segment_row=QHBoxLayout();layout.addLayout(segment_row)
+        self.undo_button=action_button('','undo',tooltip='Schnittschritt rückgängig · Strg+Z');self.undo_button.clicked.connect(lambda:self.history_step(False));self.timeline_view.controls.addWidget(self.undo_button)
+        self.redo_button=action_button('','rotate_right',tooltip='Schnittschritt wiederholen · Strg+Y');self.redo_button.clicked.connect(lambda:self.history_step(True));self.timeline_view.controls.addWidget(self.redo_button)
+        self.selected_label=QLabel('Abschnitt in einer Spur anklicken');segment_row.addWidget(self.selected_label,1)
         self.compact_time=QLabel('');self.compact_time.setObjectName('timeReadout');segment_row.addWidget(self.compact_time)
-        self.details_button=QPushButton('Marken & Abschnitte');self.details_button.setCheckable(True);segment_row.addWidget(self.details_button)
+        self.details_button=QPushButton('Marken && Abschnitte');self.details_button.setCheckable(True);segment_row.addWidget(self.details_button)
         rotation=QPushButton('Drehen');rotation.setToolTip('Video drehen');rotation_menu=QMenu(rotation)
         for title,angle in [('90° links',-90),('90° rechts',90),('180°',180)]:rotation_menu.addAction(title).triggered.connect(lambda checked=False,n=angle:self.rotate(n))
         rotation.setMenu(rotation_menu);segment_row.addWidget(rotation)
@@ -88,7 +92,7 @@ class VideoEditor(QDialog):
         self.player=QMediaPlayer(self);self.audio=QAudioOutput(self);self.player.setAudioOutput(self.audio);self.sink=QVideoSink(self);self.player.setVideoSink(self.sink)
         self.sink.videoFrameChanged.connect(self.video_frame);self.player.errorOccurred.connect(lambda error,message:self.status.setText('Wiedergabe: '+message+' · Einzelbildvorschau ist unabhängig davon verfügbar.'))
         self.player.setSource(QUrl.fromLocalFile(self.path))
-        self._shortcut('Space',self.toggle_play);self._shortcut('Left',lambda:self.step(-1));self._shortcut('Right',lambda:self.step(1));self._shortcut('C',self.add_cut);self._shortcut('Delete',lambda:self.set_selected_keep(False));self._shortcut('Shift+Delete',self.remove_cut)
+        self._shortcut('Ctrl+Z',lambda:self.history_step(False));self._shortcut('Ctrl+Y',lambda:self.history_step(True));self._shortcut('Space',self.toggle_play);self._shortcut('Left',lambda:self.step(-1));self._shortcut('Right',lambda:self.step(1));self._shortcut('C',self.add_cut);self._shortcut('Delete',lambda:self.set_selected_keep(False));self._shortcut('Shift+Delete',self.remove_cut)
         self.export.setEnabled(False);self.cut_button.setEnabled(False)
         self.seek(0)
         area=self.screen().availableGeometry();self.fit_toolbar(min(1180,area.width()-40));self.resize(min(1180,area.width()-40),min(900,area.height()-50))
@@ -159,7 +163,7 @@ class VideoEditor(QDialog):
         text=stamp(self.position)+' / '+stamp(self.model.duration);self.time_label.setText(text);self.compact_time.setText(text);self.time_label.setToolTip(f'Drehung {self.angle}°')
         value=round(min(1,self.position/self.model.duration)*100000)
         if not self.timeline.isSliderDown():self.timeline.setValue(value)
-        self.waveform.setValue(value)
+        self.waveform.setValue(value);self.timeline_view.follow() if not self.manual else None
     def kept_position(self,position):
         if not self.model:return position
         for start,end,keep in self.model.segments:
@@ -189,8 +193,14 @@ class VideoEditor(QDialog):
         index=self.marks.currentRow()
         if index<0:return
         self.model.remove(index);self.refresh_lists();self.waveform.update();self.status.setText('Marke entfernt. Zusammengeführte Abschnitte und Behalten-Auswahl prüfen.')
+    def history_step(self,redo=False):
+        if not self.model:return
+        self.player.pause();self.manual=True;self.add_when_ready=False
+        changed=self.model.redo() if redo else self.model.undo()
+        if changed:self.refresh_lists();self.status.setText('Schnittschritt wiederholt.' if redo else 'Schnittschritt rückgängig gemacht.')
     def refresh_lists(self):
         if not self.model:return
+        self.undo_button.setEnabled(bool(self.model.undo_stack));self.redo_button.setEnabled(bool(self.model.redo_stack))
         self.updating_lists=True;self.marks.clear();self.segments.clear()
         for position in self.model.cuts:self.marks.addItem(stamp(position))
         for index,(start,end,keep) in enumerate(self.model.segments):
@@ -200,7 +210,7 @@ class VideoEditor(QDialog):
         if index>=0:self.select_segment(min(index,len(self.model.segments)-1))
     def segment_changed(self,item):
         if self.updating_lists or not self.model:return
-        index=self.segments.row(item);self.model.keep(index,item.checkState()==Qt.CheckState.Checked);self.select_segment(index);self.timeline.update();self.waveform.update()
+        index=self.segments.row(item);self.model.keep(index,item.checkState()==Qt.CheckState.Checked);self.select_segment(index);self.timeline.update();self.waveform.update();self.undo_button.setEnabled(bool(self.model.undo_stack));self.redo_button.setEnabled(bool(self.model.redo_stack))
     def go_to_mark(self,item):
         if self.model:self.seek(self.model.cuts[self.marks.row(item)])
     def go_to_segment(self,item):

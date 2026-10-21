@@ -260,8 +260,11 @@ class Wheel(QWidget):
     def context_actions(self,files_only=False):
         values=getattr(getattr(self.controller,'prefs',None),'values',{})
         presets=values.get('quick_actions',[])
-        self.action_titles={'edit:quick:'+p['id']:p['name'] for p in presets}
-        return direct_actions(self.files,self.kind,self.formats,values.get('hidden_formats',[]),files_only=files_only,presets=presets)
+        self.action_titles={'edit:quick:'+p['id']:p['name'] for p in presets};workflows=values.get('workflows',[])
+        self.action_titles.update({'edit:flow:'+p['id']:p['name'] for p in workflows})
+        actions=direct_actions(self.files,self.kind,self.formats,values.get('hidden_formats',[]),files_only=files_only,presets=presets,workflows=workflows)
+        favorites=values.get('favorite_actions',[])
+        return sorted(actions,key=lambda key:key not in favorites)
 
     def segment(self, pos):
         if not self.labels or self.checking:
@@ -458,6 +461,8 @@ class Wheel(QWidget):
         self.selected=-1;self.update();super().leaveEvent(event)
 
     def mousePressEvent(self,event):
+        if event.button()==Qt.MouseButton.RightButton and not self.checking:
+            self.hide();QTimer.singleShot(0,lambda:self.controller.circle_action(self.files[:],'AKTIONSSUCHE',self.kind));return
         index=self.segment(event.position())
         if index>=0:self.select_action(self.labels[index])
         elif self.node=='direct':self.hide()
@@ -531,6 +536,8 @@ class Controller:
         key = ctypes.windll.user32.GetAsyncKeyState
         states={name:bool(key(code)&0x8000) for name,code in KEY_CODES.items()}
         left,escape=bool(key(0x01)&0x8000),bool(key(0x1B)&0x8000)
+        if QApplication.activeModalWidget() is not None:
+            self.was_keys=states;self.selection_pending=False;return
         mode=pressed_mode(self.prefs.values,states,self.was_keys)
         if mode and left:
             if self.wheel.isVisible():self.wheel.switch_mode(mode)
@@ -586,7 +593,19 @@ class Controller:
             else:self.submit(ToolJob(action,files,parameters,self.prefs.values),action)
     def circle_action(self,files,action,kind):
         try:
-            if action=='KOMPRIMIEREN':
+            if action=='AKTIONSSUCHE':self.search_actions(files,kind)
+            elif action=='BILDABLÄUFE':
+                from workflow_ui import WorkflowDialog
+                WorkflowDialog(self.prefs).exec()
+            elif action.startswith('flow:'):
+                workflow=next((w for w in self.prefs.values.get('workflows',[]) if w['id']==action.split(':',1)[1]),None)
+                if not workflow or kind!='Bild':raise ValueError('Bildablauf nicht für diese Auswahl verfügbar.')
+                self.submit(ToolJob('Bildablauf',files,{'steps':workflow['steps']},self.prefs.values),workflow['name'])
+            elif action=='PDF SEITEN':
+                from pdf_pages_ui import PdfPagesDialog
+                if len(files)!=1:raise ValueError('Bitte genau ein PDF wählen.')
+                PdfPagesDialog(files[0],self.submit_editor).exec()
+            elif action=='KOMPRIMIEREN':
                 from compression_ui import CompressionDialog
                 CompressionDialog(files,kind,self.submit_editor,self.prefs).exec()
             elif action=='MARKIEREN':
@@ -633,6 +652,13 @@ class Controller:
             elif action=='PDF TEILEN':self.tools(files,'PDF aufteilen')
             elif action=='PDF VERBINDEN':self.tools(files,'PDFs zusammenfügen')
         except Exception as error:QMessageBox.warning(None,'OrbitDrop · Bearbeiten',str(error))
+    def search_actions(self,files=None,kind=None):
+        from action_search import ActionSearchDialog
+        files=list(files or []);actions=self.wheel.context_actions()
+        if self.wheel.link:actions=['download:AUDIO LADEN','download:VIDEO LADEN']+actions
+        dialog=ActionSearchDialog(actions,self.prefs,self.wheel.action_titles,files,self.wheel.kind,self.wheel.formats,self.wheel.link)
+        if dialog.exec() and dialog.chosen:
+            self.wheel.files=dialog.files;self.wheel.kind=dialog.kind;self.wheel.formats=dialog.formats;self.wheel.link=dialog.link;self.wheel.node='direct';self.wheel.select_action(dialog.chosen)
     def record_diagnostics(self,items):
         job=DiagnosticJob(items);self.diagnostic_jobs.add(job)
         job.signals.done.connect(lambda reports,unused:self.diagnostics_ready(job,reports));self.pool.start(job)
@@ -692,7 +718,10 @@ class Controller:
     def file_action(self,files,action):
         try:
             validate_paths(files)
-            if action=='ABLAGE':
+            if action=='UMBENENNEN':
+                from rename_ui import RenameDialog
+                RenameDialog(files).exec()
+            elif action=='ABLAGE':
                 self.shelf.open(files)
             elif action=='KOPIEREN':
                 QApplication.clipboard().setMimeData(file_mime(files))
@@ -731,7 +760,7 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.15.0 · Prototyp',
+        QMessageBox.information(None, 'OrbitDrop 0.16.0 · Prototyp',
             '1. Datei im Explorer mit linker Maustaste ziehen.\n'
             '2. '+shortcut_hint(self.prefs.values)+'. Kurz antippen und wieder loslassen.\n'
             '3. Der passende Bereich öffnet direkt. Während des Ziehens lässt sich der Bereich mit den Tasten wechseln.\n'

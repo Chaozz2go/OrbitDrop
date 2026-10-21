@@ -1,11 +1,14 @@
 # OrbitDrop: Ausbau für Windows
 
-Stand 0.15.0. Eigenständige Oberfläche und Implementierung, inspiriert vom schnellen Drag-and-drop-Konzept. Die folgende Liste beschreibt geplante Arbeit, keine bereits zugesicherten Funktionen.
+Stand 0.16.0. Eigenständige Oberfläche und Implementierung, inspiriert vom schnellen Drag-and-drop-Konzept. Die folgende Liste beschreibt geplante Arbeit, keine bereits zugesicherten Funktionen.
 
 ## Erledigt in diesem Schritt
 
 - Shift → Konvertieren, Strg → Bearbeiten, Alt → Tools; alle passenden Optionen im Kreis; abgerundete Flächen, Symbole, Hinweise und mehrere Ringe bei langen Listen.
 - Ein Bildeditor mit Ausschnitt, Drehung, Farbkorrektur, Originalvergleich und Ausgabegröße.
+- Aktionssuche mit kontextabhängigen Aktionen, Favoriten und Dateiauswahl; im Kreis per Rechtsklick erreichbar.
+- Stapel-Umbenennen mit Vorschau, Konfliktprüfung und Rücknahme im offenen Fenster.
+- Gespeicherte Bildabläufe mit geordneten Schritten und neuer Ausgabe. Audio-/Videoabläufe bleiben offen.
 - Komprimieren mit aktueller Größe, Zielgrößenregler, technischer Audio-/Video-Prüfung und verlustfreier PDF-Probe.
 - Gemeinsamer Schnittstudio-Stil für alle Programmfenster, inklusive Bild-/Video-/Audiobearbeitung, Hilfsfenster und Dateiablage.
 
@@ -22,11 +25,11 @@ Stand 0.15.0. Eigenständige Oberfläche und Implementierung, inspiriert vom sch
 - Vorhandenen Schnitteditor weiterverwenden; keine zweite Schnittimplementierung für Downloads.
 - Video-Ausschnitt, Tempo mit Tonhöhenkorrektur, Stummschalten, gezielte PNG-Standbilder und Zusammenfügen.
 - Video-Schwärzungsbereiche mit Zeitspannen und tatsächlicher Exportvorschau.
-- Erledigt: echte Wellenformen in Video- und Audioschnitt, gemeinsame Abschnittsauswahl, Entf zum Entfernen und Wiederherstellen. Noch offen: Zoom, mehrere Tonspuren, Lautheitsnormalisierung, Kanalbearbeitung, Pieptonbereiche und Visualisierung als Video.
+- Erledigt: echte Wellenformen in Video- und Audioschnitt, gemeinsame Abschnittsauswahl, Entf zum Entfernen und Wiederherstellen. Erledigt: Timeline-Zoom, gemeinsames Scrollen und Schnitt-Rückgängig/Wiederholen. Noch offen: mehrere Tonspuren, Lautheitsnormalisierung, Kanalbearbeitung, Pieptonbereiche und Visualisierung als Video.
 
 ## Danach: PDF und Windows-Integration
 
-- Visuelle Seitenverwaltung: verschieben, drehen, duplizieren und entfernen.
+- Erledigt: visuelle Seitenverwaltung mit Verschieben, Drehen, Duplizieren, Entfernen und neuer PDF-Ausgabe.
 - Lokale OCR für gescannte PDFs; Office-Exportqualität und Einschränkungen klar anzeigen.
 - Windows-Teilen statt AirDrop; nicht als identisches Apple-Protokoll darstellen.
 - Explorer-Drag-and-drop, Mehrfachauswahl, mehrere Monitore und unterschiedliche DPI auf Windows testen.

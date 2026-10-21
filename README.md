@@ -1,8 +1,36 @@
-# OrbitDrop 0.15.0 – Windows-Prototyp
+# OrbitDrop 0.16.0 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
 ![Bildeditor mit Vorschau und Reglern](docs/preview-photo-studio.png)
+
+## Neu in Version 0.16.0: Suchen, Favoriten, PDF-Seiten und Bildabläufe
+
+### Aktionssuche und Favoriten
+
+**Rechtsklick auf den Kreis** öffnet die Aktionssuche, ebenso **Alt → Aktion suchen**. Sie durchsucht die für die aktuelle Auswahl verfügbaren Aktionen. Im Suchfenster lassen sich auch andere Dateien auswählen. Dateitypen werden im Hintergrund neu geprüft; nicht passende Konvertierungen werden nicht angeboten. Enter oder Doppelklick öffnet die gewählte Aktion. Mit **Favorit setzen** werden Aktionen gespeichert; **Nur Favoriten** filtert die Liste. Im Kreis stehen passende Favoriten innerhalb ihres Bereichs zuerst und tragen einen Stern. Ausgeblendete Formate bleiben ausgeblendet. Die Konvertieren-/Bearbeiten-Bereiche behalten ihre bisherigen Kategorien.
+
+### Visuelle PDF-Seitenverwaltung
+
+Ein PDF wählen → **Strg → PDF-Seiten** oder Aktionssuche. Vorschaubilder zeigen die Seiten. Mit Strg/Shift mehrfach auswählen, per Drag-and-drop oder mit den Pfeilbuttons verschieben, um 90° drehen, duplizieren und entfernen. **Entf** entfernt die Auswahl; **Strg+Z** beziehungsweise **Rückgängig** nimmt Seitenänderungen zurück. Export erzeugt eine neue PDF in der angezeigten Reihenfolge. Unterschiedliche Drehungen duplizierter Seiten bleiben unabhängig. Das Original wird nicht verändert. Nach externer Änderung der Quelldatei muss die Übersicht neu geöffnet werden. Grenzen: 1000 Quellseiten, 2000 Ausgabeseiten; keine verschlüsselten PDFs. OCR bleibt ein späterer Ausbau.
+
+### Stapel-Umbenennen mit Vorschau
+
+Dateien wählen → **Alt → Umbenennen**. Muster wie `Urlaub_{n}` oder `{name}_{n}`, Startnummer und Ziffern einstellen. Die Dateiendung bleibt erhalten. Vorher-/Nachher-Liste prüfen und **Wie angezeigt umbenennen** wählen. Diese Funktion ändert die Namen der Originaldateien. Reservierte Windows-Namen, ungültige Zeichen, doppelte Ziele und vorhandene Fremddateien werden abgefangen. Vor der Ausführung werden Konflikte und Dateistand erneut geprüft. Auch Namenswechsel untereinander werden über exklusive temporäre Namen abgewickelt. Bei Fehlern wird eine Rücknahme versucht; falls diese nicht vollständig gelingt, nennt die Meldung die zu prüfenden Pfade. **Letzte Umbenennung zurücknehmen** bleibt bis zum Schließen des Fensters verfügbar und verweigert die Rücknahme, wenn eine betroffene Datei inzwischen geändert wurde. Maximal 1000 reguläre Dateien, keine Ordner oder Symlinks.
+
+### Eigene Bildabläufe
+
+**Alt → Bildabläufe** oder Aktionssuche öffnet den Ablaufeditor. Schritte hinzufügen, mit ↑/↓ ordnen und unter eigenem Namen speichern. Laden aktualisiert einen gespeicherten Ablauf; Neu beginnt einen weiteren. Verfügbar sind: längste Bildkante verkleinern, Graustufen, 90°/180°/270° drehen, PNG/JPG/WebP-Komprimierung, Metadaten entfernen als frische PNG-Kopie, Formatwechsel (PNG/JPG/WebP/TIFF/BMP) und Ausgaben benennen. Benennen gehört ans Ende; neue Bildschritte werden automatisch davor eingefügt. Beispiel: **1600 px → Metadaten entfernen → WebP → Web_{n}**. Gespeicherte Abläufe erscheinen für Bilder direkt im Bearbeiten-Kreis und in der Aktionssuche. Die Originale bleiben erhalten; nur die fertigen neuen Dateien gelangen in den Ausgabeordner. Vorhandene Namen erhalten einen Nummernzusatz. Fehler/Abbruch räumen von diesem Ablauf erstellte Ergebnisse auf. Bis zu 40 Abläufe mit je 12 Schritten; aktuell für Einzelbilder, nicht für Audio-/Videoketten. Wiederholte verlustbehaftete Kodierung kann Qualität kosten.
+
+### Timeline-Zoom und Schnitt-Rückgängig
+
+Video- und Audioschnitt haben **100–1600 % Zoom**, horizontales Scrollen und **Einpassen**. Filmstreifen und Wellenform eines Videos bleiben in derselben Zeitskala; Zeitmarken passen sich dem sichtbaren Bereich an. Beim Abspielen folgt der Ausschnitt dem Abspielkopf. Die Vorschau zeichnet beim Zoomen nur den sichtbaren Teil der Spuren. Schnittmarken und Behalten-/Entfernen-Änderungen lassen sich über **Strg+Z / Strg+Y** oder die beiden Symbole neben dem Zoom zurücknehmen und wiederholen (100 Schritte, bis zum Schließen des Editors). Die Funktion betrifft Schnittänderungen, nicht Videodrehungen. Die globale Shift-/Strg-/Alt-Erkennung pausiert während modaler Dialoge, damit Mehrfachauswahl und normale Editorbedienung dort nicht den Kreis öffnen.
+
+Die Abbildungen zeigen echte Programmfenster mit künstlichen Testdateien:
+
+![Visuelle PDF-Seitenverwaltung](docs/preview-pdf-pages.png)
+
+![Eigene Bildabläufe](docs/preview-workflows.png)
 
 ## Neu in Version 0.15.0: Zielgröße und Komprimierungsprüfung
 

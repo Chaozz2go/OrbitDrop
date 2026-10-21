@@ -9,6 +9,7 @@ from editor_chrome import EDITOR_STYLE,heading,toolbar,action_button
 from edit_models import CutModel
 from video_editor import stamp
 from waveform import Waveform
+from timeline_view import TimelineView
 from filetypes import backend
 
 class AudioEditor(QDialog):
@@ -16,7 +17,9 @@ class AudioEditor(QDialog):
         super().__init__();self.path=str(path);self.submit=submit;self.model=None;self.updating_lists=False;self.shortcuts=[];self.stopped=threading.Event()
         self.setWindowTitle('OrbitDrop · Audioschnitt · '+Path(path).name);self.resize(1050,780);self.setStyleSheet(EDITOR_STYLE)
         layout=QVBoxLayout(self);layout.setSpacing(10);heading(layout,'Audioschnitt',Path(path).name+' · Leertaste: Start/Pause · C: Schnitt · Entf: Abschnitt entfernen')
-        self.timeline=Waveform(self,large=True);self.waveform=self.timeline;layout.addWidget(self.timeline,2);self.timeline.seekRequested.connect(self.seek);self.timeline.segmentSelected.connect(self.select_segment);self.timeline.loaded.connect(self.waveform_loaded)
+        self.timeline=Waveform(self,large=True);self.waveform=self.timeline;self.timeline_view=TimelineView([self.timeline]);layout.addWidget(self.timeline_view,2);self.timeline.seekRequested.connect(self.seek);self.timeline.segmentSelected.connect(self.select_segment);self.timeline.loaded.connect(self.waveform_loaded)
+        self.undo_button=action_button('','undo',tooltip='Schnittschritt rückgängig · Strg+Z');self.undo_button.clicked.connect(lambda:self.history_step(False));self.timeline_view.controls.addWidget(self.undo_button)
+        self.redo_button=action_button('','rotate_right',tooltip='Schnittschritt wiederholen · Strg+Y');self.redo_button.clicked.connect(lambda:self.history_step(True));self.timeline_view.controls.addWidget(self.redo_button)
         bar,controls=toolbar();layout.addWidget(bar)
         self.play=action_button('Abspielen','play',True,'Start / Pause · Leertaste');self.play.clicked.connect(self.toggle_play);controls.addWidget(self.play)
         for kind,title,amount in [('previous','0,1 Sekunden zurück · ←',-.1),('next','0,1 Sekunden vor · →',.1)]:
@@ -41,7 +44,7 @@ class AudioEditor(QDialog):
         self.export=action_button('Als MP3 speichern','save',True);self.export.setEnabled(False);self.export.clicked.connect(self.save);bottom.addWidget(self.export)
         self.player=QMediaPlayer(self);self.audio=QAudioOutput(self);self.player.setAudioOutput(self.audio)
         self.player.durationChanged.connect(self.duration_changed);self.player.positionChanged.connect(self.update_time);self.player.errorOccurred.connect(lambda error,message:self.status.setText('Wiedergabe: '+message) if not self.stopped.is_set() else None)
-        for key,callback in [('Space',self.toggle_play),('Left',lambda:self.step(-.1)),('Right',lambda:self.step(.1)),('C',self.add_cut),('Delete',lambda:self.set_selected_keep(False)),('Shift+Delete',self.remove_cut)]:
+        for key,callback in [('Ctrl+Z',lambda:self.history_step(False)),('Ctrl+Y',lambda:self.history_step(True)),('Space',self.toggle_play),('Left',lambda:self.step(-.1)),('Right',lambda:self.step(.1)),('C',self.add_cut),('Delete',lambda:self.set_selected_keep(False)),('Shift+Delete',self.remove_cut)]:
             shortcut=QShortcut(QKeySequence(key),self);shortcut.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut);shortcut.setAutoRepeat(key in ('Left','Right'));shortcut.activated.connect(callback);self.shortcuts.append(shortcut)
         self.player.setSource(QUrl.fromLocalFile(self.path));self.timeline.load(self.path,self.stopped)
         area=self.screen().availableGeometry();self.resize(min(1050,area.width()-40),min(780,area.height()-50))
@@ -65,6 +68,7 @@ class AudioEditor(QDialog):
             if kept is None:self.player.pause();return
             if kept>position+1e-6:self.player.setPosition(round(kept*1000));return
         self.time_label.setText(stamp(position)+' / '+stamp(self.model.duration));self.timeline.setValue(round(position/self.model.duration*100000))
+        if self.player.playbackState()==QMediaPlayer.PlaybackState.PlayingState:self.timeline_view.follow()
     def seek(self,position):
         if not self.model or self.stopped.is_set():return
         self.player.pause();self.player.setPosition(round(max(0,min(position,self.model.duration))*1000));self.update_time()
@@ -92,7 +96,12 @@ class AudioEditor(QDialog):
         index=self.timeline.selected_segment
         if not self.model or not 0<=index<len(self.model.segments):return
         self.player.pause();self.model.keep(index,keep);self.refresh_lists();self.select_segment(index);self.status.setText('Abschnitt wiederhergestellt.' if keep else 'Abschnitt entfernt; Wiedergabe und Export überspringen ihn.')
+    def history_step(self,redo=False):
+        if not self.model:return
+        self.player.pause();changed=self.model.redo() if redo else self.model.undo()
+        if changed:self.refresh_lists();self.status.setText('Schnittschritt wiederholt.' if redo else 'Schnittschritt rückgängig gemacht.')
     def refresh_lists(self):
+        self.undo_button.setEnabled(bool(self.model.undo_stack));self.redo_button.setEnabled(bool(self.model.redo_stack))
         self.updating_lists=True;self.marks.clear();self.segments.clear()
         for cut in self.model.cuts:self.marks.addItem(stamp(cut))
         for index,(start,end,keep) in enumerate(self.model.segments):
@@ -100,7 +109,7 @@ class AudioEditor(QDialog):
         self.updating_lists=False;self.timeline.update()
         if self.model and self.timeline.selected_segment>=0:self.select_segment(min(self.timeline.selected_segment,len(self.model.segments)-1))
     def changed(self,item):
-        if not self.updating_lists:self.model.keep(self.segments.row(item),item.checkState()==Qt.CheckState.Checked);self.select_segment(self.segments.row(item));self.timeline.update()
+        if not self.updating_lists:self.model.keep(self.segments.row(item),item.checkState()==Qt.CheckState.Checked);self.select_segment(self.segments.row(item));self.timeline.update();self.undo_button.setEnabled(bool(self.model.undo_stack));self.redo_button.setEnabled(bool(self.model.redo_stack))
     def save(self):
         if not self.model or not self.model.ranges():QMessageBox.information(self,'Audioschnitt','Bitte mindestens einen Abschnitt behalten.');return
         self.player.pause();self.submit('Audio bearbeiten',[self.path],{'ranges':self.model.ranges(),'separate':self.separate.isChecked()});self.accept()

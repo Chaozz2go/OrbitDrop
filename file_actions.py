@@ -9,8 +9,9 @@ import sys
 from PySide6.QtCore import QMimeData, QUrl
 from task_runtime import checkpoint,copy_stream
 
-FILE_ACTIONS = ('ZIP', 'ABLAGE', 'KOPIEREN', 'VERSCHIEBEN', 'ENTPACKEN', 'PFAD', 'TERMINAL', 'EXPLORER')
+FILE_ACTIONS = ('ZIP', 'ABLAGE', 'KOPIEREN', 'VERSCHIEBEN', 'ENTPACKEN', 'PFAD', 'TERMINAL', 'EXPLORER','UMBENENNEN')
 DESCRIPTIONS = {
+    'UMBENENNEN': 'Dateinamen mit Vorschau und Konfliktprüfung ändern.',
     'ZIP': 'Dateien und Ordner gemeinsam als ZIP speichern. Originale bleiben erhalten.',
     'ENTPACKEN': 'Archive in neue Unterordner entpacken. Originalarchive bleiben erhalten.',
     'ABLAGE': 'In der schwebenden Ablage parken; Originale bleiben an ihrem Ort.',
@@ -27,7 +28,7 @@ def available_file_actions(files=None):
         can_unpack=bool(files) and all(archive_kind(file) for file in files)
     except OSError:
         can_unpack=False
-    return tuple(action for action in FILE_ACTIONS if action!='ENTPACKEN' or can_unpack)
+    return tuple(action for action in FILE_ACTIONS if (action!='ENTPACKEN' or can_unpack) and (action!='UMBENENNEN' or bool(files) and all(Path(file).is_file() and not Path(file).is_symlink() for file in files)))
 
 def paths_from_urls(urls):
     if not urls or not all(url.isLocalFile() for url in urls):
