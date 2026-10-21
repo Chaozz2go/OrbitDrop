@@ -1,6 +1,6 @@
 """Named Windows virtual keys and deterministic, non-overlapping trigger chords."""
 MODIFIERS=('Strg','Alt','Shift')
-KEY_CODES={'Shift':0x10,'Strg':0x11,'Alt':0x12,**{chr(code):code for code in range(65,91)},**{str(i):48+i for i in range(10)},**{'F'+str(i):0x6f+i for i in range(1,25)},'Leertaste':0x20,'Tab':0x09,'Feststelltaste':0x14,'Pause':0x13,'Rollen':0x91,'Einfügen':0x2d,'Pos1':0x24,'Ende':0x23,'Bild auf':0x21,'Bild ab':0x22,'Links':0x25,'Rechts':0x27,'Oben':0x26,'Unten':0x28,'Zurücktaste':0x08,'Enter':0x0d}
+KEY_CODES={'Shift':0x10,'Strg':0x11,'Alt':0x12,**{chr(code):code for code in range(65,91)},**{str(i):48+i for i in range(10)},**{'F'+str(i):0x6f+i for i in range(1,25)},**{'Num'+str(i):0x60+i for i in range(10)},'Leertaste':0x20,'Tab':0x09,'Feststelltaste':0x14,'Pause':0x13,'Rollen':0x91,'Einfügen':0x2d,'Pos1':0x24,'Ende':0x23,'Bild auf':0x21,'Bild ab':0x22,'Links':0x25,'Rechts':0x27,'Oben':0x26,'Unten':0x28,'Zurücktaste':0x08,'Enter':0x0d}
 
 
 def normalize_shortcut(value):

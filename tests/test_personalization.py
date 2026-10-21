@@ -5,8 +5,9 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock,patch
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt,QEvent
 from PySide6.QtTest import QTest
+from PySide6.QtGui import QKeyEvent
 from preferences import Preferences,DEFAULTS,pressed_mode,polling_keys,KEY_CODES
 from shortcuts import normalize_shortcut
 from shortcut_ui import ShortcutChoice,ShortcutCapture
@@ -37,6 +38,10 @@ class PersonalizationTests(unittest.TestCase):
         choice=ShortcutChoice('Shift');capture=ShortcutCapture(choice);self.addCleanup(choice.close);self.addCleanup(capture.close);capture.show();capture.setFocus()
         QTest.keyClick(capture,Qt.Key.Key_F8,Qt.KeyboardModifier.ControlModifier);self.assertEqual(choice.currentText(),'Strg+F8')
         QTest.keyClick(capture,Qt.Key.Key_Shift);self.assertEqual(choice.currentText(),'Shift')
+        with patch('shortcut_ui.sys.platform','win32'):
+            event=QKeyEvent(QEvent.Type.KeyPress,Qt.Key.Key_Exclam,Qt.KeyboardModifier.ShiftModifier,0,0x31,0,'!');capture.keyPressEvent(event);capture.keyReleaseEvent(event);self.assertEqual(choice.currentText(),'Shift+1')
+            event=QKeyEvent(QEvent.Type.KeyPress,Qt.Key.Key_1,Qt.KeyboardModifier.KeypadModifier,0,0x61,0,'1');capture.keyPressEvent(event);capture.keyReleaseEvent(event);self.assertEqual(choice.currentText(),'Num1')
+
     def test_poll_custom_shortcut_and_modal_suppression(self):
         values=dict(DEFAULTS,convert_key='F8',edit_key='Strg+E',files_key='F9');controller=Controller.__new__(Controller);controller.prefs=SimpleNamespace(values=values);controller.wheel=Mock();controller.wheel.isVisible.return_value=False;controller.was_keys={};controller.selection_pending=False;controller.selection_revision=0;controller.selection_job=None;controller.released=0;controller.request_selection=Mock()
         codes={KEY_CODES['Strg'],KEY_CODES['E'],1}
