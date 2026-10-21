@@ -100,7 +100,8 @@ class EditingTests(unittest.TestCase):
         video=self.video();editor=VideoEditor(video,lambda *args:None);self.addCleanup(editor.reject);editor.show();editor.activateWindow();self.wait(lambda:editor.model is not None)
         QTest.keyClick(editor,Qt.Key.Key_Right);self.wait(lambda:editor.frame_job is None);self.assertAlmostEqual(editor.position,.1,places=5)
         QTest.keyClick(editor,Qt.Key.Key_C);self.assertEqual(len(editor.model.cuts),1)
-        editor.marks.setCurrentRow(0);QTest.keyClick(editor,Qt.Key.Key_Delete);self.assertEqual(editor.model.cuts,[])
+        editor.select_segment(1);QTest.keyClick(editor,Qt.Key.Key_Delete);self.assertEqual(len(editor.model.cuts),1);self.assertFalse(editor.model.segments[1][2])
+        editor.set_selected_keep(True);editor.marks.setCurrentRow(0);QTest.keyClick(editor,Qt.Key.Key_Delete,Qt.KeyboardModifier.ShiftModifier);self.assertEqual(editor.model.cuts,[])
         QTest.keyClick(editor,Qt.Key.Key_Left);self.wait(lambda:editor.frame_job is None);self.assertAlmostEqual(editor.position,0,places=5)
         with patch.object(editor.player,'play') as play:
             QTest.keyClick(editor,Qt.Key.Key_Space);play.assert_called_once()

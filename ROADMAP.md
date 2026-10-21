@@ -1,6 +1,6 @@
 # OrbitDrop: Ausbau für Windows
 
-Stand 0.12.1. Eigenständige Oberfläche und Implementierung, inspiriert vom schnellen Drag-and-drop-Konzept. Die folgende Liste beschreibt geplante Arbeit, keine bereits zugesicherten Funktionen.
+Stand 0.13.0. Eigenständige Oberfläche und Implementierung, inspiriert vom schnellen Drag-and-drop-Konzept. Die folgende Liste beschreibt geplante Arbeit, keine bereits zugesicherten Funktionen.
 
 ## Erledigt in diesem Schritt
 
@@ -21,7 +21,7 @@ Stand 0.12.1. Eigenständige Oberfläche und Implementierung, inspiriert vom sch
 - Vorhandenen Schnitteditor weiterverwenden; keine zweite Schnittimplementierung für Downloads.
 - Video-Ausschnitt, Tempo mit Tonhöhenkorrektur, Stummschalten, gezielte PNG-Standbilder und Zusammenfügen.
 - Video-Schwärzungsbereiche mit Zeitspannen und tatsächlicher Exportvorschau.
-- Audiowellenform, Lautheitsnormalisierung, Mono/Stereo, Pieptonbereiche und Visualisierung als Video.
+- Erledigt: echte Wellenformen in Video- und Audioschnitt, gemeinsame Abschnittsauswahl, Entf zum Entfernen und Wiederherstellen. Noch offen: Zoom, mehrere Tonspuren, Lautheitsnormalisierung, Kanalbearbeitung, Pieptonbereiche und Visualisierung als Video.
 
 ## Danach: PDF und Windows-Integration
 

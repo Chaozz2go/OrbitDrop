@@ -1,10 +1,36 @@
-# OrbitDrop 0.12.1 – Windows-Prototyp
+# OrbitDrop 0.13.0 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
 ![Bildeditor mit Vorschau und Reglern](docs/preview-image-editor.png)
 
-## Neu in Version 0.12.1: Start unter Python 3.15 korrigiert
+## Neu in Version 0.13.0: Audiospuren und Abschnittslöschung
+
+### Videoschnitt mit sichtbarer Audiospur
+
+Unter der Videoleiste liegt eine echte Audio-Wellenform aus dem ersten eingebetteten Audiostream. Stereo zeigt links/rechts getrennt in Mint/Blau. Andere Kanalbelegungen werden für die Übersicht zusammengefasst, ohne gegenphasige Kanäle gegenseitig auszulöschen. Videoleiste und Wellenform verwenden dieselbe Quellzeit und dieselben Abschnittsgrenzen. Ein Klick in eine der Spuren wählt den Abschnitt und springt zu dieser Position; beim Ziehen lässt sich die Position verschieben.
+
+### Audioschnitt mit Wellenform
+
+Der Audioschnitt bietet eine große Wellenform mit Zeitraster, Abspielposition, Schnittmarken und hervorgehobenen Abschnitten. Ein Abschnitt lässt sich in der Wellenform oder in der Liste auswählen. Entfernte Teile werden auch beim Abspielen übersprungen. Die Wellenform wird im Hintergrund mit begrenztem Speicherbedarf berechnet; bei langen Dateien kann das etwas dauern. Sie ist eine Übersicht der Amplitudenspitzen und kein Sample-genauer Zoomeditor. Die erste Audiospur wird verwendet; zusätzliche eingebettete Tonspuren sind noch nicht auswählbar.
+
+Die Darstellung kann zur besseren Sichtbarkeit automatisch skaliert werden (Hinweis **Anzeige skaliert**); die Lautstärke der Datei oder Wiedergabe wird dadurch nicht verändert. Videos ohne Ton zeigen **Keine Audiospur vorhanden**. Die Abtastrate für die Übersicht beträgt 8 kHz; die Export-Audiospur wird nicht aus diesen Vorschaudaten erzeugt.
+
+### Einheitliche Tastatursteuerung
+
+| Taste | Video | Audio |
+| --- | --- | --- |
+| Leertaste | Start / Pause | Start / Pause |
+| ← / → | Echtes Einzelbild | 0,1 Sekunden |
+| C | Schnittmarke setzen | Schnittmarke setzen |
+| **Entf** | **Ausgewählten Abschnitt entfernen** | **Ausgewählten Abschnitt entfernen** |
+| **Shift+Entf** | Gewählte Schnittmarke löschen | Gewählte Schnittmarke löschen |
+
+Entf entfernt keinen Schnittpunkt und löscht keine Originaldatei. Der Abschnitt bleibt gedimmt sichtbar und kann über **Wiederherstellen** wieder aufgenommen werden. Ohne ausgewählten Abschnitt bewirkt Entf nichts. Zum Löschen einer einzelnen Marke gibt es außerdem den eigenen Button. Exportiert werden wie zuvor ausschließlich die behaltenen Bereiche, auf Wunsch als einzelne Dateien.
+
+Beide Schnitteditoren verwenden jetzt die gemeinsame dunkle Gestaltung, klare Überschriften, Seitenflächen und mintfarbene Speicherbuttons. Ein zusätzlich gezeigtes generiertes Mockup ist ein Designvorschlag für den weiteren Feinschliff; es ist kein Screenshot dieser Version.
+
+## Änderungen in Version 0.12.1: Start unter Python 3.15 korrigiert
 
 Das Projektmodul `compression.py` wurde in `orbit_compression.py` umbenannt. Der alte Name verdeckte unter Python 3.15 das gleichnamige Standardbibliothekspaket, das `gzip` intern verwendet, und verhinderte dadurch den Programmstart.
 

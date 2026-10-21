@@ -25,7 +25,7 @@ class Filmstrip(QWidget):
     def __init__(self,owner):
         super().__init__();self.owner=owner;self.position=0;self.selected_segment=-1;self.thumbnails={};self.count=14;self.dragging=False;self.thumbnail_job=None
         self.setMinimumHeight(148);self.setMaximumHeight(148);self.setMouseTracking(True);self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
-        self.setToolTip('Abschnitt anklicken → Entfernen. Obere Zeitleiste ziehen: im Video springen.')
+        self.setToolTip('Abschnitt anklicken → Entf. Obere Zeitleiste ziehen: im Video springen.')
     def load(self,path,duration,stopped):
         if self.thumbnail_job:return
         job=ThumbnailJob(path,duration,stopped,self.count);self.thumbnail_job=job
@@ -65,7 +65,7 @@ class Filmstrip(QWidget):
             if rect.width()>42:
                 label=f'{index+1}' if keep else 'Entfernt';painter.fillRect(QRectF(rect.left()+3,top+height-24,min(rect.width()-6,78),20),QColor(10,14,22,200));painter.drawText(rect.adjusted(6,62,-4,0),Qt.AlignmentFlag.AlignLeft,label)
         x=left+width*self.position;painter.setPen(QPen(QColor('#ffffff'),2));painter.drawLine(int(x),24,int(x),125)
-        painter.setPen(QColor('#aab4c9'));painter.drawText(QRectF(10,123,width,22),Qt.AlignmentFlag.AlignCenter,'Abschnitt anklicken → Entfernen · Obere Zeitleiste ziehen = Position wählen')
+        painter.setPen(QColor('#aab4c9'));painter.drawText(QRectF(10,123,width,22),Qt.AlignmentFlag.AlignCenter,'Abschnitt anklicken → Entf · Obere Zeitleiste ziehen = Position wählen')
     def mousePressEvent(self,event):
         if not self.owner.model or event.button()!=Qt.MouseButton.LeftButton:return
         time=self.time_for(event.position().x())
