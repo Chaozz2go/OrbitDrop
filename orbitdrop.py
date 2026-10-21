@@ -731,7 +731,7 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.13.0 · Prototyp',
+        QMessageBox.information(None, 'OrbitDrop 0.14.0 · Prototyp',
             '1. Datei im Explorer mit linker Maustaste ziehen.\n'
             '2. '+shortcut_hint(self.prefs.values)+'. Kurz antippen und wieder loslassen.\n'
             '3. Der passende Bereich öffnet direkt. Während des Ziehens lässt sich der Bereich mit den Tasten wechseln.\n'
@@ -763,7 +763,8 @@ if __name__ == '__main__':
             QMessageBox.information(None,'Medien-Setup','Einrichtung abgeschlossen. OrbitDrop neu starten.' if not result else 'Einrichtung fehlgeschlagen. Bitte FFmpeg/FFprobe manuell in bin ablegen.')
         sys.exit(result)
     app = QApplication(sys.argv)
-    app.setStyleSheet(STYLE)
+    from ui_theme import install_theme
+    install_theme(app)
     app.setApplicationName('OrbitDrop')
     app.setQuitOnLastWindowClosed(False)
     state_root=QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation)

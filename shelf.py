@@ -81,9 +81,12 @@ class Shelf(QWidget):
         self.setWindowTitle('OrbitDrop · Dateiablage')
         self.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.WindowStaysOnTopHint)
         self.resize(330,420);self.setMinimumSize(280,260)
-        self.setStyleSheet('QWidget{background:#181d2a;color:#edf0f8;font-family:Segoe UI;} QListWidget{background:#252c3e;border:1px solid #40485c;border-radius:8px;padding:8px;} QListWidget::item{padding:8px;} QListWidget::item:selected{background:#3f655f;} QPushButton{background:#7ed9ba;color:#13241f;border:0;border-radius:6px;padding:7px;}')
+        from ui_theme import STYLE
+        from editor_chrome import heading
+        self.setStyleSheet(STYLE)
         layout=QVBoxLayout(self)
-        top=QHBoxLayout();title=QLabel('DATEIABLAGE');top.addWidget(title);top.addStretch()
+        heading(layout,'Dateiablage','Dateien parken und später weiterziehen')
+        top=QHBoxLayout();top.addStretch()
         pin=QPushButton('Andocken');pin.clicked.connect(self.pin_right);top.addWidget(pin)
         layout.addLayout(top)
         info=QLabel('Dateien hier parken und in andere Apps ziehen.\nOriginale bleiben an ihrem Speicherort.')

@@ -4,7 +4,8 @@ from PIL import Image,ImageOps
 from PySide6.QtCore import Qt,Signal,QPointF,QRectF
 from PySide6.QtGui import QPixmap,QPainter,QPen,QColor,QShortcut,QKeySequence
 from PySide6.QtWidgets import QDialog,QVBoxLayout,QHBoxLayout,QLabel,QPushButton,QComboBox,QLineEdit,QSpinBox,QListWidget,QColorDialog
-from editor_chrome import EDITOR_STYLE,heading
+from editor_chrome import EDITOR_STYLE,heading,toolbar
+from ui_theme import icon
 from image_editor import CropCanvas,pil_qimage
 from annotations import render_marks,validate_marks
 
@@ -52,7 +53,7 @@ class AnnotationDialog(QDialog):
         self.preview=self.image.copy();self.preview.thumbnail((1600,1100))
         self.setWindowTitle('OrbitDrop · Schwärzen & Beschriften');self.setStyleSheet(EDITOR_STYLE);self.resize(1100,780)
         layout=QVBoxLayout(self);heading(layout,'Schwärzen & Beschriften',Path(path).name+' · Markierungen werden fest in eine neue PNG-Kopie geschrieben')
-        bar=QHBoxLayout();layout.addLayout(bar);self.tool=QComboBox()
+        frame,bar=toolbar();layout.addWidget(frame);self.tool=QComboBox()
         for title,value in [('Schwärzen','redact'),('Pfeil','arrow'),('Rahmen','rectangle'),('Text','text'),('Verschieben','move')]:self.tool.addItem(title,value)
         self.tool.currentIndexChanged.connect(lambda:self.set_tool());bar.addWidget(self.tool)
         self.text=QLineEdit('Text');self.text.setMaxLength(500);self.text.textChanged.connect(lambda text:setattr(self.canvas,'text',text));bar.addWidget(self.text,1)
@@ -65,7 +66,7 @@ class AnnotationDialog(QDialog):
         delete=QPushButton('Markierung entfernen');delete.clicked.connect(self.remove_mark);row.addWidget(delete)
         self.undo=QPushButton('Rückgängig');self.undo.clicked.connect(self.undo_mark);row.addWidget(self.undo);self.redo=QPushButton('Wiederholen');self.redo.clicked.connect(self.redo_mark);row.addWidget(self.redo)
         self.notice=QLabel('Mit der Maus zeichnen. Schwarz deckt vollständig ab; Farbe gilt für Text, Pfeile und Rahmen. Die Kontrolle sensibler Stellen bleibt bei dir.');self.notice.setWordWrap(True);layout.addWidget(self.notice)
-        bottom=QHBoxLayout();layout.addLayout(bottom);close=QPushButton('Schließen');close.clicked.connect(self.reject);bottom.addWidget(close);bottom.addStretch();self.save_button=QPushButton('Als neue PNG speichern');self.save_button.setObjectName('primaryAction');self.save_button.clicked.connect(self.save);bottom.addWidget(self.save_button)
+        bottom=QHBoxLayout();layout.addLayout(bottom);close=QPushButton('Schließen');close.clicked.connect(self.reject);bottom.addWidget(close);bottom.addStretch();self.save_button=QPushButton('Als neue PNG speichern');self.save_button.setObjectName('primaryAction');self.save_button.setIcon(icon('save','#102e27'));self.save_button.clicked.connect(self.save);bottom.addWidget(self.save_button)
         self.shortcuts=[]
         for key,callback in [('Ctrl+Z',self.undo_mark),('Ctrl+Y',self.redo_mark)]:
             shortcut=QShortcut(QKeySequence(key),self);shortcut.activated.connect(callback);self.shortcuts.append(shortcut)

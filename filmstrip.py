@@ -1,9 +1,10 @@
 """Clickable clip strip; source time stays stable when a segment is excluded."""
-from PySide6.QtCore import Qt,QRectF,QObject,Signal,QRunnable,QThreadPool
+from PySide6.QtCore import Qt,QRectF,QPointF,QObject,Signal,QRunnable,QThreadPool
 from PySide6.QtGui import QPainter,QColor,QPen,QFont,QPixmap
 from PySide6.QtWidgets import QWidget
 from edit_models import read_frame
 from image_editor import pil_qimage
+from ui_theme import CANVAS,paint_excluded
 
 class ThumbnailSignals(QObject):ready=Signal(int,object)
 class ThumbnailJob(QRunnable):
@@ -24,7 +25,7 @@ class Filmstrip(QWidget):
     segmentSelected=Signal(int)
     def __init__(self,owner):
         super().__init__();self.owner=owner;self.position=0;self.selected_segment=-1;self.thumbnails={};self.count=14;self.dragging=False;self.thumbnail_job=None
-        self.setMinimumHeight(148);self.setMaximumHeight(148);self.setMouseTracking(True);self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
+        self.setMinimumHeight(128);self.setMaximumHeight(128);self.setMouseTracking(True);self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.setToolTip('Abschnitt anklicken → Entf. Obere Zeitleiste ziehen: im Video springen.')
     def load(self,path,duration,stopped):
         if self.thumbnail_job:return
@@ -38,7 +39,7 @@ class Filmstrip(QWidget):
     def x_for(self,time):return 10+(self.width()-20)*time/self.owner.model.duration
     def time_for(self,x):return max(0,min(self.owner.model.duration,(x-10)/max(1,self.width()-20)*self.owner.model.duration))
     def paintEvent(self,event):
-        painter=QPainter(self);painter.setRenderHint(QPainter.RenderHint.Antialiasing);painter.fillRect(self.rect(),QColor('#10141e'))
+        painter=QPainter(self);painter.setRenderHint(QPainter.RenderHint.Antialiasing);painter.fillRect(self.rect(),QColor(CANVAS))
         model=self.owner.model
         if not model:
             painter.setPen(QColor('#aab4c9'));painter.drawText(self.rect(),Qt.AlignmentFlag.AlignCenter,'Videoleiste wird geladen …');return
@@ -59,13 +60,14 @@ class Filmstrip(QWidget):
         painter.setClipping(False)
         for index,(start,end,keep) in enumerate(model.segments):
             rect=QRectF(self.x_for(start),top,max(1,self.x_for(end)-self.x_for(start)),height)
-            if not keep:painter.fillRect(rect,QColor(22,10,16,210))
+            if not keep:paint_excluded(painter,rect)
+            elif index==self.selected_segment:painter.fillRect(rect,QColor(255,190,138,22))
             painter.setPen(QPen(QColor('#ffbe83' if index==self.selected_segment else '#7ed9ba' if keep else '#db7584'),3 if index==self.selected_segment else 1))
             painter.setBrush(Qt.BrushStyle.NoBrush);painter.drawRect(rect.adjusted(1,1,-1,-1))
             if rect.width()>42:
                 label=f'{index+1}' if keep else 'Entfernt';painter.fillRect(QRectF(rect.left()+3,top+height-24,min(rect.width()-6,78),20),QColor(10,14,22,200));painter.drawText(rect.adjusted(6,62,-4,0),Qt.AlignmentFlag.AlignLeft,label)
         x=left+width*self.position;painter.setPen(QPen(QColor('#ffffff'),2));painter.drawLine(int(x),24,int(x),125)
-        painter.setPen(QColor('#aab4c9'));painter.drawText(QRectF(10,123,width,22),Qt.AlignmentFlag.AlignCenter,'Abschnitt anklicken → Entf · Obere Zeitleiste ziehen = Position wählen')
+        painter.setPen(Qt.PenStyle.NoPen);painter.setBrush(QColor('#f2f7ff'));painter.drawPolygon([QPointF(x-5,23),QPointF(x+5,23),QPointF(x,29)])
     def mousePressEvent(self,event):
         if not self.owner.model or event.button()!=Qt.MouseButton.LeftButton:return
         time=self.time_for(event.position().x())

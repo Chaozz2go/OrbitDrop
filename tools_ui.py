@@ -2,13 +2,14 @@ from pathlib import Path
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QDialog,QVBoxLayout,QHBoxLayout,QFormLayout,QComboBox,QListWidget,QPushButton,QFileDialog,
  QSpinBox,QCheckBox,QLineEdit,QDoubleSpinBox,QDialogButtonBox,QLabel,QMessageBox)
-from app_ui import STYLE
+from ui_theme import STYLE
+from editor_chrome import heading
 from tools import TOOLS
 
 class ToolsDialog(QDialog):
     def __init__(self,parent=None):
         super().__init__(parent);self.setWindowTitle('OrbitDrop · Werkzeuge');self.resize(570,560);self.setStyleSheet(STYLE)
-        layout=QVBoxLayout(self);self.action=QComboBox();self.action.addItems(TOOLS);layout.addWidget(self.action)
+        layout=QVBoxLayout(self);heading(layout,'Werkzeuge','Dateien auswählen und die passende Bearbeitung starten');self.action=QComboBox();self.action.addItems(TOOLS);layout.addWidget(self.action)
         self.files=QListWidget();layout.addWidget(self.files)
         row=QHBoxLayout();layout.addLayout(row)
         for title,callback in [('Hinzufügen',self.add_files),('Entfernen',self.remove),('↑',lambda:self.reorder(-1)),('↓',lambda:self.reorder(1))]:
@@ -22,7 +23,7 @@ class ToolsDialog(QDialog):
         self.start=QDoubleSpinBox();self.start.setRange(0,86400);self.start.setDecimals(2);self.start.setSuffix(' s');form.addRow('Clip: Start',self.start)
         self.end=QDoubleSpinBox();self.end.setRange(0,86400);self.end.setDecimals(2);self.end.setValue(10);self.end.setSuffix(' s');form.addRow('Clip: Ende',self.end)
         self.notice=QLabel('PDFs werden in der Listenreihenfolge zusammengefügt. Bilder werden als PNG gespeichert. Ausgabeordner und Videoqualität kommen aus den Einstellungen. Originale bleiben erhalten.');self.notice.setWordWrap(True);layout.addWidget(self.notice)
-        buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Ok|QDialogButtonBox.StandardButton.Cancel);buttons.button(QDialogButtonBox.StandardButton.Ok).setText('Starten');buttons.button(QDialogButtonBox.StandardButton.Cancel).setText('Abbrechen');buttons.accepted.connect(self.validate);buttons.rejected.connect(self.reject);layout.addWidget(buttons)
+        buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Ok|QDialogButtonBox.StandardButton.Cancel);buttons.button(QDialogButtonBox.StandardButton.Ok).setText('Starten');buttons.button(QDialogButtonBox.StandardButton.Ok).setObjectName('primaryAction');buttons.button(QDialogButtonBox.StandardButton.Cancel).setText('Abbrechen');buttons.accepted.connect(self.validate);buttons.rejected.connect(self.reject);layout.addWidget(buttons)
         self.form=form;self.action.currentTextChanged.connect(self.update_fields);self.update_fields()
     def update_fields(self):
         action=self.action.currentText()

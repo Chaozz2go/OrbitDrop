@@ -1,10 +1,32 @@
-# OrbitDrop 0.13.0 – Windows-Prototyp
+# OrbitDrop 0.14.0 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
-![Bildeditor mit Vorschau und Reglern](docs/preview-image-editor.png)
+![Bildeditor mit Vorschau und Reglern](docs/preview-photo-studio.png)
 
-## Neu in Version 0.13.0: Audiospuren und Abschnittslöschung
+## Neu in Version 0.14.0: Schnittstudio-Stil in allen Fenstern
+
+Der freigegebene Mockup-Stil ist jetzt die gemeinsame Gestaltung der Anwendung: dunkles Marineblau, ruhige abgerundete Flächen, feine Konturen, mintfarbene Hauptaktionen mit dunklem Text und orangefarbene Auswahlen. Kleine Vektorsymbole ersetzen uneinheitliche Symbolschriftzeichen in den neuen Werkzeugleisten. Ein zentraler Stil in `ui_theme.py` gilt für Bild-/Video-/Audioeditor, Schwarzweiß/Bitmap/SVG, Beschriften, Komprimieren, Schnellaktionen, Downloads, Einstellungen, Aufträge, Werkzeuge, Dateierkennung und Dateiablage.
+
+### Videoschnitt nach dem Mockup
+
+Große Vorschau über die gesamte Breite, direkt darunter Abspielen, Einzelbildschritte, Schnitt, Entfernen und Wiederherstellen. Video- und Audiospur liegen anschließend untereinander; entfernte Teile sind dunkel schraffiert und ausgewählte Abschnitte orange markiert. Schnittmarken und Abschnittslisten lassen sich über **Marken & Abschnitte** einblenden. Die Drehungen sind über **Drehen** erreichbar. Auf schmalen Fenstern wandert die Zeitanzeige unter die Spuren und Wiederherstellen wird zum Symbolbutton mit Tooltip. Die Funktion bleibt erhalten.
+
+### Audio- und Bildbearbeitung im gleichen Stil
+
+Audioschnitt zeigt die große Wellenform, eine kompakte Werkzeugleiste und die Abschnittsliste. Einzelne Schnittmarken sind über **Schnittmarken** einblendbar. In der Bildbearbeitung liegen Originalvergleich und Drehungen in einer passenden Werkzeugleiste; Farb-/Ausschnitt-/Größenregler bleiben rechts. Auf kleineren Fenstern lässt sich der Reglerbereich scrollen. Originalvergleich: Button gedrückt halten. 180°-Drehung ist weiterhin als eigene Aktion im Reglerbereich vorhanden.
+
+### Gemeinsame Fensterdarstellung
+
+Auch die Hilfsfenster haben dieselben Überschriften, Eingaben, Tabs, Buttons und Scrollleisten. Windows-Fensterrahmen werden, soweit vom System unterstützt, dunkel und mit abgerundeten Ecken dargestellt. Native Windows-Dateiauswahldialoge folgen weiterhin der Darstellung des Betriebssystems. Die Belegung Shift/Strg/Alt und die Schnitt-Tasten bleiben unverändert. Geschlossene Qt-Fenster werden im Oberflächenthread freigegeben; die SVG-Vorschau berechnet ihre Pfade im Hintergrund und rendert das Ergebnis anschließend im Oberflächenthread.
+
+Die folgenden Bilder zeigen echte gerenderte Programmfenster mit künstlichen Testdateien, nicht das zuvor generierte Mockup:
+
+![Videoschnitt im gemeinsamen Studiostil](docs/preview-video-studio.png)
+
+![Bildbearbeitung im gemeinsamen Studiostil](docs/preview-photo-studio.png)
+
+## Änderungen in Version 0.13.0: Audiospuren und Abschnittslöschung
 
 ### Videoschnitt mit sichtbarer Audiospur
 

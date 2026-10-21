@@ -21,7 +21,7 @@ def rounded_sector(center,outer,inner,start,span,corner=12):
 
 def surface(p,path,accent,selected=False):
     accent=QColor(accent);gradient=QLinearGradient(path.boundingRect().topLeft(),path.boundingRect().bottomRight())
-    gradient.setColorAt(0,accent.darker(125) if selected else QColor('#263548'))
-    gradient.setColorAt(1,accent.darker(205) if selected else QColor('#172231'))
+    gradient.setColorAt(0,accent.darker(125) if selected else QColor('#263b53'))
+    gradient.setColorAt(1,accent.darker(205) if selected else QColor('#1c2d42'))
     p.save();p.translate(0,3);p.fillPath(path,QColor(0,0,0,55));p.restore()
-    p.setBrush(gradient);p.setPen(QPen(accent if selected else QColor('#415267'),1.6 if selected else 1));p.drawPath(path)
+    p.setBrush(gradient);p.setPen(QPen(accent if selected else QColor('#405b77'),1.6 if selected else 1));p.drawPath(path)

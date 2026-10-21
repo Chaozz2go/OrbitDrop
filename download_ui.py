@@ -1,7 +1,8 @@
 from pathlib import Path
 from PySide6.QtCore import QObject,Signal,QRunnable,QThreadPool,QStandardPaths,Qt
 from PySide6.QtWidgets import QDialog,QVBoxLayout,QHBoxLayout,QLabel,QLineEdit,QPushButton,QComboBox,QFileDialog,QMessageBox
-from app_ui import STYLE
+from ui_theme import STYLE
+from editor_chrome import heading
 from link_selection import media_link
 from downloader import inspect_link
 
@@ -15,7 +16,7 @@ class LinkInspect(QRunnable):
 class DownloadDialog(QDialog):
     def __init__(self,url,mode,folder,submit,parent=None):
         super().__init__(parent);self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint,True);self.submit=submit;self.inspection=None;self.inspected_url=None;self.info=None;self.setWindowTitle('OrbitDrop · Link herunterladen');self.resize(650,380);self.setStyleSheet(STYLE)
-        layout=QVBoxLayout(self);layout.addWidget(QLabel('LINK HERUNTERLADEN'))
+        layout=QVBoxLayout(self);heading(layout,'Link herunterladen','Audio oder Video lokal speichern')
         self.url=QLineEdit(url or '');self.url.setPlaceholderText('https://…');layout.addWidget(self.url)
         self.inspect_button=QPushButton('Link prüfen');self.inspect_button.clicked.connect(self.inspect);layout.addWidget(self.inspect_button)
         self.status=QLabel('Link prüfen, dann Audio oder Video wählen.');self.status.setWordWrap(True);layout.addWidget(self.status)
@@ -23,8 +24,8 @@ class DownloadDialog(QDialog):
         self.quality=QComboBox();self.quality.addItem('Beste verfügbare Qualität',0);row.addWidget(self.quality)
         self.folder=QLineEdit(folder or QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DownloadLocation));layout.addWidget(self.folder)
         choose=QPushButton('Zielordner wählen');choose.clicked.connect(self.choose_folder);layout.addWidget(choose)
-        self.notice=QLabel('Einzelner Link. Videos behalten das verfügbare Format; getrennte Bild-/Tonspuren werden als MKV zusammengefügt. Kein zusätzlicher Schnitteditor.');self.notice.setWordWrap(True);layout.addWidget(self.notice)
-        self.start=QPushButton('Herunterladen');self.start.setEnabled(False);self.start.clicked.connect(self.download);layout.addWidget(self.start)
+        self.notice=QLabel('Videos behalten das verfügbare Format; getrennte Bild-/Tonspuren werden als MKV gespeichert. Anschließend kannst du die Datei über Strg bearbeiten.');self.notice.setWordWrap(True);layout.addWidget(self.notice)
+        self.start=QPushButton('Herunterladen');self.start.setObjectName('primaryAction');self.start.setEnabled(False);self.start.clicked.connect(self.download);layout.addWidget(self.start)
         self.url.textChanged.connect(self.invalidate);self.mode.currentIndexChanged.connect(self.update_enabled)
         if media_link(url):self.inspect()
     def invalidate(self):self.inspected_url=None;self.start.setEnabled(False)

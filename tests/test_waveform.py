@@ -35,6 +35,15 @@ class WaveformTests(unittest.TestCase):
         self.assertEqual(editor.model.cuts,[1,2]);self.assertFalse(editor.model.segments[1][2]);self.assertEqual(editor.kept_position(1.5),2)
         editor.set_selected_keep(True);self.assertTrue(editor.model.segments[1][2]);editor.marks.setCurrentRow(0);QTest.keyClick(editor,Qt.Key.Key_Delete,Qt.KeyboardModifier.ShiftModifier);self.assertEqual(editor.model.cuts,[2])
         editor.save();self.assertEqual(calls[0][0],'Audio bearbeiten');self.assertTrue(editor.stopped.is_set())
+    def test_closed_audio_player_is_disposed_before_next_editor(self):
+        from PySide6.QtCore import QCoreApplication,QEvent
+        from shiboken6 import isValid
+        from image_editor import ImageEditor
+        from PIL import Image
+        editor=AudioEditor(self.audio,lambda *args:None);editor.show();self.wait(lambda:editor.model is not None)
+        player=editor.player;editor.reject();QCoreApplication.sendPostedEvents(None,QEvent.Type.DeferredDelete);self.assertFalse(isValid(player))
+        source=self.root/'next.png';Image.new('RGB',(60,40),'red').save(source);photo=ImageEditor(source,lambda *args:None);self.addCleanup(photo.close);photo.show();self.app.processEvents();self.assertIsNotNone(photo.canvas.pixmap)
+
     @unittest.skipUnless(shutil.which('ffmpeg'),'FFmpeg missing')
     def test_video_waveform_is_time_aligned_and_delete_keeps_cuts(self):
         path=self.root/'source.mp4';subprocess.run(['ffmpeg','-v','error','-f','lavfi','-i','color=c=blue:s=128x96:r=10:d=3','-i',str(self.audio),'-c:v','libx264','-c:a','aac','-shortest',str(path)],check=True)

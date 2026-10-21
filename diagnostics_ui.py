@@ -1,18 +1,19 @@
 import json
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog,QVBoxLayout,QHBoxLayout,QLabel,QTreeWidget,QTreeWidgetItem,QTextEdit,QCheckBox,QPushButton,QFileDialog,QMessageBox
-from app_ui import STYLE
+from ui_theme import STYLE
+from editor_chrome import heading
 
 class DiagnosticsDialog(QDialog):
     def __init__(self,store):
         super().__init__();self.store=store;self.setWindowTitle('OrbitDrop · Debugging · Dateierkennung');self.resize(900,620);self.setStyleSheet(STYLE)
-        layout=QVBoxLayout(self);notice=QLabel('Nicht erkannte oder nicht unterstützte Dateien, fehlende Konverter und Erkennungsfehler. Maximal 100 Einträge. Originaldateien werden weder gespeichert noch hochgeladen.');notice.setWordWrap(True);layout.addWidget(notice)
+        layout=QVBoxLayout(self);heading(layout,'Dateierkennung','Diagnose und Unterstützung für unbekannte Formate');notice=QLabel('Nicht erkannte oder nicht unterstützte Dateien, fehlende Konverter und Erkennungsfehler. Maximal 100 Einträge. Originaldateien werden weder gespeichert noch hochgeladen.');notice.setWordWrap(True);layout.addWidget(notice)
         self.tree=QTreeWidget();self.tree.setHeaderLabels(['Datei (nur lokal)','Typ','Erkannt als','Anzahl']);self.tree.setColumnWidth(0,320);layout.addWidget(self.tree)
         self.detail=QTextEdit();self.detail.setReadOnly(True);layout.addWidget(self.detail)
         self.names=QCheckBox('Originaldateinamen in Export aufnehmen');self.names.setChecked(False);layout.addWidget(self.names)
         row=QHBoxLayout();layout.addLayout(row)
         for title,callback in [('Diagnose exportieren',self.export),('Liste leeren',self.clear),('Schließen',self.accept)]:
-            button=QPushButton(title);button.clicked.connect(callback);row.addWidget(button)
+            button=QPushButton(title);button.setObjectName('primaryAction' if title=='Diagnose exportieren' else '');button.clicked.connect(callback);row.addWidget(button)
         self.tree.currentItemChanged.connect(self.selected);self.refresh()
     def refresh(self):
         self.tree.clear();self.detail.clear()

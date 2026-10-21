@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt,QUrl
 from PySide6.QtGui import QShortcut,QKeySequence
 from PySide6.QtMultimedia import QMediaPlayer,QAudioOutput
 from PySide6.QtWidgets import QDialog,QWidget,QVBoxLayout,QHBoxLayout,QLabel,QPushButton,QListWidget,QListWidgetItem,QCheckBox,QMessageBox,QSplitter
-from editor_chrome import EDITOR_STYLE,heading
+from editor_chrome import EDITOR_STYLE,heading,toolbar,action_button
 from edit_models import CutModel
 from video_editor import stamp
 from waveform import Waveform
@@ -16,25 +16,29 @@ class AudioEditor(QDialog):
         super().__init__();self.path=str(path);self.submit=submit;self.model=None;self.updating_lists=False;self.shortcuts=[];self.stopped=threading.Event()
         self.setWindowTitle('OrbitDrop · Audioschnitt · '+Path(path).name);self.resize(1050,780);self.setStyleSheet(EDITOR_STYLE)
         layout=QVBoxLayout(self);layout.setSpacing(10);heading(layout,'Audioschnitt',Path(path).name+' · Leertaste: Start/Pause · C: Schnitt · Entf: Abschnitt entfernen')
-        self.time_label=QLabel('Audio wird geöffnet …');layout.addWidget(self.time_label)
         self.timeline=Waveform(self,large=True);self.waveform=self.timeline;layout.addWidget(self.timeline,2);self.timeline.seekRequested.connect(self.seek);self.timeline.segmentSelected.connect(self.select_segment);self.timeline.loaded.connect(self.waveform_loaded)
-        controls=QHBoxLayout();layout.addLayout(controls)
-        for label,callback in [('▶ / Pause · Leertaste',self.toggle_play),('← 0,1 s',lambda:self.step(-.1)),('0,1 s →',lambda:self.step(.1)),('Schnitt setzen · C',self.add_cut)]:
-            button=QPushButton(label);button.clicked.connect(callback);controls.addWidget(button)
+        bar,controls=toolbar();layout.addWidget(bar)
+        self.play=action_button('Abspielen','play',True,'Start / Pause · Leertaste');self.play.clicked.connect(self.toggle_play);controls.addWidget(self.play)
+        for kind,title,amount in [('previous','0,1 Sekunden zurück · ←',-.1),('next','0,1 Sekunden vor · →',.1)]:
+            button=action_button('',kind,tooltip=title);button.setFixedWidth(38);button.clicked.connect(lambda checked=False,n=amount:self.step(n));controls.addWidget(button)
+        cut=action_button('Schnitt C','cut');cut.clicked.connect(self.add_cut);controls.addWidget(cut)
+        self.remove_segment_button=action_button('Entfernen Entf','delete');self.remove_segment_button.setEnabled(False);self.remove_segment_button.clicked.connect(lambda:self.set_selected_keep(False));controls.addWidget(self.remove_segment_button)
+        self.restore_segment_button=action_button('','undo',tooltip='Abschnitt wiederherstellen');self.restore_segment_button.setEnabled(False);self.restore_segment_button.clicked.connect(lambda:self.set_selected_keep(True));controls.addWidget(self.restore_segment_button)
+        controls.addStretch();self.time_label=QLabel('Audio wird geöffnet …');self.time_label.setObjectName('timeReadout');layout.addWidget(self.time_label)
         panels=QSplitter();layout.addWidget(panels,1)
         for title,attribute in [('SCHNITTMARKEN','marks'),('ABSCHNITTE · Haken = behalten','segments')]:
             box=QWidget();box.setObjectName('editorControls');column=QVBoxLayout(box);column.addWidget(QLabel(title));items=QListWidget();items.setMinimumHeight(70);column.addWidget(items,1);setattr(self,attribute,items);panels.addWidget(box)
             if attribute=='marks':
-                remove=QPushButton('Marke entfernen · Shift+Entf');remove.clicked.connect(self.remove_cut);column.addWidget(remove)
+                self.marks_box=box;remove=action_button('Marke entfernen · Shift+Entf','delete');remove.clicked.connect(self.remove_cut);column.addWidget(remove)
+        self.marks_box.hide()
         self.marks.itemDoubleClicked.connect(lambda item:self.seek(self.model.cuts[self.marks.row(item)]) if self.model else None)
         self.segments.itemChanged.connect(self.changed);self.segments.currentRowChanged.connect(self.select_segment);self.segments.itemDoubleClicked.connect(lambda item:self.seek(self.model.segments[self.segments.row(item)][0]) if self.model else None)
         row=QHBoxLayout();layout.addLayout(row);self.selected_label=QLabel('Abschnitt in der Audiospur anklicken');row.addWidget(self.selected_label,1)
-        self.remove_segment_button=QPushButton('Abschnitt entfernen · Entf');self.remove_segment_button.setEnabled(False);self.remove_segment_button.clicked.connect(lambda:self.set_selected_keep(False));row.addWidget(self.remove_segment_button)
-        self.restore_segment_button=QPushButton('Wiederherstellen');self.restore_segment_button.setEnabled(False);self.restore_segment_button.clicked.connect(lambda:self.set_selected_keep(True));row.addWidget(self.restore_segment_button)
-        self.status=QLabel('Audiospur anklicken oder ziehen, um die Position zu wählen.');self.status.setWordWrap(True);layout.addWidget(self.status)
-        bottom=QHBoxLayout();layout.addLayout(bottom);self.separate=QCheckBox('Abschnitte als einzelne Audiodateien');bottom.addWidget(self.separate);bottom.addStretch()
-        self.export=QPushButton('Auswahl als MP3 speichern');self.export.setObjectName('primaryAction');self.export.setEnabled(False);self.export.clicked.connect(self.save);bottom.addWidget(self.export)
-        close=QPushButton('Schließen');close.clicked.connect(self.reject);bottom.addWidget(close)
+        details=QPushButton('Schnittmarken');details.setCheckable(True);details.toggled.connect(self.marks_box.setVisible);row.addWidget(details)
+        self.status=QLabel('Audiospur anklicken oder ziehen, um die Position zu wählen.');self.status.setObjectName('editorSubtitle');self.status.setWordWrap(True);layout.addWidget(self.status)
+        bottom=QHBoxLayout();layout.addLayout(bottom);self.separate=QCheckBox('Als einzelne Clips');bottom.addWidget(self.separate);bottom.addStretch()
+        close=action_button('Schließen');close.clicked.connect(self.reject);bottom.addWidget(close)
+        self.export=action_button('Als MP3 speichern','save',True);self.export.setEnabled(False);self.export.clicked.connect(self.save);bottom.addWidget(self.export)
         self.player=QMediaPlayer(self);self.audio=QAudioOutput(self);self.player.setAudioOutput(self.audio)
         self.player.durationChanged.connect(self.duration_changed);self.player.positionChanged.connect(self.update_time);self.player.errorOccurred.connect(lambda error,message:self.status.setText('Wiedergabe: '+message) if not self.stopped.is_set() else None)
         for key,callback in [('Space',self.toggle_play),('Left',lambda:self.step(-.1)),('Right',lambda:self.step(.1)),('C',self.add_cut),('Delete',lambda:self.set_selected_keep(False)),('Shift+Delete',self.remove_cut)]:
@@ -102,5 +106,5 @@ class AudioEditor(QDialog):
         self.player.pause();self.submit('Audio bearbeiten',[self.path],{'ranges':self.model.ranges(),'separate':self.separate.isChecked()});self.accept()
     def done(self,result):
         if not self.stopped.is_set():
-            self.stopped.set();self.timeline.close_waveform();self.player.stop();self.player.setAudioOutput(None);self.player.setSource(QUrl())
+            self.stopped.set();self.timeline.close_waveform();self.player.stop();self.player.setAudioOutput(None);self.player.setSource(QUrl());self.player.deleteLater();self.audio.deleteLater()
         super().done(result)

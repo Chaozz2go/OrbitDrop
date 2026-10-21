@@ -4,7 +4,8 @@ from PIL import Image,ImageOps
 from PySide6.QtCore import Qt,QRectF,QPointF,Signal,QObject,QRunnable,QThreadPool,QTimer
 from PySide6.QtGui import QImage,QPixmap,QPainter,QColor,QPen,QPainterPath
 from PySide6.QtWidgets import QDialog,QWidget,QVBoxLayout,QHBoxLayout,QPushButton,QLabel,QComboBox,QFormLayout,QSpinBox,QDoubleSpinBox,QCheckBox,QScrollArea
-from editor_chrome import EDITOR_STYLE,heading
+from editor_chrome import EDITOR_STYLE,heading,toolbar,action_button
+from ui_theme import CANVAS,APRICOT,BACKGROUND
 from slider_field import SliderField
 from photo_effects import adjust_photo,photo_settings,resize_photo,DEFAULTS
 
@@ -32,13 +33,13 @@ class CropCanvas(QWidget):
         rect=self.image_rect();sx=rect.width()/self.image.width;sy=rect.height()/self.image.height
         return QRectF(rect.left()+selection.left()*sx,rect.top()+selection.top()*sy,selection.width()*sx,selection.height()*sy)
     def paintEvent(self,event):
-        painter=QPainter(self);painter.fillRect(self.rect(),QColor('#0f121b'))
+        painter=QPainter(self);painter.setRenderHint(QPainter.RenderHint.Antialiasing);painter.fillRect(self.rect(),QColor(BACKGROUND));clip=QPainterPath();clip.addRoundedRect(QRectF(self.rect()),12,12);painter.fillPath(clip,QColor(CANVAS));painter.setClipPath(clip)
         if not self.pixmap:return
         rect=self.image_rect();painter.drawPixmap(rect.toRect(),self.pixmap)
         if self.selection and self.selection.width()>0 and self.selection.height()>0:
             selected=self.display(self.selection)
             shadow=QPainterPath();shadow.addRect(rect);shadow.addRect(selected);shadow.setFillRule(Qt.FillRule.OddEvenFill)
-            painter.fillPath(shadow,QColor(0,0,0,150));painter.setPen(QPen(QColor('#7ed9ba'),2));painter.drawRect(selected)
+            painter.fillPath(shadow,QColor(0,0,0,150));painter.setPen(QPen(QColor(APRICOT),2));painter.drawRect(selected)
             painter.setBrush(QColor('#f4faf8'))
             for point in [selected.topLeft(),selected.topRight(),selected.bottomLeft(),selected.bottomRight()]:painter.drawEllipse(point,4,4)
     def mousePressEvent(self,event):
@@ -91,8 +92,8 @@ class ImageEditor(QDialog):
         heading(layout,'Bild bearbeiten',Path(path).name+' · Ausschnitt, Farben und Größe · neue PNG-Kopie')
         body=QHBoxLayout();body.setSpacing(18);layout.addLayout(body,1)
         left=QVBoxLayout();body.addLayout(left,1);self.canvas=CropCanvas();left.addWidget(self.canvas,1)
-        row=QHBoxLayout();left.addLayout(row)
-        self.compare=QPushButton('Original zum Vergleichen halten');self.compare.setObjectName('originalPreview');self.compare.pressed.connect(lambda:self.compare_original(True));self.compare.released.connect(lambda:self.compare_original(False));row.addWidget(self.compare)
+        bar,row=toolbar();left.addWidget(bar)
+        self.compare=action_button('Original halten','compare',tooltip='Gedrückt halten: unbearbeitetes Original vergleichen');self.compare.setObjectName('originalPreview');self.compare.pressed.connect(lambda:self.compare_original(True));self.compare.released.connect(lambda:self.compare_original(False));row.addWidget(self.compare)
         self.status=QLabel();self.status.setWordWrap(True);left.addWidget(self.status)
         controls=QWidget();controls.setObjectName('editorControls');controls.setMinimumWidth(285);controls.setMaximumWidth(330)
         form=QFormLayout(controls);form.setContentsMargins(16,16,16,16);form.setSpacing(12);form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
@@ -106,10 +107,10 @@ class ImageEditor(QDialog):
         ratio=QComboBox()
         for title,value in [('Freier Ausschnitt',0),('Quadrat 1:1',1),('16:9',16/9),('4:3',4/3),('Hochformat 9:16',9/16)]:ratio.addItem(title,value)
         ratio.currentIndexChanged.connect(lambda:self.set_ratio(ratio.currentData()));self.ratio=ratio;form.addRow('Ausschnitt',ratio)
-        rotation=QHBoxLayout()
-        for label,angle in [('↶ Links',-90),('Rechts ↷',90),('180°',180)]:
-            button=QPushButton(label);button.clicked.connect(lambda checked=False,a=angle:self.rotate(a));rotation.addWidget(button)
-        form.addRow(rotation)
+        for label,angle,kind in [('',-90,'rotate_left'),('',90,'rotate_right')]:
+            button=action_button(label,kind,tooltip='90° links drehen' if angle<0 else '90° rechts drehen');button.setFixedWidth(38);button.clicked.connect(lambda checked=False,a=angle:self.rotate(a));row.addWidget(button)
+        reset_crop=action_button('','reset',tooltip='Ausschnitt entfernen');reset_crop.setFixedWidth(38);reset_crop.clicked.connect(self.reset_crop);row.addWidget(reset_crop)
+        half_turn=QPushButton('Um 180° drehen');half_turn.clicked.connect(lambda:self.rotate(180));form.addRow(half_turn)
         clear=QPushButton('Ausschnitt entfernen');clear.clicked.connect(self.reset_crop);form.addRow(clear)
         self.width=QSpinBox();self.height=QSpinBox()
         for title,field in [('Breite',self.width),('Höhe',self.height)]:
@@ -118,7 +119,7 @@ class ImageEditor(QDialog):
         note=QLabel('0 / Automatisch behält die passende Kante bei. Zwei Werte mit Seitenverhältnis bilden einen Begrenzungsrahmen.');note.setWordWrap(True);note.setObjectName('editorSubtitle');form.addRow(note)
         bottom=QHBoxLayout();layout.addLayout(bottom);reset=QPushButton('Alles zurücksetzen');reset.clicked.connect(self.reset);bottom.addWidget(reset);bottom.addStretch()
         cancel=QPushButton('Schließen');cancel.clicked.connect(self.reject);bottom.addWidget(cancel)
-        self.save_button=QPushButton('Als neue PNG speichern');self.save_button.setObjectName('primaryAction');self.save_button.clicked.connect(self.save);bottom.addWidget(self.save_button)
+        self.save_button=action_button('Als PNG speichern','save',True);self.save_button.clicked.connect(self.save);bottom.addWidget(self.save_button)
         self.timer=QTimer(self);self.timer.setSingleShot(True);self.timer.timeout.connect(self.refresh)
         for field in self.fields.values():field.valueChanged.connect(self.changed)
         self.gray.toggled.connect(self.changed)

@@ -46,7 +46,7 @@ def paint_direct(w):
         if advance>label_width:font.setPointSizeF(max(8,font.pointSizeF()*label_width/advance))
         p.setFont(font);p.setPen(QColor('#f3fffb'))
         p.drawText(QRectF(point.x()-label_width/2,point.y()+3,label_width,40),Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignTop|Qt.TextFlag.TextWordWrap,text)
-    p.setBrush(QColor('#141e2c'));p.setPen(QPen(QColor('#43556d'),1));p.drawEllipse(QRectF(center-82,center-82,164,164))
+    p.setBrush(QColor('#142131'));p.setPen(QPen(QColor('#43556d'),1));p.drawEllipse(QRectF(center-82,center-82,164,164))
     if w.preview is not None and not w.preview.isNull():
         p.save();clip=QPainterPath();clip.addEllipse(QRectF(center-36,center-56,72,72));p.setClipPath(clip);p.fillRect(clip.boundingRect(),QColor('white'));pixmap=QPixmap.fromImage(w.preview).scaled(72,72,Qt.AspectRatioMode.KeepAspectRatioByExpanding,Qt.TransformationMode.SmoothTransformation);p.drawPixmap(round(center-pixmap.width()/2),round(center-20-pixmap.height()/2),pixmap);p.restore()
     else:
@@ -56,7 +56,7 @@ def paint_direct(w):
     p.setFont(QFont('Segoe UI',8,QFont.Weight.Bold));p.setPen(QColor('#e9f4ff'));p.drawText(QRectF(center-64,center+20,128,22),Qt.AlignmentFlag.AlignCenter,QFontMetrics(p.font()).elidedText(name,Qt.TextElideMode.ElideMiddle,125))
     p.setFont(QFont('Segoe UI',8));p.setPen(QColor('#a8bed6'));p.drawText(QRectF(center-64,center+43,128,20),Qt.AlignmentFlag.AlignCenter,w.action_titles.get(w.labels[w.selected],NAMES.get(w.labels[w.selected].split(':',1)[-1],w.labels[w.selected].split(':',1)[-1])).replace('\n',' ') if w.selected>=0 else 'Aktion wählen')
     y=w.circle_size+3
-    p.setPen(QPen(QColor('#34475d'),1));p.setBrush(QColor('#151e2b'));p.drawRoundedRect(QRectF(10,y-2,w.circle_size-20,60),12,12)
+    p.setPen(QPen(QColor('#344c66'),1));p.setBrush(QColor('#1b2b3f'));p.drawRoundedRect(QRectF(10,y-2,w.circle_size-20,60),12,12)
     p.setFont(QFont('Segoe UI',9))
     for index,(color,text) in enumerate([('#7ed9ba','Konvertieren'),('#ffbe83','Bearbeiten'),('#83baff','Tools')]):
         x=center-180+index*130;p.setPen(Qt.PenStyle.NoPen);p.setBrush(QColor(color));p.drawEllipse(QPointF(x,y+10),4,4);p.setPen(QColor('#c2d4e6'));p.drawText(QRectF(x+10,y,115,22),Qt.AlignmentFlag.AlignVCenter,text)

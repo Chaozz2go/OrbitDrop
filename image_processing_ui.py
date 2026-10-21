@@ -4,6 +4,7 @@ from PySide6.QtGui import QPixmap,QImage,QPainter
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import QDialog,QVBoxLayout,QHBoxLayout,QFormLayout,QLabel,QComboBox,QSpinBox,QDoubleSpinBox,QCheckBox,QPushButton,QMessageBox,QScrollArea,QWidget
 from editor_chrome import EDITOR_STYLE,heading
+from ui_theme import icon
 from slider_field import SliderField
 from image_editor import pil_qimage
 from image_processing import load_image,prepare_image,trace_svg,settings
@@ -15,11 +16,10 @@ class ImagePreviewJob(QRunnable):
         try:
             original=load_image(self.path);prepared,threshold=prepare_image(original,self.options,vector=self.target=='SVG');svg=None
             if self.target=='SVG':
-                svg=trace_svg(prepared,self.options,original.size);renderer=QSvgRenderer(svg.encode());size=renderer.defaultSize();size.scale(1200,850,Qt.AspectRatioMode.KeepAspectRatio)
-                rendered=QImage(size,QImage.Format.Format_ARGB32);rendered.fill(Qt.GlobalColor.white);painter=QPainter(rendered);renderer.render(painter);painter.end()
+                svg=trace_svg(prepared,self.options,original.size);rendered=None
             else:
                 show=prepared.copy();show.thumbnail((1200,850));rendered=pil_qimage(show)
-            original.thumbnail((1200,850));self.signals.done.emit((pil_qimage(original),rendered,threshold,len(svg or '')),'')
+            original.thumbnail((1200,850));self.signals.done.emit((pil_qimage(original),rendered,threshold,svg),'')
         except Exception as error:self.signals.done.emit(None,str(error))
 
 class ImageProcessingDialog(QDialog):
@@ -32,7 +32,7 @@ class ImageProcessingDialog(QDialog):
         previews=QHBoxLayout();body.addLayout(previews,1);self.previews=[]
         for title in ('ORIGINAL','ERGEBNIS'):
             column=QVBoxLayout();previews.addLayout(column,1);caption=QLabel(title);caption.setObjectName('editorSubtitle');column.addWidget(caption)
-            label=QLabel('Vorschau wird erstellt …');label.setAlignment(Qt.AlignmentFlag.AlignCenter);label.setMinimumSize(180,200);label.setStyleSheet('background:#0f1723;color:#a5b7cd;border:1px solid #34475d;border-radius:12px;');column.addWidget(label,1);self.previews.append(label)
+            label=QLabel('Vorschau wird erstellt …');label.setAlignment(Qt.AlignmentFlag.AlignCenter);label.setMinimumSize(180,200);label.setObjectName('previewSurface');column.addWidget(label,1);self.previews.append(label)
         controls=QWidget();controls.setObjectName('editorControls');form=QFormLayout(controls);form.setContentsMargins(16,16,16,16);form.setSpacing(12);form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
         scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(controls);scroll.setMinimumWidth(320);scroll.setMaximumWidth(370);body.addWidget(scroll);self.fields={};self.slider_fields={}
         self.mode=QComboBox();self.mode.addItem('Schwarzweiß · 1 Bit','binary');self.mode.addItem('Graustufen','gray')
@@ -52,7 +52,7 @@ class ImageProcessingDialog(QDialog):
             for title,value in [('Weiche Kurven','spline'),('Gerade Kanten','polygon'),('Pixelkonturen','pixel')]:self.curve.addItem(title,value)
             form.addRow('Konturform',self.curve);self.white=QCheckBox('Weißen Hintergrund in SVG aufnehmen');form.addRow(self.white)
         self.status=QLabel('Vorschau wird erstellt …');self.status.setWordWrap(True);layout.addWidget(self.status)
-        bottom=QHBoxLayout();layout.addLayout(bottom);reset=QPushButton('Zurücksetzen');reset.clicked.connect(self.reset);bottom.addWidget(reset);bottom.addStretch();self.save_button=QPushButton('Als '+('SVG' if target=='SVG' else 'BMP · 1 Bit' if target=='BITMAP' else 'PNG')+' speichern');self.save_button.setObjectName('primaryAction');self.save_button.setEnabled(False);self.save_button.clicked.connect(self.save);bottom.addWidget(self.save_button);close=QPushButton('Schließen');close.clicked.connect(self.reject);bottom.addWidget(close)
+        bottom=QHBoxLayout();layout.addLayout(bottom);reset=QPushButton('Zurücksetzen');reset.clicked.connect(self.reset);bottom.addWidget(reset);bottom.addStretch();self.save_button=QPushButton('Als '+('SVG' if target=='SVG' else 'BMP · 1 Bit' if target=='BITMAP' else 'PNG')+' speichern');self.save_button.setObjectName('primaryAction');self.save_button.setIcon(icon('save','#102e27'));self.save_button.setEnabled(False);self.save_button.clicked.connect(self.save);bottom.addWidget(self.save_button);close=QPushButton('Schließen');close.clicked.connect(self.reject);bottom.addWidget(close)
         self.timer=QTimer(self);self.timer.setSingleShot(True);self.timer.timeout.connect(self.refresh)
         self.mode.currentIndexChanged.connect(self.changed);self.auto.toggled.connect(self.changed);self.invert.toggled.connect(self.changed);self.dither.toggled.connect(self.changed)
         for widget in self.fields.values():widget.valueChanged.connect(self.changed)
@@ -78,7 +78,13 @@ class ImageProcessingDialog(QDialog):
         if self.closed:return
         if options!=self.options() or self.pending:self.refresh();return
         if error:self.status.setText(error);return
-        original,processed,threshold,size=result;self.images=[original,processed];self.draw_previews();self.valid=True;self.save_button.setEnabled(True)
+        original,processed,threshold,svg=result
+        # Keep renderer QObject creation and destruction on the GUI thread. The
+        # worker only computes pixels/paths; no GUI-affine lifetime crosses it.
+        if svg:
+            renderer=QSvgRenderer(svg.encode());size=renderer.defaultSize();size.scale(1200,850,Qt.AspectRatioMode.KeepAspectRatio)
+            processed=QImage(size,QImage.Format.Format_ARGB32);processed.fill(Qt.GlobalColor.white);painter=QPainter(processed);renderer.render(painter);painter.end()
+        size=len(svg or '');self.images=[original,processed];self.draw_previews();self.valid=True;self.save_button.setEnabled(True)
         self.status.setText(f'Schwellwert: {threshold}'+(f' · SVG: {size/1024:.1f} KB · Echte Vektorpfade; Fotos werden vereinfacht.' if self.target=='SVG' else ' · Original bleibt erhalten.'))
     def draw_previews(self):
         for label,image in zip(self.previews,self.images):label.setPixmap(QPixmap.fromImage(image).scaled(label.size(),Qt.AspectRatioMode.KeepAspectRatio,Qt.TransformationMode.SmoothTransformation))

@@ -3,6 +3,8 @@ os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 import struct
 import tempfile
 import time
+import threading
+from unittest.mock import patch
 from pathlib import Path
 import unittest
 import xml.etree.ElementTree as ET
@@ -44,9 +46,13 @@ class ImageProcessingTests(unittest.TestCase):
         self.assertLess(canvas.pixelColor(25,25).red(),30);self.assertGreater(canvas.pixelColor(50,50).red(),230)
     def test_advanced_preview_and_submit(self):
         calls=[];dialog=ImageProcessingDialog(self.source,'SVG',lambda *a:calls.append(a));dialog.show();self.addCleanup(dialog.close)
-        deadline=time.monotonic()+10
-        while not dialog.valid and time.monotonic()<deadline:self.app.processEvents();time.sleep(.01)
-        self.assertTrue(dialog.valid);self.assertTrue(dialog.save_button.isEnabled());dialog.save();self.assertEqual(calls[0][2]['target'],'SVG');self.assertEqual(calls[0][2]['processing']['mode'],'binary')
+        renderer_threads=[];main_thread=threading.get_ident()
+        def render_on_gui(*args):
+            renderer_threads.append(threading.get_ident());return QSvgRenderer(*args)
+        with patch('image_processing_ui.QSvgRenderer',side_effect=render_on_gui):
+            deadline=time.monotonic()+10
+            while not dialog.valid and time.monotonic()<deadline:self.app.processEvents();time.sleep(.01)
+        self.assertEqual(renderer_threads,[main_thread]);self.assertTrue(dialog.valid);self.assertTrue(dialog.save_button.isEnabled());dialog.save();self.assertEqual(calls[0][2]['target'],'SVG');self.assertEqual(calls[0][2]['processing']['mode'],'binary')
     def test_svg_menu_quick_and_advanced(self):
         calls=[]
         class Target:

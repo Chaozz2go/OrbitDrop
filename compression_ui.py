@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt,QObject,QRunnable,Signal,QThreadPool,QTimer
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QDialog,QVBoxLayout,QHBoxLayout,QFormLayout,QLabel,QComboBox,QSpinBox,QDoubleSpinBox,QPushButton,QLineEdit,QMessageBox,QListWidget,QSizePolicy
 from editor_chrome import EDITOR_STYLE,heading
+from ui_theme import icon
 from slider_field import SliderField
 from orbit_compression import compression_settings,image_bytes
 from image_editor import pil_qimage
@@ -28,8 +29,8 @@ class CompressionDialog(QDialog):
         super().__init__();self.files=list(files);self.kind=kind;self.submit=submit;self.prefs=prefs;self.job=None;self.closed=False;self.revision=0;self.preview_image=None;self.original_image=None
         self.setStyleSheet(EDITOR_STYLE);self.setWindowTitle('OrbitDrop · Komprimieren');self.resize(920,760)
         layout=QVBoxLayout(self);heading(layout,'Komprimieren',f'{len(files)} Datei(en) · {kind} · Originale bleiben erhalten')
-        self.preview=QLabel('Bildvorschau wird berechnet …' if kind=='Bild' else 'Video → MP4 · Audio → MP3 · PDF → verlustfrei optimiertes PDF');self.preview.setAlignment(Qt.AlignmentFlag.AlignCenter);self.preview.setWordWrap(True);self.preview.setMinimumHeight(150);self.preview.setStyleSheet('background:#0f1723;border-radius:12px;')
-        preview_row=QHBoxLayout();layout.addLayout(preview_row,1);self.before=QLabel('Original');self.before.setAlignment(Qt.AlignmentFlag.AlignCenter);self.before.setMinimumSize(180,150);self.before.setStyleSheet('background:#0f1723;border-radius:12px;')
+        self.preview=QLabel('Bildvorschau wird berechnet …' if kind=='Bild' else 'Video → MP4 · Audio → MP3 · PDF → verlustfrei optimiertes PDF');self.preview.setAlignment(Qt.AlignmentFlag.AlignCenter);self.preview.setWordWrap(True);self.preview.setMinimumHeight(150);self.preview.setObjectName('previewSurface')
+        preview_row=QHBoxLayout();layout.addLayout(preview_row,1);self.before=QLabel('Original');self.before.setAlignment(Qt.AlignmentFlag.AlignCenter);self.before.setMinimumSize(180,150);self.before.setObjectName('previewSurface')
         for label,title in [(self.before,'ORIGINAL'),(self.preview,'ERGEBNIS')]:
             column=QVBoxLayout();caption=QLabel(title);column.addWidget(caption);column.addWidget(label,1);preview_row.addLayout(column,1);label.setSizePolicy(QSizePolicy.Policy.Ignored,QSizePolicy.Policy.Ignored)
             if label is self.before:caption.setVisible(kind=='Bild')
@@ -49,7 +50,7 @@ class CompressionDialog(QDialog):
         self.status=QLabel();self.status.setWordWrap(True);layout.addWidget(self.status)
         hint=QLabel('MB = 1.000.000 Byte. Das Limit wird am Ergebnis geprüft; unerreichbare Ziele führen zu einer Fehlermeldung. Ohne Limit ist eine kleinere Datei nicht garantiert. JPG erhält bei Transparenz einen weißen Hintergrund.');hint.setObjectName('editorSubtitle');hint.setWordWrap(True);layout.addWidget(hint)
         recipe=QHBoxLayout();layout.addLayout(recipe);self.preset_name=QLineEdit();self.preset_name.setMaxLength(28);self.preset_name.setPlaceholderText('Name für eigene Schnellaktion');recipe.addWidget(self.preset_name,1);save=QPushButton('Einstellungen merken');save.clicked.connect(self.save_recipe);recipe.addWidget(save)
-        bottom=QHBoxLayout();layout.addLayout(bottom);self.close_button=QPushButton('Schließen');self.close_button.clicked.connect(self.reject);bottom.addWidget(self.close_button);bottom.addStretch();self.start=QPushButton('Neue Dateien erstellen');self.start.setObjectName('primaryAction');self.start.clicked.connect(self.apply);bottom.addWidget(self.start)
+        bottom=QHBoxLayout();layout.addLayout(bottom);self.close_button=QPushButton('Schließen');self.close_button.clicked.connect(self.reject);bottom.addWidget(self.close_button);bottom.addStretch();self.start=QPushButton('Neue Dateien erstellen');self.start.setObjectName('primaryAction');self.start.setIcon(icon('save','#102e27'));self.start.clicked.connect(self.apply);bottom.addWidget(self.start)
         self.timer=QTimer(self);self.timer.setSingleShot(True);self.timer.timeout.connect(self.refresh)
         for widget in (self.quality,self.edge,self.target):widget.valueChanged.connect(self.changed)
         self.format.currentIndexChanged.connect(self.changed);self.height.currentIndexChanged.connect(self.changed);self.bitrate.currentIndexChanged.connect(self.changed)

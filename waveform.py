@@ -4,6 +4,7 @@ import math,threading
 from PySide6.QtCore import Qt,QObject,Signal,QRunnable,QThreadPool,QRectF
 from PySide6.QtGui import QPainter,QColor,QPen,QFont
 from PySide6.QtWidgets import QWidget
+from ui_theme import CANVAS,paint_excluded
 
 class WaveformCancelled(RuntimeError):pass
 
@@ -89,7 +90,7 @@ class Waveform(QWidget):
     def isSliderDown(self):return self.dragging
     def time_for(self,x):return max(0,min(1,(x-10)/max(1,self.width()-20)))*self.owner.model.duration
     def paintEvent(self,event):
-        p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing);p.fillRect(self.rect(),QColor('#101b29'));p.setPen(QColor('#8fa8bf'));p.setFont(QFont('Segoe UI',8));p.drawText(QRectF(12,3,self.width()-24,20),Qt.AlignmentFlag.AlignVCenter,self.message)
+        p=QPainter(self);p.setRenderHint(QPainter.RenderHint.Antialiasing);p.fillRect(self.rect(),QColor(CANVAS));p.setPen(QColor('#8fa8bf'));p.setFont(QFont('Segoe UI',8));p.drawText(QRectF(12,3,self.width()-24,20),Qt.AlignmentFlag.AlignVCenter,self.message)
         model=self.owner.model
         if not model:return
         left,width,top,bottom=10,max(1,self.width()-20),48 if self.large else 27,self.height()-9
@@ -106,7 +107,8 @@ class Waveform(QWidget):
                 p.drawLine(left+pixel,round(center-extent),left+pixel,round(center+extent))
         for index,(start,end,keep) in enumerate(model.segments):
             rect=QRectF(left+width*start/model.duration,top,width*(end-start)/model.duration,bottom-top)
-            if not keep:p.fillRect(rect,QColor(12,17,27,210))
+            if not keep:paint_excluded(p,rect)
+            elif index==self.selected_segment:p.fillRect(rect,QColor(255,190,138,22))
             if index==self.selected_segment:
                 p.setPen(QPen(QColor('#ffbe83'),2));p.setBrush(Qt.BrushStyle.NoBrush);p.drawRoundedRect(rect.adjusted(1,1,-1,-1),4,4)
         p.setPen(QPen(QColor('#ffbe83'),1))
