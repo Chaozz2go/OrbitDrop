@@ -47,7 +47,8 @@ def direct_actions(files,kind,formats,hidden=(),files_only=False,presets=(),work
         actions+=['edit:quick:'+item['id'] for item in presets if item['kind']==kind]
     if not files_only and kind=='Bild':actions+=['edit:flow:'+item['id'] for item in workflows]
     if files:actions+=['tool:'+action for action in available_file_actions(files)]
-    actions+=['app:AKTIONSSUCHE','app:UPDATES','app:BILDABLÄUFE','app:SCHNELLAKTIONEN','app:LINK LADEN','app:AUFTRÄGE','app:EINSTELLUNGEN','app:KONVERTER','app:DEBUGGING','app:HILFE']
+    from menu_visibility import APP_IDS
+    actions+=['app:'+key for key in APP_IDS]
     return actions
 
 

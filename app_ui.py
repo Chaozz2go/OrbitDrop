@@ -5,7 +5,7 @@ import uuid
 from PySide6.QtCore import Qt,QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (QWidget,QVBoxLayout,QHBoxLayout,QLabel,QPushButton,QTreeWidget,QTreeWidgetItem,QProgressBar,
- QDialog,QFormLayout,QLineEdit,QSpinBox,QComboBox,QCheckBox,QDialogButtonBox,QFileDialog,QMessageBox,QInputDialog,QTextEdit,QListWidget,QListWidgetItem,QTabWidget)
+ QDialog,QFormLayout,QLineEdit,QSpinBox,QComboBox,QCheckBox,QDialogButtonBox,QFileDialog,QMessageBox,QInputDialog,QTextEdit,QListWidget,QListWidgetItem,QTabWidget,QScrollArea)
 from preferences import set_autostart
 from window_focus import present
 
@@ -16,8 +16,8 @@ from editor_chrome import heading
 
 class SettingsDialog(QDialog):
     def __init__(self,prefs,parent=None):
-        super().__init__(parent);self.prefs=prefs;self.setWindowTitle('OrbitDrop · Einstellungen');self.setMinimumWidth(620);self.setStyleSheet(STYLE)
-        layout=QVBoxLayout(self);heading(layout,'Einstellungen','OrbitDrop an deine Arbeitsweise anpassen');tabs=QTabWidget();layout.addWidget(tabs);general=QWidget();tabs.addTab(general,'Allgemein');form=QFormLayout(general);v=prefs.values
+        super().__init__(parent);self.prefs=prefs;self.setWindowTitle('OrbitDrop · Einstellungen');self.setMinimumWidth(820);self.resize(1020,720);self.setStyleSheet(STYLE)
+        layout=QVBoxLayout(self);heading(layout,'Einstellungen','OrbitDrop an deine Arbeitsweise anpassen');tabs=QTabWidget();layout.addWidget(tabs);general=QWidget();scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(general);tabs.addTab(scroll,'Allgemein');form=QFormLayout(general);v=prefs.values
         row=QHBoxLayout();self.output=QLineEdit(v['output_dir']);self.output.setPlaceholderText('Leer = neben der Originaldatei');row.addWidget(self.output)
         browse=QPushButton('Wählen');browse.clicked.connect(self.choose_folder);row.addWidget(browse);form.addRow('Ausgabeordner',row)
         self.quality=QSpinBox();self.quality.setRange(10,100);self.quality.setValue(v['image_quality']);self.quality.setSuffix(' %');form.addRow('Bildqualität',self.quality)
@@ -25,26 +25,43 @@ class SettingsDialog(QDialog):
         self.height=QComboBox()
         for label,value in [('Originalgröße',0),('Maximal 480p',480),('Maximal 720p',720),('Maximal 1080p',1080),('Maximal 1440p',1440),('Maximal 2160p',2160)]:self.height.addItem(label,value)
         self.height.setCurrentIndex(self.height.findData(v['video_height']));form.addRow('Videogröße (MP4/MOV/MKV/WebM)',self.height)
-        self.convert=QComboBox();self.convert.addItems(['Shift','Strg','Alt']);self.convert.setCurrentText(v['convert_key']);form.addRow('Konvertieren direkt',self.convert)
-        self.edit=QComboBox();self.edit.addItems(['Shift','Strg','Alt']);self.edit.setCurrentText(v['edit_key']);form.addRow('Bearbeiten direkt',self.edit)
-        self.files=QComboBox();self.files.addItems(['Shift','Strg','Alt']);self.files.setCurrentText(v['files_key']);form.addRow('Tools (direkter Zugang)',self.files)
+        from shortcut_ui import shortcut_row
+        self.convert,row=shortcut_row(v['convert_key']);form.addRow('Konvertieren direkt',row)
+        self.edit,row=shortcut_row(v['edit_key']);form.addRow('Bearbeiten direkt',row)
+        self.files,row=shortcut_row(v['files_key']);form.addRow('Tools direkt',row)
+        key_hint=QLabel('Tasten eintippen oder im rechten Feld aufnehmen. Einzelne Tasten und Kombinationen, z. B. F8 oder Strg+E. Esc, Win-Kombinationen und Strg+Alt (AltGr) sind nicht belegbar. Windows-/Explorer-Funktionen dieser Tasten bleiben aktiv.');key_hint.setWordWrap(True);form.addRow(key_hint)
+        key_reset=QPushButton('Standardtasten wiederherstellen');key_reset.clicked.connect(lambda:(self.convert.setCurrentText('Shift'),self.edit.setCurrentText('Strg'),self.files.setCurrentText('Alt')));form.addRow(key_reset)
         self.startup=QCheckBox('Beim Windows-Anmelden starten');self.startup.setChecked(v['autostart']);self.startup.setEnabled(sys.platform=='win32');self.startup.setToolTip('Gilt für diesen Installationspfad. Nach Verschieben des Programms erneut einstellen.');form.addRow(self.startup)
         self.backends=QCheckBox('Konverter beim Start prüfen');self.backends.setChecked(v['check_backends']);form.addRow(self.backends)
-        formats=QWidget();tabs.addTab(formats,'Formate im Kreis');format_layout=QVBoxLayout(formats)
-        format_layout.addWidget(QLabel('Haken = im Kreis anzeigen. Ausblenden entfernt nur die Menüoption.'))
-        self.format_list=QListWidget();format_layout.addWidget(self.format_list)
-        from converter import EXTENSIONS
-        for name in sorted(EXTENSIONS):
-            item=QListWidgetItem(name);item.setFlags(item.flags()|Qt.ItemFlag.ItemIsUserCheckable);item.setCheckState(Qt.CheckState.Unchecked if name in v['hidden_formats'] else Qt.CheckState.Checked);self.format_list.addItem(item)
-        restore=QPushButton('Alle Formate anzeigen');restore.clicked.connect(lambda:[self.format_list.item(i).setCheckState(Qt.CheckState.Checked) for i in range(self.format_list.count())]);format_layout.addWidget(restore)
+        menus=QWidget();tabs.addTab(menus,'Menüpunkte');menu_layout=QVBoxLayout(menus)
+        notice_menu=QLabel('Haken = anzeigen. Gruppen schalten alle enthaltenen Punkte. Gilt für Kreis und Aktionssuche; die Tray-Einstellungen bleiben immer erreichbar. Auch ausgeblendete Funktionen bleiben grundsätzlich ausführbar.');notice_menu.setWordWrap(True);menu_layout.addWidget(notice_menu)
+        self.menu_search=QLineEdit();self.menu_search.setPlaceholderText('Menüpunkt suchen …');menu_layout.addWidget(self.menu_search)
+        self.menu_tree=QTreeWidget();self.menu_tree.setHeaderLabels(['Menüpunkt','Bereich']);self.menu_tree.setColumnWidth(0,380);menu_layout.addWidget(self.menu_tree);self.menu_items={}
+        from menu_visibility import action_catalog,visible_actions
+        for group,actions in action_catalog(v):
+            parent=QTreeWidgetItem([group]);parent.setFlags(parent.flags()|Qt.ItemFlag.ItemIsUserCheckable|Qt.ItemFlag.ItemIsAutoTristate);self.menu_tree.addTopLevelItem(parent)
+            for key,title in actions:
+                item=QTreeWidgetItem([title,group]);item.setData(0,Qt.ItemDataRole.UserRole,key);item.setFlags(item.flags()|Qt.ItemFlag.ItemIsUserCheckable);parent.addChild(item);item.setCheckState(0,Qt.CheckState.Checked if visible_actions([key],v) else Qt.CheckState.Unchecked);self.menu_items[key]=item
+        self.menu_tree.expandAll();self.menu_search.textChanged.connect(self.filter_menus)
+        restore=QPushButton('Alle Menüpunkte wieder anzeigen');restore.clicked.connect(lambda:[item.setCheckState(0,Qt.CheckState.Checked) for item in self.menu_items.values()]);menu_layout.addWidget(restore)
         notice=QLabel('Gilt für neue Aufträge. ZIP-/Entpack-Ziele wählst du weiterhin direkt.');notice.setWordWrap(True);layout.addWidget(notice)
         buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Save|QDialogButtonBox.StandardButton.Cancel);buttons.button(QDialogButtonBox.StandardButton.Save).setText('Speichern');buttons.button(QDialogButtonBox.StandardButton.Save).setObjectName('primaryAction');buttons.button(QDialogButtonBox.StandardButton.Cancel).setText('Abbrechen');buttons.accepted.connect(self.save);buttons.rejected.connect(self.reject);layout.addWidget(buttons)
+    def filter_menus(self,text):
+        query=text.casefold().strip()
+        for index in range(self.menu_tree.topLevelItemCount()):
+            parent=self.menu_tree.topLevelItem(index);visible=False
+            for i in range(parent.childCount()):
+                item=parent.child(i);match=query in (item.text(0)+' '+parent.text(0)).casefold();item.setHidden(not match);visible|=match
+            parent.setHidden(not visible)
     def choose_folder(self):
         path=QFileDialog.getExistingDirectory(self,'Ausgabeordner wählen',self.output.text())
         if path:self.output.setText(path)
     def save(self):
         try:
-            values=dict(self.prefs.values,hidden_formats=[self.format_list.item(i).text() for i in range(self.format_list.count()) if self.format_list.item(i).checkState()==Qt.CheckState.Unchecked],output_dir=self.output.text().strip(),image_quality=self.quality.value(),video_profile=self.profile.currentText(),video_height=self.height.currentData(),convert_key=self.convert.currentText(),edit_key=self.edit.currentText(),files_key=self.files.currentText(),autostart=self.startup.isChecked(),check_backends=self.backends.isChecked())
+            hidden=[key for key,item in self.menu_items.items() if item.checkState(0)==Qt.CheckState.Unchecked]
+            from converter import EXTENSIONS
+            hidden_formats=[target for target in EXTENSIONS if (all('format:'+key in hidden for key in ('SVG SCHNELL','SVG ERWEITERT')) if target=='SVG' else 'format:'+target in hidden)]
+            values=dict(self.prefs.values,hidden_actions=hidden,hidden_formats=hidden_formats,output_dir=self.output.text().strip(),image_quality=self.quality.value(),video_profile=self.profile.currentText(),video_height=self.height.currentData(),convert_key=self.convert.currentText(),edit_key=self.edit.currentText(),files_key=self.files.currentText(),autostart=self.startup.isChecked(),check_backends=self.backends.isChecked())
             values=self.prefs.validate(values)
             if values['output_dir'] and not Path(values['output_dir']).is_dir():raise ValueError('Bitte einen vorhandenen Ausgabeordner wählen.')
             previous=self.prefs.values['autostart']

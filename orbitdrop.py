@@ -11,7 +11,7 @@ from file_actions import FILE_ACTIONS, available_file_actions, DESCRIPTIONS, fil
 from shelf import Shelf
 from archives import create_zip, extract_archive
 from task_runtime import TaskControl, Cancelled, checkpoint
-from preferences import Preferences,KEY_CODES,pressed_mode,shortcut_hint
+from preferences import Preferences,KEY_CODES,pressed_mode,shortcut_hint,polling_keys
 from app_ui import SettingsDialog,TasksWindow,STYLE
 from single_instance import SingleInstance
 from tools import tool_outputs
@@ -270,6 +270,8 @@ class Wheel(QWidget):
         self.action_titles={'edit:quick:'+p['id']:p['name'] for p in presets};workflows=values.get('workflows',[])
         self.action_titles.update({'edit:flow:'+p['id']:p['name'] for p in workflows})
         actions=direct_actions(self.files,self.kind,self.formats,values.get('hidden_formats',[]),files_only=files_only,presets=presets,workflows=workflows)
+        from menu_visibility import visible_actions
+        actions=visible_actions(actions,values)
         favorites=values.get('favorite_actions',[])
         return sorted(actions,key=lambda key:key not in favorites)
 
@@ -374,6 +376,10 @@ class Wheel(QWidget):
         else:QTimer.singleShot(0,lambda:self.controller.circle_action(files,target,kind))
 
     def display_page(self):
+        from menu_visibility import visible_actions
+        values=getattr(getattr(self.controller,'prefs',None),'values',{})
+        self.all_actions=visible_actions(self.all_actions,values)
+        if not self.all_actions:self.message='Alle Menüpunkte ausgeblendet · Einstellungen über das Tray öffnen'
         if self.node=='direct':
             self.labels=self.all_actions[:];self.selected=-1
             screen=QApplication.screenAt(self.pos()) or QApplication.primaryScreen();area=screen.availableGeometry()
@@ -551,7 +557,7 @@ class Controller:
         if sys.platform != 'win32':
             return
         key = ctypes.windll.user32.GetAsyncKeyState
-        states={name:bool(key(code)&0x8000) for name,code in KEY_CODES.items()}
+        states={name:bool(key(code)&0x8000) for name,code in polling_keys(self.prefs.values).items()}
         left,escape=bool(key(0x01)&0x8000),bool(key(0x1B)&0x8000)
         if QApplication.activeModalWidget() is not None:
             self.was_keys=states;self.selection_pending=False;return
@@ -804,24 +810,8 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.18.0 · Prototyp',
-            '1. Datei im Explorer mit linker Maustaste ziehen.\n'
-            '2. '+shortcut_hint(self.prefs.values)+'. Kurz antippen und wieder loslassen.\n'
-            '3. Der passende Bereich öffnet direkt. Während des Ziehens lässt sich der Bereich mit den Tasten wechseln.\n'
-            '4. Direkt auf der gewünschten Aktion loslassen.\n'
-            'Einstellungen/Verlauf: direkt im Tools-Kreis. Link markieren + Shift: Download auswählen.\n\n'
-            'Falls kein Kreis erscheint: Kreis über das Infobereich-Symbol öffnen, '
-            'danach das Bild auf ein Segment ziehen. Esc bricht ab.\n\n'
-            'Konvertieren/Kopieren/Ablage erhalten Originale. VERSCHIEBEN versetzt sie ins gewählte Ziel.\n'
-            'ZIP: Dateien/Ordner zusammenpacken. ENTPACKEN erscheint bei Archiven.\n'
-            'Ablage: Fenster bleibt oben, Einträge in andere Apps ziehen; Leeren löscht keine Dateien.\n'
-            'JPG bekommt bei Transparenz einen weißen Hintergrund. '
-            'Animationen/mehrseitige Bilder werden abgelehnt.\n'
-            'Audio/Video benötigen ffmpeg.exe und ffprobe.exe im Ordner bin oder PATH.\n'
-            'Office/E-Books benötigen je nach Format LibreOffice und Pandoc.\n'
-            'Viele Formate erscheinen in mehreren Ringen; ungenutzte Ziele in Einstellungen ausblenden.\n'
-            'PDF: Bilder als ZIP, PPTX als Seitenbilder, DOCX als Text; OCR über Strg → Text erkennen.\n'
-            'Bitte ohne Administratorrechte starten, genauso wie den Explorer.')
+        from help_ui import HelpDialog
+        HelpDialog(self.prefs).exec()
 
 if __name__ == '__main__':
     if '--download-worker' in sys.argv:

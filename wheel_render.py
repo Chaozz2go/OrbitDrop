@@ -21,6 +21,7 @@ def icon(p,kind,x,y,size=34):
     p.restore()
 
 def ring(p,w,labels):
+    if not labels:return []
     p.setPen(Qt.PenStyle.NoPen);p.setBrush(QColor(0,0,0,55));p.drawEllipse(QRectF(20,23,342,342))
     outer,inner=QRectF(24,24,332,332),QRectF(107,107,166,166);paths=[];step=360/len(labels)
     for i,label in enumerate(labels):
@@ -29,7 +30,10 @@ def ring(p,w,labels):
         surface(p,path,accent,selected)
         angle=math.radians(-90+step/2+i*step);x,y=190+125*math.cos(angle),190+125*math.sin(angle)
         p.setPen(QPen(accent if selected else QColor('#c9d8e8'),2.3,Qt.PenStyle.SolidLine,Qt.PenCapStyle.RoundCap,Qt.PenJoinStyle.RoundJoin))
-        if label in HOME or label in ('AUDIO LADEN','VIDEO LADEN'):icon(p,label,x,y,38)
+        if label in HOME or label in ('AUDIO LADEN','VIDEO LADEN'):
+            icon(p,label,x,y,38)
+            if len(labels)!=3 and label in HOME:
+                p.setFont(QFont('Segoe UI',9,QFont.Weight.Bold));p.drawText(QRectF(x-65,y+23,130,25),Qt.AlignmentFlag.AlignCenter,{'KONVERTIEREN':'Konvertieren','BEARBEITEN':'Bearbeiten','TOOLS':'Tools'}[label])
         else:
             p.setFont(QFont('Segoe UI',10,QFont.Weight.Bold));p.drawText(QRectF(x-48,y-22,96,44),Qt.AlignmentFlag.AlignCenter,MENU_LABELS.get(label,label))
     return paths
@@ -39,7 +43,8 @@ def pill(p,rect,text,color):
 
 def paint_wheel(w):
     p=QPainter(w);p.setCompositionMode(QPainter.CompositionMode.CompositionMode_Source);p.fillRect(w.rect(),Qt.GlobalColor.transparent);p.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceOver);p.setRenderHint(QPainter.RenderHint.Antialiasing);w.paths=[]
-    roots=w.labels if w.node=='home' and w.labels else list(HOME);roots=roots if w.node=='home' else list(HOME)
+    from menu_visibility import visible_actions
+    roots=w.labels if w.node=='home' else visible_actions(list(HOME),getattr(getattr(w.controller,'prefs',None),'values',{}))
     w.ring_paths=ring(p,w,roots)
     if w.node=='home':w.paths=w.ring_paths[:]
     if len(roots)==3 and all(label in HOME for label in roots):

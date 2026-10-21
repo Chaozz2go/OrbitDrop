@@ -1,8 +1,24 @@
-# OrbitDrop 0.18.0 – Windows
+# OrbitDrop 0.19.0 – Windows
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
 ![Bildeditor mit Vorschau und Reglern](docs/preview-photo-studio.png)
+
+## Neu in Version 0.19.0: Personalisierung und Anleitung
+
+**Einstellungen → Allgemein:** Konvertieren, Bearbeiten und Tools frei auf unterstützte Einzeltasten oder Kombinationen legen, z. B. F8, Strg+E und F9. Das rechte Feld nimmt die gedrückten Tasten auf; das linke erlaubt direkte Eingabe. Standard bleibt Shift / Strg / Alt. Speichern prüft gleiche oder ineinander enthaltene Belegungen, z. B. Shift und Shift+F8. Strg+Alt bleibt für AltGr reserviert; Esc, Win-Kombinationen und Alt+F4 sind ausgeschlossen. Windows-/Explorer-Funktionen der gewählten Tasten bleiben aktiv. Globale Erkennung pausiert in modalen OrbitDrop-Dialogen; die internen Editor-Tasten werden nicht umbelegt.
+
+**Einstellungen → Menüpunkte:** Gemeinsam durchsuchbare Checkbox-Liste für Formate, Bearbeitungen, Datei-Tools, Programmfunktionen, Downloads, eigene Abläufe, die Bereichsauswahl und Zurück. Gruppen schalten alle enthaltenen Punkte, auch gerade ausgefilterte Zeilen. SVG Schnell/Erweitert sind getrennt steuerbar. Ausblendungen gelten im Kreis und in der Aktionssuche, auch für Favoriten. Alte versteckte Formate werden übernommen. Neue selbst erstellte Abläufe sind standardmäßig sichtbar.
+
+Du kannst auch Einstellungen, Anleitung, Zurück oder sämtliche Punkte ausblenden. **Wiederherstellung: Rechtsklick auf das OrbitDrop-Symbol im Windows-Infobereich → Einstellungen → Alle Menüpunkte wieder anzeigen.** Die Tray-Zugänge bleiben unabhängig von der Kreis-Personalisierung erhalten. Ausblenden ist keine Zugriffssperre; direkte Tasten-/Tray-Zugänge bleiben nutzbar. Änderungen gelten beim nächsten Öffnen des Kreises.
+
+**Tools-Kreis → Anleitung & Info:** Lokales Handbuch mit Themenleiste und Volltext-Themensuche. Es erklärt Bedienung mit deiner aktuellen Tastenbelegung, Bild-/SVG-/Schnittwerkzeuge, OCR, Playlist-Auswahl, Komprimierung, Dateiaktionen, Abläufe, Fehler, Installation und Updates. Lizenztext direkt im Fenster lesbar; externe Links öffnen erst nach einem Klick den Browser.
+
+## Lizenz und Quellcode
+
+Copyright © 2026 Chaozz2go. Der OrbitDrop-eigene Code steht unter **GNU AGPL Version 3** (SPDX: `AGPL-3.0-only`), siehe [LICENSE](LICENSE). Nutzung, Änderungen und Weitergabe sind nach den Lizenzbedingungen erlaubt, einschließlich kommerzieller Nutzung. Es besteht keine Gewährleistung, soweit gesetzlich zulässig. Abhängigkeiten behalten ihre eigenen Lizenzen; Hinweise stehen in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+
+Das öffentlich Schalten des Repositorys und das Veröffentlichen eines Release-Entwurfs sind getrennte Schritte. Windows-Pakete werden weiterhin zunächst als Entwurf erstellt; automatische Updates erkennen nur veröffentlichte stabile Releases.
 
 ## Neu in Version 0.18.0: Playlist-Auswahl
 

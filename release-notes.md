@@ -1,10 +1,9 @@
-OrbitDrop 0.18.0 ergänzt die Auswahl von Playlist-Titeln im Downloader.
+OrbitDrop 0.19.0 ergänzt Personalisierung und ein lokales Handbuch.
 
-- YouTube-Playlist erkennen, Titel/Dauer anzeigen und alle oder einzelne Einträge auswählen.
-- Titelsuche und sichtbarer Auswahlzähler, gemeinsame Audio-/Video-Ausgabe und Zielordner.
-- Nacheinander herunterladen; Fehler einzelner Titel stoppen die übrigen nicht.
-- Abbruch behält fertige Dateien und entfernt den laufenden Teil-Download.
-- Als privat/gelöscht erkannte Einträge sind gesperrt; endgültige Verfügbarkeit wird beim Download geprüft.
-- Rahmenkorrektur aus 0.17.1 bleibt enthalten.
+- Eigene Tasten und Tastenkombinationen für Konvertieren, Bearbeiten und Tools; Aufnahmefeld und Standard-Wiederherstellung.
+- Jeden funktionalen Menüeintrag ausblenden, inklusive Formaten, Downloads, eigenen Abläufen, Kategorien und Zurück. Gruppen-Checkboxen und Suche; alte Formatwahl wird übernommen.
+- Versteckte Einträge bleiben auch in Favoriten/Aktionssuche verborgen. Wiederherstellung jederzeit über die Tray-Einstellungen.
+- Anleitung & Info im Tools-Kreis: ausführliche, durchsuchbare Themen mit aktueller Tastenbelegung und Lizenzanzeige.
+- Projektlizenz GNU AGPL v3; Drittanbieter behalten eigene Bedingungen.
 
-Windows x64. Die bestehende Installation kann aktualisiert werden; noch nicht digital signiert.
+Windows x64. Belegungen und Sichtbarkeit nach Speichern beim nächsten Öffnen verwenden. Setup kann die vorhandene Installation aktualisieren.

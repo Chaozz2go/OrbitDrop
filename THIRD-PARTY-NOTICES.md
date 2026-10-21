@@ -12,4 +12,4 @@ Wichtige Projekte und Originalquellen:
 - PyInstaller: https://pyinstaller.org/ — GPL mit Ausnahme für erzeugte Anwendungspakete.
 - Weitere Python-Pakete: Lizenztexte und Paketmetadaten im Verzeichnis `third-party`.
 
-Diese Sammlung vergibt keine zusätzliche Lizenz für den OrbitDrop-eigenen Code. Vor einer öffentlichen Binärveröffentlichung muss eine zu den verwendeten Abhängigkeiten passende Projektlizenz festgelegt und die vollständige Weitergabe der nötigen Quellen und Hinweise sichergestellt werden. Automatisch erzeugte Binärpakete bleiben bis dahin unveröffentlichte Release-Entwürfe.
+Der OrbitDrop-eigene Code steht unter GNU AGPL Version 3 (AGPL-3.0-only), siehe die Datei LICENSE im Paket/Repository. Diese Lizenz ersetzt keine Bedingungen der einzelnen Abhängigkeiten. Vor einer öffentlichen Binärveröffentlichung muss die vollständige Weitergabe der jeweils nötigen Quellen und Hinweise geprüft sein. Automatisch erzeugte Binärpakete bleiben zunächst unveröffentlichte Release-Entwürfe.

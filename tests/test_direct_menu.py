@@ -40,8 +40,7 @@ class DirectMenuTests(unittest.TestCase):
         key,path,point,index=next(entry for entry in geometry(wheel) if entry[0]=='format:PNG');QTest.mouseClick(wheel,Qt.MouseButton.LeftButton,pos=point.toPoint());self.app.processEvents();self.assertEqual(calls,[([str(self.image)],'PNG')])
     def test_format_preferences_persist_and_dialog_checkboxes(self):
         prefs=Preferences(self.root/'prefs');dialog=SettingsDialog(prefs);self.addCleanup(dialog.close)
-        for i in range(dialog.format_list.count()):
-            if dialog.format_list.item(i).text()=='SVG':dialog.format_list.item(i).setCheckState(Qt.CheckState.Unchecked)
+        for key in ('format:SVG SCHNELL','format:SVG ERWEITERT'):dialog.menu_items[key].setCheckState(0,Qt.CheckState.Unchecked)
         dialog.save();self.assertIn('SVG',Preferences(prefs.root).values['hidden_formats'])
     def test_sliders_and_values_stay_synchronized(self):
         for target in ('BITMAP','SVG'):

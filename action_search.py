@@ -57,7 +57,8 @@ class ActionSearchDialog(QDialog):
         item=self.list.currentItem();return item.data(Qt.ItemDataRole.UserRole) if item else None
     def filter(self,*args):
         chosen=self.selected();self.list.clear();favorites=self.prefs.values.get('favorite_actions',[])
-        for key in matching_actions(self.actions,self.query.text(),favorites,self.titles,self.only.isChecked()):
+        from menu_visibility import visible_actions
+        for key in matching_actions(visible_actions(self.actions,self.prefs.values),self.query.text(),favorites,self.titles,self.only.isChecked()):
             title=('★  ' if key in favorites else '')+action_title(key,self.titles)+' · '+GROUPS.get(key.split(':',1)[0],'')
             item=QListWidgetItem(title);item.setData(Qt.ItemDataRole.UserRole,key);self.list.addItem(item)
             if key==chosen:self.list.setCurrentItem(item)

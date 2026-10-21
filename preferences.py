@@ -7,9 +7,9 @@ import subprocess
 import sys
 import tempfile
 
-DEFAULTS={'check_updates':False,'favorite_actions':[],'workflows':[],'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
+DEFAULTS={'check_updates':False,'hidden_actions':[],'favorite_actions':[],'workflows':[],'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
           'convert_key':'Shift','edit_key':'Strg','files_key':'Alt','autostart':False,'check_backends':True}
-KEY_CODES={'Shift':0x10,'Strg':0x11,'Alt':0x12}
+from shortcuts import KEY_CODES,pressed_mode,validate_bindings,polling_keys
 
 class Preferences:
     def __init__(self,root):
@@ -35,9 +35,10 @@ class Preferences:
         finally:Path(temp).unlink(missing_ok=True)
     def validate(self,values):
         result={key:values.get(key,value) for key,value in DEFAULTS.items()}
-        keys=[result[name] for name in ('convert_key','edit_key','files_key')]
-        if any(key not in KEY_CODES for key in keys):raise ValueError('Ungültige Taste.')
-        if len(set(keys))!=3:raise ValueError('Konvertieren, Bearbeiten und Tools benötigen drei unterschiedliche Tasten.')
+        result.update(validate_bindings(result))
+        hidden_actions=result['hidden_actions']
+        if not isinstance(hidden_actions,list) or len(hidden_actions)>1000 or any(not isinstance(key,str) or len(key)>150 or ':' not in key for key in hidden_actions):raise ValueError('Ungültige Menüauswahl.')
+        result['hidden_actions']=sorted(set(hidden_actions))
         from quick_actions import validate_presets
         result['quick_actions']=validate_presets(result['quick_actions'])
         from workflows import validate_workflows
@@ -89,15 +90,6 @@ def set_autostart(enabled):
         else:
             try:winreg.DeleteValue(key,'OrbitDrop')
             except FileNotFoundError:pass
-
-
-def pressed_mode(values,states,previous):
-    # A lone AltGr chord (Ctrl+Alt) must not open a palette while dragging.
-    if states.get('Strg') and states.get('Alt'):return None
-    for setting,mode in [('convert_key','convert'),('edit_key','edit'),('files_key','files')]:
-        key=values[setting]
-        if states.get(key) and not previous.get(key):return mode
-    return None
 
 
 def shortcut_hint(values):

@@ -30,7 +30,7 @@ def build(onefile=False):
     args=[sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onefile' if onefile else '--onedir','--windowed','--name','OrbitDrop','--version-file','version_info.txt']
     for package in ('pillow_heif','pymupdf','av','vtracer','yt_dlp','yt_dlp_ejs'):args+=['--collect-all',package]
     notices=collect_notices(root)
-    args+=['--add-data','README.md;.','--add-data',str(notices)+';third-party']
+    args+=['--add-data','README.md;.','--add-data','LICENSE;.','--add-data',str(notices)+';third-party']
     for file in (root/'bin').glob('*'):
         if file.is_file():args+=['--add-binary' if file.suffix.lower() in ('.exe','.dll') else '--add-data',str(file)+';bin']
     if (root/'tessdata').is_dir():args+=['--add-data','tessdata;tessdata']
