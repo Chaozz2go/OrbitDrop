@@ -1,535 +1,255 @@
-# OrbitDrop 0.19.0 – Windows
+# OrbitDrop für Windows
 
-OrbitDrop ist ein Windows-Dateiwerkzeug mit radialem Drag-and-drop-Menü für Konvertierung, Medienbearbeitung, Downloads und Dateiaktionen.
+**Dateien umwandeln, bearbeiten und organisieren – direkt dort, wo du sie gerade ziehst.**
 
-## Quick Install · Schnellstart
+OrbitDrop ist ein Windows-Dateiwerkzeug mit einem radialen Drag-and-drop-Menü. Ziehe eine Datei, tippe eine Taste an und lege sie auf der gewünschten Aktion im Kreis ab. Statt für jede kleine Aufgabe ein eigenes Programm zu öffnen, erreichst du Konverter, Bildeditor, Audio-/Videoschnitt, Downloads und Dateiaktionen über dieselbe Oberfläche.
 
-**[Windows-Downloads & Releases](https://github.com/Chaozz2go/OrbitDrop/releases)** · **[Quellcode als ZIP herunterladen](https://github.com/Chaozz2go/OrbitDrop/archive/refs/heads/main.zip)**
+OrbitDrop erkennt den Dateiinhalt und zeigt passende Aktionen für deine Auswahl. Du kannst mehrere Dateien gemeinsam verarbeiten, häufige Aktionen als Favoriten speichern und unbenutzte Menüpunkte ausblenden. Konvertierung, Bearbeitung und Texterkennung laufen lokal auf deinem Rechner.
 
-> **Aktueller Download-Status:** Das Repository ist öffentlich. Die Windows-Pakete sind derzeit noch unveröffentlichte Release-Entwürfe und für Besucher nicht herunterladbar. Bis zur Veröffentlichung kannst du OrbitDrop wie unten beschrieben aus dem Quellcode starten.
+<p align="center">
+  <img src="docs/preview-radial-menu.png" alt="OrbitDrop-Kreismenü für ein Bild mit Zuschnitt, Bildeditor, Bitmap, Komprimierung, Drehung und Texterkennung" width="680">
+</p>
 
-### Windows-App ohne Python installieren
+*Aufnahme der aktuellen Programmoberfläche: Bearbeiten-Kreis für ein Bild. Je nach Datei und deinen Einstellungen erscheinen andere Aktionen.*
+
+| Bereich | Standardtaste | Beispiele |
+| --- | --- | --- |
+| 🟢 Konvertieren | **Shift** | Bilder, Audio, Video, Dokumente und Untertitel umwandeln |
+| 🟠 Bearbeiten | **Strg** | Schneiden, zuschneiden, drehen, komprimieren, Text erkennen |
+| 🔵 Tools | **Alt** | ZIP, Ablage, Terminal, Umbenennen, Downloads und Einstellungen |
+
+## Installation · Quick Install
+
+**[Windows-Downloads & Releases](https://github.com/Chaozz2go/OrbitDrop/releases)** · **[Quellcode als ZIP](https://github.com/Chaozz2go/OrbitDrop/archive/refs/heads/main.zip)**
+
+> **Download-Status:** Die Windows-Pakete liegen derzeit noch als unveröffentlichte Release-Entwürfe vor. Besucher können sie erst nach der Veröffentlichung herunterladen. Der Quellcode ist bereits öffentlich und kann mit Python gestartet werden.
+
+### Windows-App ohne Python
 
 Sobald ein Windows-Release veröffentlicht ist:
 
-1. [Releases öffnen](https://github.com/Chaozz2go/OrbitDrop/releases) und beim neuesten Release **Assets** aufklappen.
-2. **`OrbitDrop-<Version>-Windows-x64-Setup.exe`** herunterladen und starten. Das Setup installiert für dein Benutzerkonto; Administratorrechte sind nicht nötig.
-3. **OrbitDrop** über das Windows-Startmenü öffnen.
+1. [Releases öffnen](https://github.com/Chaozz2go/OrbitDrop/releases) und beim aktuellen Release **Assets** aufklappen.
+2. **`OrbitDrop-<Version>-Windows-x64-Setup.exe`** herunterladen und starten.
+3. Dem Setup folgen und **OrbitDrop** anschließend über das Windows-Startmenü öffnen. Die Installation erfolgt für dein Benutzerkonto und benötigt keine Administratorrechte.
 
-**Portable Alternative:** `OrbitDrop-<Version>-Windows-x64-Portable.zip` herunterladen, vollständig entpacken und `OrbitDrop.exe` im entpackten Ordner starten. Den gesamten Ordner zusammenlassen.
+**Ohne Installation:** Stattdessen `OrbitDrop-<Version>-Windows-x64-Portable.zip` herunterladen, vollständig entpacken und `OrbitDrop.exe` starten. Den gesamten entpackten Programmordner zusammenlassen.
 
-Python, Qt, FFmpeg/FFprobe und deutsche/englische OCR-Sprachdaten sind in den Windows-Paketen enthalten. Unterstützt werden **Windows 10 ab Build 17763 und Windows 11, jeweils x64**.
+Die Windows-Pakete enthalten Python, Qt, FFmpeg/FFprobe sowie deutsche und englische OCR-Sprachdaten. Unterstützt werden **Windows 10 ab Build 17763 und Windows 11, jeweils x64**. Die Programme sind bislang nicht digital signiert.
 
 ### Jetzt starten: Quellcode mit Python
 
-1. **Python 3.12 x64** von [python.org](https://www.python.org/downloads/windows/) installieren, einschließlich des Python-Launchers (`py`).
-2. [Quellcode-ZIP herunterladen](https://github.com/Chaozz2go/OrbitDrop/archive/refs/heads/main.zip) und vollständig entpacken.
-3. Im entpackten Projektordner **`Start.cmd`** doppelklicken. Beim ersten Start werden die Python-Abhängigkeiten automatisch installiert; dafür ist eine Internetverbindung nötig.
-4. Für Audio-/Videofunktionen zusätzlich **`Medien-einrichten.cmd`** starten. Fehlende OCR-Sprachdaten lassen sich im Fenster **Text erkennen → Deutsch/Englisch einrichten** nachladen. Manche Dokumentkonvertierungen benötigen zusätzliche Programme; Details stehen weiter unten.
+1. **Python 3.12 x64** von [python.org](https://www.python.org/downloads/windows/) einschließlich des Python-Launchers (`py`) installieren.
+2. [Quellcode-ZIP herunterladen](https://github.com/Chaozz2go/OrbitDrop/archive/refs/heads/main.zip) und vollständig in einen beschreibbaren Ordner entpacken.
+3. Im Projektordner **`Start.cmd`** doppelklicken. Beim ersten Start installiert das Skript die Python-Abhängigkeiten; dafür ist eine Internetverbindung nötig.
+4. Für Audio und Video zusätzlich **`Medien-einrichten.cmd`** ausführen. Es richtet FFmpeg und FFprobe ein. Fehlende OCR-Sprachdaten kannst du später unter **Text erkennen → Deutsch/Englisch einrichten** nachladen.
 
-### Die ersten Schritte
+Nach dem Start findest du OrbitDrop im Windows-Infobereich neben der Uhr, gegebenenfalls unter dem kleinen Pfeil. Starte OrbitDrop wie den Explorer ohne erhöhte Administratorrechte, damit Drag-and-drop funktioniert.
 
-Dateien im Explorer auswählen oder zum Kreis ziehen und die gewünschte Taste verwenden:
+### Zusätzliche Dokumentkonverter
 
-| Taste (Standard) | Bereich |
+Für manche Formate werden weitere Programme gebraucht. Installiere sie nur, wenn du die jeweilige Funktion nutzt, und starte OrbitDrop anschließend neu. **Alt → Konverter** zeigt, welche Programme gefunden wurden.
+
+| Aufgabe | Benötigtes Programm |
 | --- | --- |
-| **Shift** | Konvertieren: passende Zielformate anzeigen |
-| **Strg** | Bearbeiten: zum Beispiel Schnitt, Crop, Drehen oder Texterkennung |
-| **Alt** | Tools: Dateiaktionen, Einstellungen sowie **Anleitung & Info** |
+| Audio-/Videokonvertierung und Schnitt | FFmpeg + FFprobe; im Windows-Paket enthalten, beim Quellstart über `Medien-einrichten.cmd` |
+| Office-Dokumente, Tabellen, Präsentationen und deren PDF-Export | [LibreOffice](https://www.libreoffice.org/download/download-libreoffice/) |
+| Bestimmte Umwandlungen zwischen DOCX, Markdown, TXT, EPUB und HTML | [Pandoc](https://pandoc.org/installing.html) |
+| Unverschlüsselte RAR-Dateien entpacken | Externer Decoder wie unrar, unar oder bsdtar im PATH |
 
-Die Tastenbelegung und sichtbaren Menüpunkte kannst du in den **Einstellungen** anpassen. **Alt → Anleitung & Info** erklärt alle Bereiche ausführlich. Einstellungen erreichst du auch per Rechtsklick auf das OrbitDrop-Symbol im Windows-Infobereich.
+## Anleitung
 
-![Bildeditor mit Vorschau und Reglern](docs/preview-photo-studio.png)
+### 1. Das Kreismenü bedienen
 
-## Neu in Version 0.19.0: Personalisierung und Anleitung
+1. Eine oder mehrere Dateien im Explorer mit der linken Maustaste ziehen.
+2. Während des Ziehens **Shift** für Konvertieren, **Strg** für Bearbeiten oder **Alt** für Tools kurz drücken und wieder loslassen. Die Maustaste weiter gedrückt halten.
+3. Die Datei kurz in die Kreismitte halten. OrbitDrop prüft die Auswahl und zeigt passende Aktionen an.
+4. Auf das gewünschte Format oder Werkzeug ziehen und dort die Maustaste loslassen.
+5. Falls ein Einstellungsfenster erscheint, die Vorschau prüfen und die Aktion starten. Fortschritt und Ergebnisse stehen unter **Aufträge**.
 
-**Einstellungen → Allgemein:** Konvertieren, Bearbeiten und Tools frei auf unterstützte Einzeltasten oder Kombinationen legen, z. B. F8, Strg+E und F9. Das rechte Feld nimmt die gedrückten Tasten auf; das linke erlaubt direkte Eingabe. Standard bleibt Shift / Strg / Alt. Speichern prüft gleiche oder ineinander enthaltene Belegungen, z. B. Shift und Shift+F8. Strg+Alt bleibt für AltGr reserviert; Esc, Win-Kombinationen und Alt+F4 sind ausgeschlossen. Windows-/Explorer-Funktionen der gewählten Tasten bleiben aktiv. Globale Erkennung pausiert in modalen OrbitDrop-Dialogen; die internen Editor-Tasten werden nicht umbelegt.
+Du kannst während des Ziehens zwischen den drei Bereichen wechseln. Alternativ das OrbitDrop-Symbol neben der Uhr anklicken und eine Datei in den geöffneten Kreis ziehen. In der Startansicht wählst du zuerst Konvertieren, Bearbeiten oder Tools. **Esc** schließt den Kreis. **Zurück** führt zur Bereichsauswahl.
 
-**Einstellungen → Menüpunkte:** Gemeinsam durchsuchbare Checkbox-Liste für Formate, Bearbeitungen, Datei-Tools, Programmfunktionen, Downloads, eigene Abläufe, die Bereichsauswahl und Zurück. Gruppen schalten alle enthaltenen Punkte, auch gerade ausgefilterte Zeilen. SVG Schnell/Erweitert sind getrennt steuerbar. Ausblendungen gelten im Kreis und in der Aktionssuche, auch für Favoriten. Alte versteckte Formate werden übernommen. Neue selbst erstellte Abläufe sind standardmäßig sichtbar.
+**Rechtsklick im Kreis** öffnet die Aktionssuche. Suche beispielsweise nach „schneiden“ oder „komprimieren“ und öffne die passende Aktion mit Enter. Über **Favorit setzen** stehen häufig genutzte Aktionen im jeweiligen Bereich zuerst und erhalten einen Stern.
 
-Du kannst auch Einstellungen, Anleitung, Zurück oder sämtliche Punkte ausblenden. **Wiederherstellung: Rechtsklick auf das OrbitDrop-Symbol im Windows-Infobereich → Einstellungen → Alle Menüpunkte wieder anzeigen.** Die Tray-Zugänge bleiben unabhängig von der Kreis-Personalisierung erhalten. Ausblenden ist keine Zugriffssperre; direkte Tasten-/Tray-Zugänge bleiben nutzbar. Änderungen gelten beim nächsten Öffnen des Kreises.
+Bei mehreren Dateien erscheinen nur gemeinsam passende Aktionen. Ein Bild und ein Video werden beispielsweise nicht automatisch zu einer gemeinsamen Datei verbunden. Die Dateiendung allein entscheidet nicht über die Erkennung; Inhalt und verfügbare Konverter werden ebenfalls geprüft.
 
-**Tools-Kreis → Anleitung & Info:** Lokales Handbuch mit Themenleiste und Volltext-Themensuche. Es erklärt Bedienung mit deiner aktuellen Tastenbelegung, Bild-/SVG-/Schnittwerkzeuge, OCR, Playlist-Auswahl, Komprimierung, Dateiaktionen, Abläufe, Fehler, Installation und Updates. Lizenztext direkt im Fenster lesbar; externe Links öffnen erst nach einem Klick den Browser.
+### 2. Dateien konvertieren
 
-## Lizenz und Quellcode
+**Dateien ziehen → Shift → Zielformat wählen.** Bei Bedarf Einstellungen und Ausgabeordner wählen, dann starten. Alle passenden sichtbaren Zielformate stehen im Kreis, bei vielen Einträgen in mehreren Ringen.
 
-Copyright © 2026 Chaozz2go. Der OrbitDrop-eigene Code steht unter **GNU AGPL Version 3** (SPDX: `AGPL-3.0-only`), siehe [LICENSE](LICENSE). Nutzung, Änderungen und Weitergabe sind nach den Lizenzbedingungen erlaubt, einschließlich kommerzieller Nutzung. Es besteht keine Gewährleistung, soweit gesetzlich zulässig. Abhängigkeiten behalten ihre eigenen Lizenzen; Hinweise stehen in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+| Dateityp | Unterstützte Möglichkeiten |
+| --- | --- |
+| Bilder | JPG, PNG, WebP, HEIC, AVIF, TIFF und BMP umwandeln; Bilder als PDF speichern; Rasterbilder als SVG vektorisieren |
+| SVG | SVG als Bild oder PDF ausgeben; die Eingabe wird dafür gerastert |
+| Audio | MP3, M4A, WAV, FLAC, OGG, Opus, AIFF und WMA; konkrete Ziele hängen von verfügbaren FFmpeg-Encodern ab |
+| Video | MP4, MOV, MKV, WebM, AVI, WMV und GIF; Audio aus Videos mit Ton extrahieren oder ein erstes Standbild speichern |
+| PDF | Als JPG/PNG, DOCX, PPTX, XLSX, EPUB, TXT oder Markdown ausgeben |
+| Dokumente und E-Books | DOCX, Markdown, TXT und EPUB; je nach Konverter auch RTF, DOC und HTML als Eingabe sowie PDF-Ausgabe |
+| Präsentationen | PPT/PPTX als PDF oder Seitenbilder exportieren |
+| Tabellen | XLSX, ODS, CSV und TSV umwandeln sowie als PDF ausgeben; XLS als zusätzliche Eingabe |
+| Untertitel | SRT ↔ VTT oder Text ohne Zeitmarken als TXT speichern |
+| Archive | ZIP, TAR und GZIP neu verpacken; RAR nur als Eingabe mit zusätzlichem Decoder |
 
-Das öffentlich Schalten des Repositorys und das Veröffentlichen eines Release-Entwurfs sind getrennte Schritte. Windows-Pakete werden weiterhin zunächst als Entwurf erstellt; automatische Updates erkennen nur veröffentlichte stabile Releases.
+Die Tabelle beschreibt die Formatfamilien. Nicht jede Kombination ist möglich; der Kreis zeigt die für deine konkrete Auswahl verfügbaren Ziele.
 
-## Neu in Version 0.18.0: Playlist-Auswahl
+**Bei PDF und Office beachten:** PDF → DOCX extrahiert Text, statt das ursprüngliche Layout vollständig wiederherzustellen. PDF → PPTX setzt jede Seite als Bild auf eine Folie. PDF → XLSX benötigt erkennbare Tabellen. JPG/PNG-Exporte mehrseitiger PDFs werden als ZIP mit Seitenbildern gespeichert. Gescannte PDFs benötigen zuerst die separate Texterkennung. CSV/TSV übernehmen nur ein Tabellenblatt und erhalten keine Office-Formatierungen oder Formeln.
 
-Beim Prüfen eines YouTube-Playlist-Links werden die Einträge eingelesen, auch bei einem Video-Link mit angehängter Playlist. Die Liste zeigt Nummer, Titel, bekannte Dauer und Verfügbarkeit. Alle verfügbaren Einträge sind zunächst markiert. **Alle auswählen**, **Keine auswählen** und die Häkchen erlauben eine eigene Auswahl. Die Suche filtert nur die Anzeige; markierte, ausgeblendete Titel bleiben ausgewählt und werden im Zähler mitgezählt. Der Startbutton zeigt die Anzahl der ausgewählten Titel.
+Normale Bildkonvertierungen sind für Einzelbilder ausgelegt; Animationen und mehrseitige Bilder werden dabei abgewiesen. JPG unterstützt keine Transparenz. Neuencodierung von Audio und Video kann Qualität kosten.
 
-Audio (MP3) oder Video sowie Ausgabeordner einmal wählen. Videos bieten eine gemeinsame maximale Auflösung; die konkrete Verfügbarkeit wird pro Titel beim Download geprüft. Jeder ausgewählte Eintrag wird einzeln und nacheinander geladen, nicht die gesamte Playlist über den Playlist-Link. Die ursprüngliche Reihenfolge bleibt erhalten; vorhandene Dateien werden nicht überschrieben. Ein fehlgeschlagener Titel wird in den Auftragsdetails gemeldet, die übrigen werden weitergeladen. Beim Abbruch bleiben bereits vollständig gespeicherte Titel erhalten; der laufende Teil-Download wird entfernt.
+### 3. Bilder bearbeiten
 
-Von yt-dlp als privat/gelöscht gemeldete Einträge sind nicht auswählbar. Manche Sperren werden erst beim tatsächlichen Abruf erkennbar; die Vorschau garantiert daher keine erfolgreiche Übertragung. Leere/private Playlists melden einen Fehler. Höchstens 10.000 Einträge und fünf Minuten für die Linkprüfung; größere Listen werden ausdrücklich abgewiesen. Unterplaylists werden nicht automatisch ausgeweitet. Einzelne Video-/Audio-Links funktionieren weiterhin. Schließen des Dialogs bricht eine laufende Prüfung ab.
+**Ein Bild ziehen → Strg → Bild bearbeiten.** Im Editor kannst du den Ausschnitt mit der Maus festlegen, ein Seitenverhältnis wählen, das Bild drehen, die Ausgabegröße setzen und Helligkeit, Kontrast oder Farben anpassen. Vorschau, Originalvergleich und Zurücksetzen helfen beim Abstimmen. Export speichert eine neue Datei.
 
-## Korrektur in Version 0.17.1
+Weitere direkte Aktionen im Bearbeiten-Kreis:
 
-Das transparente Kreismenü wird nicht mehr mit nativer Windows-Eckenrundung versehen. Dadurch wird der rechteckige Windows-Rahmen um das gesamte Menü vermieden. Normale Programmfenster behalten ihren dunklen Windows-Rahmen.
+| Aktion | So verwendest du sie |
+| --- | --- |
+| Zuschneiden | Ausschnitt mit der Maus aufziehen und bei Bedarf ein festes Seitenverhältnis verwenden |
+| Bildgröße | Breite/Höhe in Pixeln einstellen; auch mehrere Einzelbilder gemeinsam verarbeiten |
+| 90° links/rechts oder 180° | Bild direkt drehen |
+| Schwarzweiß | Graustufen oder zwei Farben mit Vorschau erzeugen |
+| Bitmap | Ein echtes 1-Bit-Bild erstellen; den Schwellwert mit dem Regler abstimmen |
+| Schwärzen & Beschriften | Deckende Bereiche, Texte, Pfeile und Rahmen einzeichnen; Elemente verschieben oder rückgängig machen |
 
-## Neu in Version 0.17.0: Windows-Paket, Updates, OCR und Audio
+Beim Beschriften werden die Elemente fest in die neue Bilddatei gezeichnet. Es gibt keine automatische Erkennung vertraulicher Inhalte; kontrolliere die fertige Ausgabe.
 
-### Installation ohne Python
+![OrbitDrop-Bildeditor mit Vorschau und Reglern](docs/preview-photo-studio.png)
 
-Der Windows-Build erzeugt ein **Setup für Windows x64** und ein **portables ZIP**. Python, Qt, FFmpeg/FFprobe sowie deutsche und englische OCR-Sprachdaten werden mitgeliefert. Das Setup installiert im Benutzerprofil ohne Administratorrechte, legt eine Startmenü-Verknüpfung an und bietet eine Deinstallation. Beim portablen Paket den gesamten Ordner behalten. Windows 10 ab Build 17763 oder Windows 11; ARM64 ist kein getestetes Ziel. Die Programme sind bisher nicht digital signiert.
+### 4. Bilder als SVG vektorisieren
 
-Die GitHub-Automation führt zuerst die Tests aus, baut dann das Paket, prüft die gebündelte EXE mit echten Bild-, PDF-, Audio- und Videooperationen und installiert das Setup anschließend unbeaufsichtigt für einen weiteren Funktionstest. Ein grüner Build ersetzt keine manuelle Prüfung auf deinem Rechner. Getestete Pakete werden als unveröffentlichter Release-Entwurf hinterlegt; das erzeugt keine öffentliche Freigabe.
+**Bild ziehen → Shift → SVG Schnell oder SVG Erweitert.**
 
-### Updates
+- **SVG Schnell** bereitet das Bild automatisch vor und erzeugt Vektorpfade.
+- **SVG Erweitert** öffnet eine Vorschau mit Reglern für Vorbereitung, Konturen/Farben und Glättung. Werte anpassen, Ergebnis prüfen und exportieren.
 
-**Alt → Updates** zeigt neue stabile GitHub-Releases. Die tägliche Prüfung beim Start lässt sich dort einschalten und ist zunächst aus. Downloads werden anhand der veröffentlichten SHA-256-Prüfsumme geprüft; direkt vor dem Start des Setups wird erneut geprüft. **Installieren** ist eine bewusste Aktion und wartet, bis Hintergrundaufträge beendet sind. Die Prüfsumme ersetzt keine digitale Signatur. Die automatische Prüfung benötigt ein öffentliches Repository und ein veröffentlichtes Release; solange das Repository privat ist, bleibt der Browser-Link zu Releases verfügbar.
+Für Logos, klare Linien und Stencils helfen saubere Kontraste und passende Schwellenwerte. Ein Foto wird dadurch nicht verlustfrei rekonstruiert; sehr viele Details können große SVG-Dateien mit vielen Pfaden erzeugen.
 
-### Lokale Texterkennung
+### 5. Video und Audio schneiden
 
-Ein Bild oder PDF wählen → **Strg → Text erkennen**. Sprache Deutsch, Englisch oder beide und die Auflösung wählen. Erkannten Text korrigieren, kopieren oder als neue TXT-Datei speichern. **Scan-PDF erstellen** erzeugt ein neues durchsuchbares PDF. Dabei werden Seiten neu gerendert: Vektoren, Formulare und interaktive Elemente bleiben in dieser Ausgabe nicht erhalten. Originale bleiben erhalten. Maximal 500 PDF-Seiten und 50 Megapixel pro gerenderter Seite/Bild; keine verschlüsselten PDFs. Falls Sprachdaten fehlen, lädt **Deutsch/Englisch einrichten** nur die geprüften Sprachdateien herunter. Dokumente werden für OCR nicht hochgeladen. Die normale PDF→DOCX-Konvertierung startet OCR nicht automatisch.
+**Eine Video- oder Audiodatei ziehen → Strg → Schneiden.** Videos zeigen einen Filmstreifen und eine Audiospur, Audiodateien eine Wellenform. Klicke die gewünschte Zeitposition an und setze Schnittmarken. Anschließend kannst du einzelne Abschnitte auswählen und aus der Ausgabe entfernen.
 
-### Audio verbessern
+| Taste | Funktion im Schnittfenster |
+| --- | --- |
+| **Leertaste** | Abspielen / pausieren |
+| **← / →** | Im Video ein Frame zurück / vor; im Audio um 0,1 Sekunden springen |
+| **C** | Schnittmarke an der aktuellen Position setzen |
+| **Entf** | Ausgewählten Abschnitt aus der Ausgabe entfernen |
+| **Shift + Entf** | Ausgewählte Schnittmarke entfernen |
+| **Strg + Z / Strg + Y** | Schnittänderung rückgängig machen / wiederholen |
 
-Audio wählen → **Strg → Audio verbessern**. Lautheit in zwei Durchgängen normalisieren (z. B. −16 oder −23 LUFS), Stille ausschließlich an Anfang/Ende entfernen und Ein-/Ausblenden einstellen. Innere Pausen bleiben erhalten. Die Schwelle für Randstille lässt sich mit einem Regler anpassen; sehr leise Randstellen können dabei ebenfalls entfallen. Export als FLAC, WAV oder MP3 erzeugt neue Dateien. Unmögliche Fade-Längen und vollständig stille Eingaben beim Trimmen werden abgewiesen.
+Beispiel: Vor und nach einem unerwünschten Teil jeweils **C** drücken, den entstandenen Abschnitt anklicken und **Entf** drücken. Die Wiederherstellen-Schaltfläche nimmt einen ausgeschlossenen Abschnitt wieder auf.
 
-### Selbst bauen
+Mit **100–1600 % Zoom**, horizontalem Scrollen und **Einpassen** navigierst du durch längere Dateien. Filmstreifen und Audiospur eines Videos bleiben zeitlich ausgerichtet. Videos lassen sich im Editor auch drehen. Beim Export werden die behaltenen Bereiche in einer neuen Datei verbunden; die Quelle bleibt erhalten.
 
-Für den Windows-Build **Python 3.12 x64** und **Inno Setup 6** installieren, dann `Build-EXE.cmd` starten. Das Skript richtet eine eigene Build-Umgebung ein, lädt FFmpeg und OCR-Sprachdaten und verwendet denselben Buildpfad wie die Automation. Ergebnisse liegen unter `dist/release`. Für einen Quellstart bleibt `Start.cmd` verfügbar.
+![OrbitDrop-Videoschnitt mit Filmstreifen und Audiospur](docs/preview-video-studio.png)
 
-## Neu in Version 0.16.0: Suchen, Favoriten, PDF-Seiten und Bildabläufe
+### 6. Audio verbessern
 
-### Aktionssuche und Favoriten
+**Audiodatei ziehen → Strg → Audio verbessern.**
 
-**Rechtsklick auf den Kreis** öffnet die Aktionssuche, ebenso **Alt → Aktion suchen**. Sie durchsucht die für die aktuelle Auswahl verfügbaren Aktionen. Im Suchfenster lassen sich auch andere Dateien auswählen. Dateitypen werden im Hintergrund neu geprüft; nicht passende Konvertierungen werden nicht angeboten. Enter oder Doppelklick öffnet die gewählte Aktion. Mit **Favorit setzen** werden Aktionen gespeichert; **Nur Favoriten** filtert die Liste. Im Kreis stehen passende Favoriten innerhalb ihres Bereichs zuerst und tragen einen Stern. Ausgeblendete Formate bleiben ausgeblendet. Die Konvertieren-/Bearbeiten-Bereiche behalten ihre bisherigen Kategorien.
+1. Bei Bedarf Lautheit normalisieren und ein Ziel wie −16 oder −23 LUFS wählen.
+2. Optional Stille am Anfang und Ende entfernen. Der Schwellwert-Regler legt fest, was als Stille zählt; innere Pausen bleiben erhalten.
+3. Ein-/Ausblenden in Sekunden einstellen und als neue FLAC-, WAV- oder MP3-Datei ausgeben.
 
-### Visuelle PDF-Seitenverwaltung
+Zu hohe Stille-Schwellen können sehr leise Anfänge oder Enden abschneiden. Die Normalisierung misst in zwei Durchläufen; FFmpeg und FFprobe werden benötigt.
 
-Ein PDF wählen → **Strg → PDF-Seiten** oder Aktionssuche. Vorschaubilder zeigen die Seiten. Mit Strg/Shift mehrfach auswählen, per Drag-and-drop oder mit den Pfeilbuttons verschieben, um 90° drehen, duplizieren und entfernen. **Entf** entfernt die Auswahl; **Strg+Z** beziehungsweise **Rückgängig** nimmt Seitenänderungen zurück. Export erzeugt eine neue PDF in der angezeigten Reihenfolge. Unterschiedliche Drehungen duplizierter Seiten bleiben unabhängig. Das Original wird nicht verändert. Nach externer Änderung der Quelldatei muss die Übersicht neu geöffnet werden. Grenzen: 1000 Quellseiten, 2000 Ausgabeseiten; keine verschlüsselten PDFs. Lokale OCR ist seit 0.17.0 separat über Text erkennen verfügbar.
+### 7. Dateigröße reduzieren
 
-### Stapel-Umbenennen mit Vorschau
+**Bild, PDF, Audio oder Video ziehen → Strg → Komprimieren.** Die aktuelle Größe wird sofort angezeigt, bei mehreren Dateien zusätzlich die Summe.
 
-Dateien wählen → **Alt → Umbenennen**. Muster wie `Urlaub_{n}` oder `{name}_{n}`, Startnummer und Ziffern einstellen. Die Dateiendung bleibt erhalten. Vorher-/Nachher-Liste prüfen und **Wie angezeigt umbenennen** wählen. Diese Funktion ändert die Namen der Originaldateien. Reservierte Windows-Namen, ungültige Zeichen, doppelte Ziele und vorhandene Fremddateien werden abgefangen. Vor der Ausführung werden Konflikte und Dateistand erneut geprüft. Auch Namenswechsel untereinander werden über exklusive temporäre Namen abgewickelt. Bei Fehlern wird eine Rücknahme versucht; falls diese nicht vollständig gelingt, nennt die Meldung die zu prüfenden Pfade. **Letzte Umbenennung zurücknehmen** bleibt bis zum Schließen des Fensters verfügbar und verweigert die Rücknahme, wenn eine betroffene Datei inzwischen geändert wurde. Maximal 1000 reguläre Dateien, keine Ordner oder Symlinks.
+- Das gewünschte Limit mit dem Schieberegler oder genau über das MB-Feld einstellen. **0 MB** entfernt das Limit.
+- Bei mehreren Dateien gilt dasselbe absolute Limit **für jede Datei**, nicht für den gesamten Stapel. Der Prozentregler orientiert sich an der ersten Datei.
+- Bei Bildern zeigt eine berechnete Vorschau die Ergebnisgröße. Audio und Video werden auf technisch mögliche Bitraten geprüft; unerreichbare Ziele sperren den Export.
+- Bei PDFs wird verlustfreie Optimierung geprüft. Das Größenlimit verändert dort nicht die PDF-Qualität und garantiert keine Einsparung.
 
-### Eigene Bildabläufe
+Niedrige Audio-/Videobitraten können hörbare oder sichtbare Verluste erzeugen. Prüfe die fertige Datei. Wiederkehrende Einstellungen kannst du als **Schnellaktion** speichern; passende Rezepte erscheinen danach im Bearbeiten-Kreis.
 
-**Alt → Bildabläufe** oder Aktionssuche öffnet den Ablaufeditor. Schritte hinzufügen, mit ↑/↓ ordnen und unter eigenem Namen speichern. Laden aktualisiert einen gespeicherten Ablauf; Neu beginnt einen weiteren. Verfügbar sind: längste Bildkante verkleinern, Graustufen, 90°/180°/270° drehen, PNG/JPG/WebP-Komprimierung, Metadaten entfernen als frische PNG-Kopie, Formatwechsel (PNG/JPG/WebP/TIFF/BMP) und Ausgaben benennen. Benennen gehört ans Ende; neue Bildschritte werden automatisch davor eingefügt. Beispiel: **1600 px → Metadaten entfernen → WebP → Web_{n}**. Gespeicherte Abläufe erscheinen für Bilder direkt im Bearbeiten-Kreis und in der Aktionssuche. Die Originale bleiben erhalten; nur die fertigen neuen Dateien gelangen in den Ausgabeordner. Vorhandene Namen erhalten einen Nummernzusatz. Fehler/Abbruch räumen von diesem Ablauf erstellte Ergebnisse auf. Bis zu 40 Abläufe mit je 12 Schritten; aktuell für Einzelbilder, nicht für Audio-/Videoketten. Wiederholte verlustbehaftete Kodierung kann Qualität kosten.
+### 8. PDF-Seiten verwalten und Text erkennen
 
-### Timeline-Zoom und Schnitt-Rückgängig
+**PDF ziehen → Strg → PDF-Seiten.** Die Seiten erscheinen als Vorschaubilder. Mit Strg/Shift mehrere auswählen, per Drag-and-drop oder Pfeilen umordnen, drehen, duplizieren oder entfernen. **Entf** entfernt Seiten, **Strg+Z** nimmt Änderungen zurück. Export erstellt eine neue PDF.
 
-Video- und Audioschnitt haben **100–1600 % Zoom**, horizontales Scrollen und **Einpassen**. Filmstreifen und Wellenform eines Videos bleiben in derselben Zeitskala; Zeitmarken passen sich dem sichtbaren Bereich an. Beim Abspielen folgt der Ausschnitt dem Abspielkopf. Die Vorschau zeichnet beim Zoomen nur den sichtbaren Teil der Spuren. Schnittmarken und Behalten-/Entfernen-Änderungen lassen sich über **Strg+Z / Strg+Y** oder die beiden Symbole neben dem Zoom zurücknehmen und wiederholen (100 Schritte, bis zum Schließen des Editors). Die Funktion betrifft Schnittänderungen, nicht Videodrehungen. Die globale Shift-/Strg-/Alt-Erkennung pausiert während modaler Dialoge, damit Mehrfachauswahl und normale Editorbedienung dort nicht den Kreis öffnen.
+**PDF teilen** erzeugt einzelne Seiten. **PDFs verbinden** kombiniert mehrere PDFs; die Reihenfolge lässt sich vor dem Export einstellen.
 
-Die Abbildungen zeigen echte Programmfenster mit künstlichen Testdateien:
+**Bild oder PDF → Strg → Text erkennen:**
 
-![Visuelle PDF-Seitenverwaltung](docs/preview-pdf-pages.png)
+1. Deutsch, Englisch oder beide Sprachen und die Auflösung wählen.
+2. Texterkennung starten. Fehlende Sprachdaten bei Bedarf über **Deutsch/Englisch einrichten** nachladen.
+3. Erkannten Text prüfen, korrigieren, kopieren oder als TXT speichern.
+4. Optional über **Scan-PDF erstellen** eine neue durchsuchbare PDF erzeugen.
 
-![Eigene Bildabläufe](docs/preview-workflows.png)
+Die Erkennung läuft lokal. Beim Erstellen einer Scan-PDF werden die Seiten neu gerendert; Formulare, Vektoren und interaktive Elemente bleiben in dieser Ausgabe nicht erhalten. Originale behalten. OCR unterstützt bis zu 500 PDF-Seiten und 50 Megapixel pro Bild/gerenderter Seite; verschlüsselte PDFs werden nicht unterstützt.
 
-## Neu in Version 0.15.0: Zielgröße und Komprimierungsprüfung
+### 9. Audio, Videos und Playlists herunterladen
 
-Komprimieren zeigt die aktuelle Größe sofort, bei mehreren Dateien zusätzlich die Gesamtgröße und die Größe der ersten Datei. Der Regler setzt ein gemeinsames Größenlimit pro Datei, relativ zur ersten Datei; das MB-Feld erlaubt genaue Eingaben. 0 MB entfernt das Limit. Kleine Dateien unter 1 KB haben keinen Prozentregler. Für Bilder zeigt die Hintergrundvorschau die tatsächlich berechnete Größe und die Einsparung; ein größeres Ergebnis wird ausdrücklich angezeigt.
+**Einen vollständigen http(s)-Link markieren → Shift drücken.** Alternativ den Link in den Kreis ziehen oder **Alt → Link einfügen** verwenden. Die Konvertieren-Taste kann eine markierte Textauswahl auch ohne Datei-Drag als Link übernehmen; es startet dabei kein automatischer Download.
 
-Audio und Video werden vor dem Start auf Dauer und technisch mögliche Bitraten geprüft. Nicht erreichbare Ziele sperren den Export. Niedrige Bitraten bekommen einen Qualitätshinweis; die Einschätzung ersetzt keine visuelle oder akustische Prüfung. Bei MP3 wird eine ungefähre Ergebnisgröße angegeben. Für Videos ohne Zielgröße lässt sich die Größe bei variabler Qualitätskodierung nicht zuverlässig vorhersagen.
+1. **Audio laden** oder **Video laden** wählen.
+2. Link prüfen und einen Ausgabeordner auswählen. OrbitDrop merkt sich den zuletzt verwendeten Downloadordner.
+3. Bei Video bei Bedarf eine maximale Auflösung festlegen und den Download starten.
 
-PDFs werden im Hintergrund testweise verlustfrei optimiert. Die Probe zeigt die Größe des optimierten PDFs und meldet, wenn keine Einsparung entsteht. Der Größenregler ändert dort nur das Akzeptanzlimit, nicht die PDF-Qualität. Bei Stapeln gilt das Limit für jede Datei, nicht für den gesamten Stapel. Die Originaldateien bleiben erhalten. Zusätzliche Hinweise und Regler sind bei kleineren Fenstern scrollbar; die Start-/Schließen-Buttons bleiben sichtbar.
+Audio wird als MP3 gespeichert. Getrennte Video-/Audiostreams werden als MKV kombiniert. Die verfügbaren Qualitäten hängen vom jeweiligen Dienst und Inhalt ab.
 
-## Neu in Version 0.14.0: Schnittstudio-Stil in allen Fenstern
+**Playlists:** Bei einem YouTube-Playlist-Link oder einem Videolink mit Playlist zeigt OrbitDrop eine Titelliste mit Auswahlkästchen. Alle verfügbaren Einträge sind zunächst markiert. Mit **Alle auswählen**, **Keine auswählen** oder einzelnen Häkchen entscheidest du, welche Titel geladen werden. Die Suche filtert nur die Anzeige; ausgeblendete markierte Titel bleiben ausgewählt.
 
-Der freigegebene Mockup-Stil ist jetzt die gemeinsame Gestaltung der Anwendung: dunkles Marineblau, ruhige abgerundete Flächen, feine Konturen, mintfarbene Hauptaktionen mit dunklem Text und orangefarbene Auswahlen. Kleine Vektorsymbole ersetzen uneinheitliche Symbolschriftzeichen in den neuen Werkzeugleisten. Ein zentraler Stil in `ui_theme.py` gilt für Bild-/Video-/Audioeditor, Schwarzweiß/Bitmap/SVG, Beschriften, Komprimieren, Schnellaktionen, Downloads, Einstellungen, Aufträge, Werkzeuge, Dateierkennung und Dateiablage.
+Die ausgewählten Titel werden nacheinander geladen. Ein Fehler bei einem Titel stoppt die übrigen nicht. Beim Abbrechen bleiben fertige Dateien erhalten. Bereits als privat oder gelöscht erkannte Einträge sind nicht auswählbar; weitere Sperren können erst beim Laden auffallen. Es gibt keine automatische Anmeldung oder Übernahme von Browser-Cookies. Die Prüfung ist auf 10.000 Einträge und fünf Minuten begrenzt; Unterplaylists werden nicht automatisch erweitert.
 
-### Videoschnitt nach dem Mockup
+Neue Downloads bringen die Auftragsansicht wieder nach vorn, auch wenn sie bereits geöffnet oder minimiert war. Anschließend kannst du heruntergeladene Dateien über **Strg → Schneiden** bearbeiten.
 
-Große Vorschau über die gesamte Breite, direkt darunter Abspielen, Einzelbildschritte, Schnitt, Entfernen und Wiederherstellen. Video- und Audiospur liegen anschließend untereinander; entfernte Teile sind dunkel schraffiert und ausgewählte Abschnitte orange markiert. Schnittmarken und Abschnittslisten lassen sich über **Marken & Abschnitte** einblenden. Die Drehungen sind über **Drehen** erreichbar. Auf schmalen Fenstern wandert die Zeitanzeige unter die Spuren und Wiederherstellen wird zum Symbolbutton mit Tooltip. Die Funktion bleibt erhalten.
+### 10. Datei-Tools, ZIP und Ablage
 
-### Audio- und Bildbearbeitung im gleichen Stil
+**Dateien oder Ordner ziehen → Alt → Werkzeug wählen.** Diese Dateiaktionen funktionieren auch bei unbekannten Dateitypen und gemischten Auswahlen.
 
-Audioschnitt zeigt die große Wellenform, eine kompakte Werkzeugleiste und die Abschnittsliste. Einzelne Schnittmarken sind über **Schnittmarken** einblendbar. In der Bildbearbeitung liegen Originalvergleich und Drehungen in einer passenden Werkzeugleiste; Farb-/Ausschnitt-/Größenregler bleiben rechts. Auf kleineren Fenstern lässt sich der Reglerbereich scrollen. Originalvergleich: Button gedrückt halten. 180°-Drehung ist weiterhin als eigene Aktion im Reglerbereich vorhanden.
+| Werkzeug | Funktion |
+| --- | --- |
+| Kopieren | Dateien/Ordner in die Windows-Zwischenablage legen und anschließend beispielsweise im Explorer einfügen |
+| Pfad | Vollständige Pfade als Text kopieren |
+| Explorer | Datei markieren oder zugehörigen Ordner öffnen |
+| Terminal | Terminal im ausgewählten bzw. enthaltenden Ordner öffnen |
+| Verschieben | Ziel wählen und Originaldateien dorthin verschieben |
+| ZIP | Ausgewählte Dateien und Ordner gemeinsam in ein neues ZIP packen |
+| Entpacken | Erkannte Archive in jeweils einen neuen Unterordner entpacken |
+| Ablage | Dateien vorübergehend im schwebenden Fenster parken und später in andere Apps ziehen |
+| Umbenennen | Mehrere Dateien mit Vorschau nach einem Muster umbenennen |
 
-### Gemeinsame Fensterdarstellung
+**Ablage:** Sie merkt sich Dateiverweise und kopiert oder verschiebt die Originale nicht. **Andocken** setzt das Fenster an den rechten Monitorrand. Leeren, Entf oder „Aus Ablage entfernen“ entfernen nur die Einträge. Die Ablage gilt für die laufende Sitzung; extern verschobene Dateien können ungültige Verweise hinterlassen.
 
-Auch die Hilfsfenster haben dieselben Überschriften, Eingaben, Tabs, Buttons und Scrollleisten. Windows-Fensterrahmen werden, soweit vom System unterstützt, dunkel und mit abgerundeten Ecken dargestellt. Native Windows-Dateiauswahldialoge folgen weiterhin der Darstellung des Betriebssystems. Die Belegung Shift/Strg/Alt und die Schnitt-Tasten bleiben unverändert. Geschlossene Qt-Fenster werden im Oberflächenthread freigegeben; die SVG-Vorschau berechnet ihre Pfade im Hintergrund und rendert das Ergebnis anschließend im Oberflächenthread.
+**Archive:** Normale ZIPs benötigen keine zusätzliche Einrichtung. Auch TAR und GZIP werden unterstützt; RAR braucht einen externen Decoder. Keine Passwortarchive oder 7z. Beim Entpacken gelten maximal 2 GiB und 10.000 Einträge; problematische Pfade und Links werden abgewiesen. Bestehende Dateien werden nicht überschrieben, Archiv-Metadaten und NTFS-Rechte werden nicht vollständig übernommen.
 
-Die folgenden Bilder zeigen echte gerenderte Programmfenster mit künstlichen Testdateien, nicht das zuvor generierte Mockup:
+**Stapel-Umbenennen:** Ein Muster wie `Urlaub_{n}` oder `{name}_{n}`, Startnummer und Ziffernzahl einstellen. Die Dateiendung bleibt erhalten. Vorher-/Nachher-Liste prüfen und **Wie angezeigt umbenennen** wählen. **Letzte Umbenennung zurücknehmen** funktioniert bis zum Schließen des Fensters, sofern die Dateien unverändert sind. Verschieben und Umbenennen ändern die Originale; kontrolliere deshalb das Ziel und die Vorschau.
 
-![Videoschnitt im gemeinsamen Studiostil](docs/preview-video-studio.png)
+### 11. Eigene Bildabläufe erstellen
 
-![Bildbearbeitung im gemeinsamen Studiostil](docs/preview-photo-studio.png)
+**Alt → Bildabläufe.** Schritte hinzufügen, mit den Pfeilen ordnen und unter einem eigenen Namen speichern. Möglich sind Verkleinern, Drehen, Graustufen, Metadaten entfernen, Komprimierung, Formatwechsel und Ausgaben benennen.
 
-## Änderungen in Version 0.13.0: Audiospuren und Abschnittslöschung
+Beispiel: **Längste Kante 1600 px → Metadaten entfernen → WebP → `Web_{n}`**.
 
-### Videoschnitt mit sichtbarer Audiospur
+Benennen gehört an das Ende. Gespeicherte Abläufe erscheinen für Bilder direkt im Bearbeiten-Kreis. Die Originale bleiben erhalten; nur fertige neue Ergebnisse werden ausgegeben. Diese Abläufe sind für Einzelbilder gedacht, nicht für Audio-/Videoketten.
 
-Unter der Videoleiste liegt eine echte Audio-Wellenform aus dem ersten eingebetteten Audiostream. Stereo zeigt links/rechts getrennt in Mint/Blau. Andere Kanalbelegungen werden für die Übersicht zusammengefasst, ohne gegenphasige Kanäle gegenseitig auszulöschen. Videoleiste und Wellenform verwenden dieselbe Quellzeit und dieselben Abschnittsgrenzen. Ein Klick in eine der Spuren wählt den Abschnitt und springt zu dieser Position; beim Ziehen lässt sich die Position verschieben.
+### 12. Tasten und Menüs personalisieren
 
-### Audioschnitt mit Wellenform
+**Alt → Einstellungen** oder Rechtsklick auf das Symbol neben der Uhr → **Einstellungen**.
 
-Der Audioschnitt bietet eine große Wellenform mit Zeitraster, Abspielposition, Schnittmarken und hervorgehobenen Abschnitten. Ein Abschnitt lässt sich in der Wellenform oder in der Liste auswählen. Entfernte Teile werden auch beim Abspielen übersprungen. Die Wellenform wird im Hintergrund mit begrenztem Speicherbedarf berechnet; bei langen Dateien kann das etwas dauern. Sie ist eine Übersicht der Amplitudenspitzen und kein Sample-genauer Zoomeditor. Die erste Audiospur wird verwendet; zusätzliche eingebettete Tonspuren sind noch nicht auswählbar.
+- **Allgemein:** Die drei Bereichstasten frei auf unterstützte Einzeltasten oder Kombinationen legen, etwa F8, Strg+E und F9. Taste eingeben oder im Aufnahmefeld drücken, anschließend speichern. **Standardtasten wiederherstellen** setzt Shift / Strg / Alt zurück.
+- **Menüpunkte:** Formate, Bearbeitungen, Dateiaktionen, Programmfunktionen und eigene Abläufe per Checkbox ein-/ausblenden. Die Suche hilft beim Finden; Gruppen-Checkboxen schalten die gesamte Gruppe. SVG Schnell und SVG Erweitert sind einzeln steuerbar.
+- **Weitere Einstellungen:** Ausgabeordner, Bild-/Videoqualität und optionalen Windows-Autostart festlegen. Ohne festen Ausgabeordner werden normale Konvertierungen neben der Quelle gespeichert. Downloads merken sich ihren eigenen zuletzt gewählten Ordner.
 
-Die Darstellung kann zur besseren Sichtbarkeit automatisch skaliert werden (Hinweis **Anzeige skaliert**); die Lautstärke der Datei oder Wiedergabe wird dadurch nicht verändert. Videos ohne Ton zeigen **Keine Audiospur vorhanden**. Die Abtastrate für die Übersicht beträgt 8 kHz; die Export-Audiospur wird nicht aus diesen Vorschaudaten erzeugt.
+Mehrdeutige Belegungen wie Shift und Shift+F9 werden abgewiesen. Strg+Alt bleibt für AltGr reserviert; Esc, Win-Kombinationen und Alt+F4 sind nicht belegbar. Die ursprünglichen Windows-Funktionen gewählter Tasten bleiben aktiv. Die Tastatursteuerung innerhalb der Editoren wird dadurch nicht geändert.
 
-### Einheitliche Tastatursteuerung
+Ausblendungen gelten im Kreis und in der Aktionssuche, auch für Favoriten. Falls du Einstellungen oder alle Menüpunkte ausgeblendet hast: **Rechtsklick auf das OrbitDrop-Symbol im Windows-Infobereich → Einstellungen → Alle Menüpunkte wieder anzeigen.** Änderungen gelten beim nächsten Öffnen des Kreises.
 
-| Taste | Video | Audio |
-| --- | --- | --- |
-| Leertaste | Start / Pause | Start / Pause |
-| ← / → | Echtes Einzelbild | 0,1 Sekunden |
-| C | Schnittmarke setzen | Schnittmarke setzen |
-| **Entf** | **Ausgewählten Abschnitt entfernen** | **Ausgewählten Abschnitt entfernen** |
-| **Shift+Entf** | Gewählte Schnittmarke löschen | Gewählte Schnittmarke löschen |
+### 13. Aufträge, Fehler und Updates
 
-Entf entfernt keinen Schnittpunkt und löscht keine Originaldatei. Der Abschnitt bleibt gedimmt sichtbar und kann über **Wiederherstellen** wieder aufgenommen werden. Ohne ausgewählten Abschnitt bewirkt Entf nichts. Zum Löschen einer einzelnen Marke gibt es außerdem den eigenen Button. Exportiert werden wie zuvor ausschließlich die behaltenen Bereiche, auf Wunsch als einzelne Dateien.
+**Alt → Aufträge** zeigt Fortschritt, fertige Ergebnisse und Fehler. Auftrag auswählen, **Ergebnis öffnen**, **Ordner anzeigen**, **Details** oder **Abbrechen** verwenden. **Verlauf leeren** entfernt nur Einträge, keine Ergebnisdateien.
 
-Beide Schnitteditoren verwenden jetzt die gemeinsame dunkle Gestaltung, klare Überschriften, Seitenflächen und mintfarbene Speicherbuttons. Ein zusätzlich gezeigtes generiertes Mockup ist ein Designvorschlag für den weiteren Feinschliff; es ist kein Screenshot dieser Version.
+Normale Konvertierungen und Bearbeitungen erstellen neue Dateien; vorhandene Namen erhalten Nummernzusätze. Bei Abbruch bleiben bereits fertige Konvertierungen oder Playlist-Titel erhalten. Mehrstufige Bildabläufe und manche Werkzeug-Stapel räumen ihre selbst erzeugten Teilergebnisse dagegen vollständig auf. Die Details nennen Fehler oder zu prüfende Pfade.
 
-## Änderungen in Version 0.12.1: Start unter Python 3.15 korrigiert
+**Datei nicht erkannt?** Unter **Alt → Konverter** prüfen, ob benötigte Programme gefunden werden. Dateien aus Cloud- oder Netzlaufwerken gegebenenfalls erst vollständig lokal speichern. Nicht erkannte Typen erscheinen unter **Debugging** und können für die Fehlersuche exportiert werden. Vor dem Weitergeben persönliche Dateipfade und Fehlermeldungen prüfen.
 
-Das Projektmodul `compression.py` wurde in `orbit_compression.py` umbenannt. Der alte Name verdeckte unter Python 3.15 das gleichnamige Standardbibliothekspaket, das `gzip` intern verwendet, und verhinderte dadurch den Programmstart.
+**Alt → Updates** sucht nach veröffentlichten stabilen GitHub-Releases. Die tägliche Prüfung beim Start ist zunächst aus und kann dort eingeschaltet werden. Release-Entwürfe werden nicht angeboten. Download-Prüfsummen werden geprüft; die Installation startest du ausdrücklich, sobald keine Hintergrundaufträge mehr laufen.
 
-**Update:** Dieses ZIP in einen neuen Ordner entpacken und dort `Start.cmd` starten. Beim manuellen Übertragen in einen bestehenden Ordner muss die alte Datei `compression.py` entfernt werden; nur Überschreiben reicht bei einer Umbenennung nicht. Einstellungen und Verlauf liegen im Benutzerprofil und bleiben erhalten.
+Die vollständige Hilfe findest du jederzeit direkt im Programm unter **Alt → Anleitung & Info**. Sie zeigt auch deine aktuelle Tastenbelegung.
 
-## Änderungen in Version 0.12.0: Komprimieren, Markieren und Schnellaktionen
+---
 
-**Shift = Konvertieren · Strg = Bearbeiten · Alt = Tools** bleibt unverändert.
+OrbitDrop von Chaozz2go · [GNU AGPL v3](LICENSE) · [Hinweise zu Drittanbietern](THIRD-PARTY-NOTICES.md) · [Fehler melden oder Funktion vorschlagen](https://github.com/Chaozz2go/OrbitDrop/issues)
 
-### Komprimieren mit überprüfter Zielgröße
-
-Datei(en) ziehen → **Strg → Komprimieren**. Für Bilder gibt es eine Vorher-/Nachher-Vorschau der ersten Datei, Qualität, längste Kante und WebP/JPG/PNG als Ausgabe. Die Größenanzeige stammt aus einer vollständigen Probekodierung, nicht aus einer Schätzung anhand des Vorschaubilds. Bei einer Auswahl wird jede Datei mit denselben Einstellungen einzeln verarbeitet; das Größenlimit gilt pro Datei.
-
-- **Video:** neue MP4 mit H.264/AAC, optional reduzierter Höhe. Ein gesetztes Limit aktiviert zwei Videodurchläufe mit berechnetem Bitratenbudget. Videos ohne Ton sind möglich.
-- **Audio:** neue MP3, einstellbare Bitrate. Mit Größenlimit wird eine passende niedrigere Bitrate gesucht.
-- **PDF:** verlustfreie strukturelle Optimierung, keine Rasterisierung. Das Layout und auswählbarer Text bleiben erhalten; bei bereits optimierten PDFs kann die Ersparnis gering sein.
-- **MB** bezeichnet 1.000.000 Byte. Übersteigt das fertige Ergebnis das Limit oder ist dieses unerreichbar, wird die neu angelegte Ausgabedatei entfernt und ein Fehler gemeldet. Ohne Limit ist eine Größenreduktion nicht garantiert. Das Limit eines großen Batches ist keine Grenze für dessen Gesamtgröße.
-- **Transparenz:** WebP/PNG erhalten Alpha, JPG erhält einen weißen Hintergrund. Bilder werden vor der Verarbeitung anhand ihrer EXIF-Ausrichtung gedreht.
-
-Originale werden nicht überschrieben. Ergebnisse landen neben der jeweiligen Quelldatei oder im eingestellten Ausgabeordner. Aufträge erscheinen im vorhandenen Verlauf und können abgebrochen werden. Bei Fehlern/Abbruch eines Komprimierungsstapels werden seine bereits erzeugten Ergebnisse ebenfalls entfernt. Video/Audio benötigen einen geeigneten FFmpeg-/FFprobe-Build mit den verwendeten Encodern.
-
-### Schwärzen und Beschriften
-
-Ein Bild ziehen → **Strg → Schwärzen & Beschriften**. Mit der Maus deckende schwarze Rechtecke, Pfeile oder Rahmen zeichnen; für Text eine Beschriftung eingeben und auf das Bild klicken. Farbe, Textgröße und Linienstärke gelten für neue Markierungen. **Verschieben** wählen und eine Markierung im Bild ziehen. Über die Liste lassen sich einzelne Markierungen entfernen. **Rückgängig/Wiederholen** bzw. Strg+Z/Strg+Y unterstützen die letzten 30 Schritte. Bis zu 200 Markierungen pro Bild.
-
-Der Export schreibt alle Markierungen in die Pixel einer neuen PNG-Kopie. Schwarze Flächen sind vollständig deckend, auch bei transparenten Vorlagen. Der Export enthält keine Bearbeitungsebenen, eingebettete Originalansicht oder Original-EXIF. Schwärzungen werden manuell gewählt; automatische Gesichts-/Texterkennung und Video-Schwärzung sind noch nicht enthalten. Empfindliche Stellen im Ergebnis kontrollieren.
-
-![Schwärzen und Beschriften mit fiktivem Beispielscreenshot](docs/preview-markieren.png)
-
-### Eigene Schnellaktionen
-
-Im Komprimieren-Dialog einen Namen eingeben und **Einstellungen merken** wählen. Die passende Schnellaktion erscheint beim nächsten Öffnen direkt im **Bearbeiten-Kreis**; ein Klick startet einen Auftrag mit den gespeicherten Einstellungen. Derzeit sind das Komprimierungsrezepte, keine frei programmierbaren Makros. Bild-/Video-/Audio-/PDF-Rezepte werden nur beim passenden Dateityp angezeigt. Es werden keine Quelldateien oder Ausgabepfade im Rezept gespeichert; der aktuelle Ausgabeordner gilt weiterhin.
-
-**Alt → Schnellaktionen** bietet die Verwaltung und **Startvorlagen hinzufügen**: Bilder fürs Web (WebP, max. 1600 px), Video 720p unter 20 MB und Audio klein (MP3, 96 kbit/s). Vorlagen werden nicht automatisch ungefragt in den Kreis gelegt. Schnellaktionen lassen sich entfernen; Namen müssen eindeutig sein. Bis zu 40 Rezepte werden dauerhaft in den Benutzereinstellungen gespeichert.
-
-Dieser Ausbau ergänzt die drei zuerst gewählten Funktionsgruppen. Metadateneditor, Audio-Normalisierung, weitere Video-Werkzeuge und PDF-Seitenübersicht bleiben nächste Ausbauschritte; siehe [ROADMAP.md](ROADMAP.md).
-
-## Änderungen in Version 0.11.1: Drei direkte Tastenzugänge
-
-Datei im Explorer ziehen und eine Taste kurz antippen, dann wieder loslassen:
-
-| Taste | Öffnet direkt | Beispiele |
-| --- | --- | --- |
-| **Shift** | **Konvertieren** | Passende Zielformate, SVG Schnell/Erweitert |
-| **Strg** | **Bearbeiten** | Video-/Audioschnitt, Bildeditor, Crop, Drehen, PDF-Werkzeuge |
-| **Alt** | **Tools** | Terminal, Dateiablage, Kopieren, Verschieben, ZIP, Entpacken, Explorer |
-
-Die vorgelagerte Bereichsauswahl entfällt bei diesen Tastenzugängen. Beim Ziehen kann man zwischen den drei Bereichen wechseln. **Zurück** führt bei Bedarf zur Bereichsauswahl. Über das Infobereich-Symbol bleibt diese allgemeine Auswahl erreichbar. Bearbeiten und Konvertieren prüfen zuerst den Dateiinhalt; Tools funktioniert auch mit Ordnern und unbekannten Dateien ohne Medienkonverter.
-
-Unter **Einstellungen** lassen sich alle drei Tasten zuordnen; sie müssen verschieden sein. Alte Einstellungen ohne separate Bearbeiten-Taste werden beim Laden auf Shift/Strg/Alt migriert. Ausgabeordner, ausgeblendete Formate und andere Einstellungen bleiben erhalten. Ein Strg+Alt-/AltGr-Akkord wird nicht als einzelner Tools-/Bearbeiten-Auslöser behandelt. Die normale Explorer-Wirkung der Modifikatortasten wird nicht global unterdrückt; die Taste vor dem Loslassen der Datei wieder freigeben.
-
-Link markieren und Shift antippen öffnet weiterhin die Download-Auswahl. Ohne Ziehen lösen Strg und Alt keinen Kreis aus.
-
-**Die nachfolgenden Versionsabschnitte enthalten die historischen Bedienabläufe; maßgeblich ist die obige Dreierbelegung.**
-
-## Änderungen in Version 0.11.0
-
-### Neuer Kreis: ruhige Flächen, klare Aktionen
-
-Der erste Kreis bietet weiterhin **Konvertieren / Bearbeiten / Tools**. Alle Kreise verwenden abgerundete Segmente mit dunklen Flächen. Grün, Orange und Blau markieren die Bereiche und die jeweils aktive Aktion. Die Optionen haben eigene gezeichnete Vektorsymbole; die Erklärung unter dem Kreis beschreibt die gewählte Aktion. Bei mehr als zehn Optionen pro Gruppe entstehen zusätzliche konzentrische Ringe statt immer schmalerer Segmente. Alle Optionen bleiben gleichzeitig sichtbar. Ausblendbare Formate gelten weiterhin. Auf sehr kleinen Monitoren können umfangreiche Listen trotzdem eng werden.
-
-### Ein Bildeditor für Ausschnitt, Farbe und Größe
-
-**Bearbeiten → Bild bearbeiten** öffnet die große Vorschau mit seitlichen Reglern für Helligkeit, Kontrast, Sättigung, Schärfe und Wärme. Schwarzweiß/Graustufen ist zuschaltbar. **Original zum Vergleichen halten** zeigt das unbearbeitete Bild in seiner aktuellen Drehung, mit der gewählten Ausschnittmarkierung. Die Farbkorrektur wird für eine verkleinerte Vorschau im Hintergrund berechnet; gespeichert wird in voller Ausgabeauflösung. Schärfe kann in der verkleinerten Vorschau anders wirken als bei Betrachtung des Exports in voller Auflösung.
-
-Ausschnitt direkt im Bild ziehen, an Ecken ändern oder verschieben. Freies Format, Quadrat, 16:9, 4:3 und 9:16 stehen zur Auswahl. Drehungen und Ausgabegröße liegen im selben Fenster. **Zuschneiden** sowie **Bildgröße** bei einer einzelnen Datei öffnen ebenfalls diesen Editor. Stapel-Bildgröße bleibt über das bisherige Werkzeug verfügbar. Bei der Größe bedeutet 0 / Automatisch die passende Originalkante; mit aktiviertem Seitenverhältnis sind zwei Werte ein Begrenzungsrahmen. **Alles zurücksetzen** stellt Farbe, Drehung, Ausschnitt und Größe wieder her.
-
-Der Export speichert eine neue PNG-Datei neben dem Original bzw. im eingestellten Ausgabeordner. Transparenz bleibt erhalten; die Originaldatei wird nicht überschrieben. Animierte Bilder sind für diesen Editor nicht vorgesehen. Der Editor ist kein vollständiger professioneller Farbmanagement-/RAW-Workflow.
-
-### Einheitliche Spezialdialoge
-
-Schwarzweiß, 1-Bit-Bitmap und SVG nutzen dieselben Überschriften, Seitenflächen und primären Speicherbuttons. Original und Ergebnis stehen nebeneinander, die Regler rechts in einem scrollbaren Bereich. Schwellwertregler und SVG-Einstellungen bleiben erhalten.
-
-Diese Version erweitert die Kreisgestaltung und den Bildeditor. Beschriftungen, Collagen, Metadateneditor, Komprimierungsdialoge, zusätzliche Audio-/Videowerkzeuge, OCR und visuelle PDF-Seitenverwaltung sind noch nicht Teil dieses Schritts. Details stehen in [ROADMAP.md](ROADMAP.md).
-
-## Änderungen in Version 0.10.1
-
-### Zuerst Bereich wählen, dann alle passenden Optionen im Kreis
-
-Datei ziehen → Shift antippen → im ersten Kreis **Konvertieren / Bearbeiten / Tools** wählen. Anschließend zeigt ein großer Kreis alle passenden Optionen des gewählten Bereichs gleichzeitig, ohne rechte Menüfläche und ohne WEITER-Seiten. Konvertieren zeigt die verfügbaren, eingeblendeten Zielformate einschließlich SVG Schnell/Erweitert. Bearbeiten zeigt Zuschneiden, Drehen und weitere passende Bild-/Audio-/Videofunktionen. Tools enthält Dateiwerkzeuge und Programmfunktionen. **Zurück** führt zur Bereichsauswahl; die Datei bleibt ausgewählt.
-
-Grün steht für Konvertieren, Orange für Bearbeiten, Blau für Tools. Die Kreisgröße passt sich an die verfügbare Bildschirmfläche an. Bei vielen Formaten helfen die Einstellungen zum Ausblenden. Strg bleibt der direkte Dateiwerkzeug-Zugang; Links bieten Audio/Video direkt. Windows-DPI und Explorer-Drag-and-drop bitte am Windows-Gerät prüfen.
-
-### Unbenutzte Zielformate ausblenden
-
-**Einstellungen → Formate im Kreis**: Haken entfernen, Speichern. Die Auswahl gilt beim nächsten Öffnen für alle Dateitypen und bleibt nach Neustart erhalten. SVG ausblenden entfernt beide SVG-Varianten. Die eigentlichen Konverter werden nicht deinstalliert oder gesperrt; nur ihre Format-Einträge verschwinden aus dem Kreis. Bearbeitungen wie Bitmap bleiben unabhängig sichtbar. **Alle Formate anzeigen** setzt die Haken zurück; anschließend speichern. Eine gemischte Dateiauswahl bleibt nach dem eigentlichen Inhalt geprüft, auch wenn alle ihre Formate ausgeblendet wurden.
-
-### Schieberegler und gemeinsamer Dialogstil
-
-Bitmap-/Schwarzweiß- und SVG-Dialoge bieten für jeden numerischen Parameter Schieberegler plus synchronisiertes Zahlenfeld. Automatische Schwelle deaktiviert den manuellen Schwellenregler. Regleränderungen aktualisieren die Vorschau nach einer kurzen Pause; genaue Werte sind weiterhin eintippbar. Kontrast/Helligkeit und Vereinfachung unterstützen Nachkommastellen. Zurücksetzen setzt Regler und Felder gemeinsam zurück. Alle Qt-Dialoge verwenden den gemeinsamen dunklen Stil mit mintfarbenen Reglern, abgerundeten Flächen und deutlichen Hover-Zuständen; native Windows-Dateiauswahldialoge folgen weiterhin Windows.
-
-## Änderungen in Version 0.9.0
-
-### Neues Menü nach dem freigegebenen Mockup
-
-Der native Qt-Kreis verwendet große Symbole, feste Farbverläufe (Grün/Orange/Blau) und vollständig lesbare Außenbeschriftungen. Auch die Beschriftungen sind klick-/dropfähig. Die Mitte zeigt bei einem Einzelbild bis 40 Megapixel eine Dateivorschau, sonst Dateiname/Typ. Untermenüs öffnen sich als Auswahlkarten rechts neben dem Kreis; SVG bietet zwei große Karten für Schnell/Erweitert. Klick auf einen anderen Farbbereich wechselt den Bereich. Esc schließt weiterhin. Die Seitennavigation über WEITER bleibt erhalten; besonders lange Formatlisten werden aufgeteilt. Die Umsetzung verwendet native Zeichenoperationen, keine generierten UI-Bilder. Die Bildschirmposition wird beim Öffnen/Größenwechsel auf den verfügbaren Monitorbereich begrenzt; Windows-DPI und native Explorer-Drags bitte weiterhin am Gerät prüfen.
-
-### Downloads: Ordner merken und Fenster hervorholen
-
-Der zuletzt für einen gestarteten Download gewählte Zielordner wird separat als `download_dir` in den Einstellungen gespeichert, auch nach Neustart. Dadurch bleibt der Konvertierungs-Ausgabeordner unverändert. Falls das letzte Ziel nicht mehr existiert, fällt der Dialog auf Downloads zurück. Der neue Downloaddialog gehört zur Auftragsansicht und bleibt darüber; minimierte Aufträge werden wiederhergestellt. Nach Start eines Downloads wird dessen neuer Eintrag ausgewählt und die Auftragsansicht aktiviert. Die Aktivierung wird über Qt angefordert; das genaue Windows-Fokusverhalten muss am Gerät geprüft werden.
-
-
-### Graustufen, Schwarzweiß und Bitmap
-
-Bild → **Bearbeiten → Schwarzweiß** öffnet einen Dialog mit Original-/Ergebnisvorschau. Standard ist Graustufen (8 Bit), alternativ echtes Schwarzweiß mit zwei Farben (1 Bit). Helligkeit, Kontrast, automatische/manuelle Schwelle, Glättung, Invertieren und Floyd–Steinberg-Rasterung sind einstellbar. Ausgabe als neue PNG-Datei. **Bearbeiten → Bitmap** öffnet denselben Ablauf mit 1-Bit-Ausgabe als BMP. Das bisherige **Konvertieren → BMP** bleibt ein normaler Rasterformat-Export; eine BMP-Datei allein bedeutet noch nicht Schwarzweiß. Mehrere Bilder können mit den Standardwerten im Stapel verarbeitet werden. Transparenz wird bei der Vorbereitung auf Weiß gelegt, EXIF-Orientierung beachtet. Originale bleiben erhalten.
-
-### SVG vektorisieren: Schnell oder Erweitert
-
-Bild → **Konvertieren → SVG** → **SVG Schnell** oder **SVG Erweitert**.
-
-- Schnell erledigt die Zwischenstufen automatisch: Transparenz auf Weiß, Graustufen, automatische Schwarzweiß-Schwelle, kleine Flecken entfernen, weiche Vektorkonturen.
-- Erweitert zeigt für ein Bild Original und echte Ergebnisvorschau. Bildmodus Schwarzweiß/Graustufen/Farbe, Schwellwert, Kontrast, Helligkeit, Glättung, Invertieren, Rasterung, Arbeitsauflösung, Fleckenfilter, Farbzahl, Konturvereinfachung und Kurvenform sind einstellbar. Bei Schwarzweiß gilt die Schwelle; bei Farbe/Graustufen die Farbzahl. Der Fleckenfilter und die Vereinfachung beeinflussen nur SVG. Rasterung erzeugt viele kleine Punkte; für Logos meist ausgeschaltet lassen.
-- Ausgabe enthält echte SVG-Pfade, keine eingebettete Rasterdatei. Weißer Hintergrund optional, bei Schwarzweiß sonst transparent. Ursprüngliche Abmessungen bleiben über viewBox/Skalierung erhalten. Arbeitsauflösung standardmäßig längste Kante 1600 Pixel, maximal 2400; große Bilder werden für die Vektorisierung verkleinert. Rasterexport bleibt in Originalauflösung, maximal 80 Megapixel.
-- Besonders geeignet für Logos, Silhouetten und Strichzeichnungen. Fotos werden vereinfacht; Detailverlust und andere Konturen sind möglich. Weißes/leeres Bild kann ein leeres SVG ergeben. Die Vorschau basiert auf den gleichen Verarbeitungsparametern wie der Export. Konvertierung erfolgt im Hintergrund; Abbrechen kann während eines laufenden nativen Trace-Aufrufs erst danach greifen.
-- VTracer ist auf **1.0.0a4** festgelegt (Vorabversion mit Windows-ABI3-Wheel für Python 3.15); Start.cmd installiert die neue Abhängigkeit, keine manuelle Compilerinstallation. PyInstaller sammelt das Modul ein. Eingabe-SVG wird weiterhin über Qt gerastert; keine SVG-zu-SVG-Bearbeitung.
-
-## Änderungen in Version 0.8.3
-
-Download-Fix für Windows: Wird die Fortschrittsdatei beim Umbenennen vorübergehend gesperrt (WinError 5), läuft der Download weiter. Die letzte lesbare Fortschrittsanzeige bleibt bestehen und spätere Aktualisierungen versuchen es erneut. Fortschrittsmeldungen sind auf fünf pro Sekunde begrenzt und innerhalb des Workers synchronisiert. Schreibfehler der Fortschrittsanzeige werden abgefangen; tatsächliche Download-/Exportfehler werden weiterhin gemeldet. Keine Administratorrechte oder Änderungen am Virenschutz erforderlich.
-
-## Änderungen in Version 0.8.2
-
-Pandoc wird unter Windows zusätzlich in `%LOCALAPPDATA%/Pandoc`, `%LOCALAPPDATA%/Programs/Pandoc`, Program Files/Pandoc, WinGet-Paketordnern sowie üblichen Scoop-/Chocolatey-Zugängen gesucht. Außerdem wird der aktuelle Benutzer-/System-PATH aus der Windows-Registry gelesen: Eine Pandoc-Installation nach dem Start von OrbitDrop kann so über **Tools → Programm → Konverter** erneut erkannt werden. Der Prozess-PATH und der lokale bin-Ordner bleiben unterstützt. Keine Änderungen an PATH oder Registry. Nach erfolgreicher Prüfung die Datei erneut in den Kreis ziehen, damit ihre Formate neu geprüft werden.
-
-## Änderungen in Version 0.8.1
-
-**Installationsfix für Python 3.15 unter Windows:** Die benötigten yt-dlp-Zusatzpakete werden explizit installiert; das optionale Brotli-Paket entfällt. Damit wird der im Fehlerprotokoll beobachtete C++-Build von Brotli vermieden. yt-dlp und EJS sind auf die zusammengehörigen Versionen 2026.8.19 / 0.8.0 festgelegt. Keine Installation von Visual C++ Build Tools für diesen Fehler nötig. ZIP in einen neuen Ordner entpacken und Start.cmd ausführen. Ein bestehender Programmordner kann alternativ vollständig mit den neuen Quellen aktualisiert werden; Start.cmd bemerkt die geänderte requirements.txt und versucht die Installation erneut. Eigene Mediendateien unverändert lassen.
-
-
-**Tools → Programm → Debugging** sammelt automatisch Dateien ohne verfügbare Konvertierung: unbekannte/unsupported Formate, Erkennungsfehler sowie fehlende Konverter oder Encoder. Eine gemischte Auswahl ohne gemeinsame Ausgabe wird nicht als unbekannt protokolliert, solange jede Datei einzeln erkannt wird. Die Erkennung läuft im Hintergrund; zusätzliche Codecdiagnose maximal 5 Sekunden pro Problemdatei.
-
-Gespeichert werden Name (nur lokal), Endung, Größe, erkannter Typ/Containerhinweis, technische Codecwerte, Fehlergrund, System-/Bibliotheks-/Konverterversionen, Zeitpunkt und Anzahl gleicher Ereignisse. Keine Dateikopie, Rohbytes, Medien-Tags oder vollständigen Dateipfade. Maximal 100 Einträge; Wiederholungen werden zusammengefasst. Speicherung lokal im selben Benutzerordner wie Einstellungen (`diagnostics.json`), über Neustarts hinweg. Erfasst werden Dateien beim Prüfen im Shift-Kreis; der direkte Strg-Dateiaktionskreis prüft keine Formate.
-
-**Diagnose exportieren** erzeugt eine JSON-Datei zum Anhängen im Chat. Dateinamen werden standardmäßig durch `Datei_1.ext` usw. ersetzt; Originalnamen sind auf ausdrückliches Anhaken möglich. Vorhandene Exportdateien werden nicht überschrieben. **Liste leeren** löscht nur Diagnoseeinträge, keine Originaldateien. Exportdaten können Hinweise auf das technische System enthalten; sie werden nur lokal gespeichert und nicht automatisch versendet.
-
-Der Downloader verwendet bereits yt-dlp, ebenso wie die Android-App. Eine JavaScript-Laufzeit wie Deno/Node/QuickJS ist eine zusätzliche yt-dlp-Abhängigkeit für bestimmte Seiten, kein Ersatz für yt-dlp.
-
-## Funktionen aus Version 0.8
-
-### Drei feste Bereiche im Kreis
-
-Datei(en) ziehen → **Shift** kurz antippen → in der Mitte prüfen lassen → auf einem Bereich loslassen → Untermenü anklicken. Das erste Menü hat immer dieselben drei Bereiche:
-
-| Bereich | Farbe | Inhalt |
-|---|---|---|
-| Konvertieren | Grün | Alle für die gewählte Datei und vorhandenen Konverter verfügbaren Zielformate |
-| Bearbeiten | Orange | Bilder zuschneiden, drehen, skalieren; Audio/Video schneiden; PDFs teilen/zusammenfügen |
-| Tools | Blau | ZIP, Entpacken, Ablage, Kopieren, Verschieben, Pfad, Terminal, Explorer; Link einfügen; Programm |
-
-Nicht passende Bearbeitungen werden ausgeblendet. Bei gemischten Dateien werden nur gemeinsame Konvertierungen angeboten. **Tools → Programm** öffnet Aufträge, Einstellungen, Konverterprüfung und Hilfe. **Strg** beim Ziehen bleibt als direkter Zugang zu Dateiaktionen erhalten. Zurück führt eine Ebene zurück; die Mitte zum Startmenü. Farben bleiben auch in Untermenüs gleich.
-
-### Breite Videoschnittleiste
-
-Die breite Leiste zeigt echte Vorschaubilder über die gesamte Quelldauer. **C** teilt an der aktuellen Position. Einen Abschnitt in der Leiste anklicken, dann **Abschnitt entfernen** drücken. Entfernte Teile erscheinen dunkel und werden bei Wiedergabe und Export übersprungen. **Wiederherstellen** holt den ausgewählten Teil zurück. Die Originaldatei bleibt unverändert. Die obere Zeitskala lässt sich zum Springen ziehen. Leertaste und Einzelbildschritte bleiben erhalten; **Entf** löscht weiterhin eine ausgewählte Schnittmarke (führt die Nachbarabschnitte zusammen), nicht den Abschnitt.
-
-Die Leiste bleibt auf die Quellzeit bezogen, damit entfernte Teile wieder angeklickt werden können. Für die Vorschau werden 14 Bilder im Hintergrund geladen; bei langen Videos oder entfernten Schlüsselbildern kann dies dauern. Noch kein Zoom und keine Mehrspurbearbeitung.
-
-### Audio bearbeiten
-
-Audio → Bearbeiten → Schneiden öffnet Vorschau und Abschnittsauswahl mit C, Leertaste, Entf und Pfeiltasten (0,1 Sekunden). Abschnitte per Haken behalten, gemeinsam oder separat als MP3 exportieren. FFmpeg/FFprobe erforderlich. Audio besitzt keine Einzelbilder.
-
-### Links herunterladen
-
-- Vollständigen http(s)-Link als Text markieren und **Shift antippen**; ein Shift-Klick wird nach Loslassen der Maustaste ausgewertet. Wenn die Anwendung ihre Auswahl über Windows UI Automation bereitstellt, erscheinen **Audio laden** und **Video laden**. Die Zwischenablage wird dabei nicht verändert. Die Windows-Erkennung ist hier noch nicht auf einem echten Windows-PC getestet und funktioniert nicht in jeder Anwendung.
-- Alternativ einen Link mit Shift in den Kreis ziehen oder **Tools → Link einfügen** öffnen. Dort kann man einen kopierten Link einfügen.
-- Vor dem Download werden Titel und verfügbare Videoauflösungen geprüft. Audio wird MP3 (192 kbit/s), Video behält das verfügbare Format; getrennte Bild-/Tonspuren werden in MKV zusammengeführt. Nur ein einzelner Link, keine Playlists/Suche und kein zusätzlicher Schnitteditor.
-- Downloadordner wählen. Fortschritt, Geschwindigkeit, Abbrechen und Ergebnisse stehen unter Aufträge. Originale/vorhandene Downloads werden nicht überschrieben. Teil-Downloads liegen temporär und werden bei Fehler/Abbruch entfernt.
-- Nutzt wie die vorhandene Android-Downloader-App **yt-dlp + FFmpeg**; die Windows-Oberfläche ist neu implementiert, kein vollständiger Import der Android-App. yt-dlp und EJS werden mit den Python-Abhängigkeiten installiert. FFmpeg/FFprobe bitte über Tools → Programm → Konverter einrichten.
-- YouTube benötigt zusätzlich eine unterstützte JavaScript-Laufzeit (Deno ab 2.3 oder Node ab 22, alternativ QuickJS). Eine vorhandene Installation wird in PATH/bin erkannt. Downloadlinks: https://deno.com/ und https://nodejs.org/. Keine automatische Installation der Laufzeit und kein Download externer Challenge-Skripte; EJS kommt aus dem installierten Python-Paket. Websites können Login, Regionen oder Downloads einschränken; kein DRM-Umgehen. Bei Seitenänderungen Python-Abhängigkeiten aktualisieren: `.venv\Scripts\python.exe -m pip install --upgrade yt-dlp yt-dlp-ejs`.
-- Echte Downloads mit Audio-/Video-Fixtures über lokalen HTTP-Server getestet. Live-Downloads von YouTube und Windows-Linkerkennung sind noch nicht bestätigt.
-
-## Funktionen aus Version 0.7
-
-Datei ziehen → Shift antippen → zuerst **KONVERTIEREN**, **BEARBEITEN** oder **TOOLS** wählen. Die Auswahl richtet sich nach der Datei. Untermenüs bleiben nach dem Loslassen offen und lassen sich anklicken; erneutes Ziehen ist nicht nötig. **DATEIEN** bietet ZIP, Entpacken und weitere Dateiaktionen. **Tools → Programm** öffnet Aufträge, Einstellungen, Konverterprüfung, Werkzeuge und Hilfe direkt aus dem Kreis.
-
-### Videos schneiden
-
-Video → Bearbeiten → Schneiden wählen. Im Videoschnitteditor gelten:
-
-| Taste | Aktion |
-|---|---|
-| Leertaste | Wiedergabe starten / pausieren |
-| Pfeil links / rechts | Ein tatsächliches Videobild zurück / vor |
-| C | Schnittmarke an der aktuellen Position setzen |
-| Entf | Ausgewählte Schnittmarke löschen |
-
-Die Teilstücke in der Liste lassen sich per Häkchen behalten oder ausschließen. Beim Löschen einer Marke werden benachbarte Abschnitte zusammengeführt; bei gemischter Auswahl anschließend die Häkchen prüfen. Export verbindet behaltene Abschnitte oder schreibt auf Wunsch separate Clips. Drehung links/rechts/180° ist direkt im Editor möglich. Ausgabe ist ein neu encodiertes MP4 mit den Videoeinstellungen der App; FFmpeg und FFprobe werden benötigt. Frame-Navigation verwendet PyAV und tatsächliche Zeitstempel, auch bei variabler Bildrate. Wiedergabe und Ton hängen vom verfügbaren Qt-Medienbackend ab; Windows-Wiedergabe und Audio sind noch nicht auf einem Windows-PC geprüft.
-
-### Bilder zuschneiden und drehen
-
-Bild → Bearbeiten → Zuschneiden wählen. Rahmen ziehen, verschieben oder an den Ecken verändern; freie Auswahl oder 1:1, 16:9 und 4:3. Links/rechts/180° drehen ist direkt möglich. **DREHEN** im Kreis bietet außerdem die schnelle Drehung ohne Editor. Bearbeitete Bilder werden als neue PNGs gespeichert. Originale bleiben erhalten.
-
-## Funktionen aus Version 0.6
-
-| Funktion | Bedienung |
-|---|---|
-| Aufträge und Fortschritt | Öffnet sich bei einer Konvertierung oder Archivaktion. Videos/Audio verwenden die Zeitangaben von FFmpeg, ZIP-Erstellung verarbeitete Bytes, PDFs je nach Aktion Seiten. Bei unbekanntem Fortschritt läuft eine Aktivitätsanzeige statt erfundener Prozentwerte. |
-| Abbrechen | Auftrag auswählen → Abbrechen. Laufende Konverterprozesse werden beendet, Bibliotheksaufrufe am nächsten geeigneten Verarbeitungsschritt gestoppt. Unfertige, von dieser Aktion erstellte Ausgaben werden nach Möglichkeit entfernt. Bereits fertige Konvertierungen im Stapel bleiben erhalten. |
-| Ergebnisse öffnen | Auftrag auswählen → Ergebnis öffnen oder Ordner anzeigen. Bei mehreren Ausgaben erscheint eine Auswahl. |
-| Verlauf | Letzte 50 abgeschlossene Aufträge inklusive Ausgabepfaden, Status und Fehlern, auch nach Neustart verfügbar. „Verlauf leeren“ löscht nur diese Liste, keine Ergebnisse. |
-| Einstellungen | Rechtsklick auf Infobereich-Symbol → Einstellungen: Ausgabeordner, Bildqualität, Videoqualität/-größe, Tasten und optionaler Windows-Autostart. Änderungen gelten für neue Aufträge. |
-| Konverterprüfung | Optional automatisch beim Start. „Konverter prüfen / einrichten“ prüft FFmpeg, FFprobe, Pandoc und LibreOffice. Medien-Setup startet direkt als Auftrag mit Fortschritt; Office/Pandoc-Schaltflächen öffnen die Downloadseiten. |
-| Nur eine Instanz | Zweiter Start öffnet die vorhandene Auftragsansicht. Wenn das System lokale IPC blockiert, verhindert die Sperre dennoch einen Doppelstart; nur das Hervorholen kann dann ausfallen. |
-| Zusätzliche Werkzeuge | Infobereich-Menü → „Werkzeuge: Bilder / PDF / Video“. |
-
-### Neue Werkzeuge
-
-- **Bildgröße ändern:** Breite/Höhe in Pixeln, 0 für automatische Kante, optional Seitenverhältnis beibehalten. Ergebnis ist PNG, maximal 80 Megapixel. Auch mehrere Einzelbilder.
-- **Bild drehen:** 90°, 180° oder 270°, Ergebnis PNG, Original bleibt erhalten.
-- **PDFs zusammenfügen:** mehrere PDFs auswählen und mit ↑/↓ in die gewünschte Reihenfolge bringen. Ergebnis ist ein neues PDF.
-- **PDF aufteilen:** alle oder ausgewählte Seiten (z. B. `1-3,5`), pro Seite eine neue PDF-Datei. Keine OCR, keine verschlüsselten PDFs.
-- **Video kürzen:** genau ein Video; öffnet den visuellen Schnitteditor. Neues MP4 durch Neuencodierung; nutzt Videoqualität und Größenlimit aus den Einstellungen. FFmpeg/FFprobe erforderlich.
-
-Werkzeug-Aufträge bewahren Originale. Scheitert ein solcher Werkzeug-Stapel oder wird er abgebrochen, werden seine neu erzeugten Teilergebnisse entfernt. Bereits vorhandene Dateien werden nicht ersetzt. Konvertierungs-Stapel außerhalb der Werkzeuge behalten dagegen schon fertiggestellte Dateien.
-
-### Einstellungen und Speicherung
-
-Einstellungen/Verlauf werden pro Benutzer im von Qt vorgesehenen AppLocalDataLocation-Ordner gespeichert (unter Windows typischerweise `%LOCALAPPDATA%/OrbitDrop`). Sie bleiben bei einem neuen entpackten Programmordner erhalten. Die Historie speichert lokale Pfade und Fehlermeldungen, keine Dateiinhalte. Autostart wird ausschließlich auf ausdrückliches Anhaken über den Run-Eintrag des aktuellen Windows-Benutzers gesetzt. Nach Verschieben der Installation muss der Autostart-Pfad neu gespeichert werden.
-
-- Leerer Ausgabeordner = neben der Quelldatei. Ein eingestellter Ordner muss existieren. ZIP-/Entpack-Ziele und Verschiebeziele werden weiterhin direkt gewählt.
-- Bildqualität gilt für JPG, WebP, HEIC und AVIF; verlustfreie PNGs verwenden diesen Qualitätsregler nicht.
-- Videoqualität und maximale Höhe gelten für MP4/MOV/MKV/WebM sowie MP4-Clips. Kleinere Videos werden durch das Höhenlimit nicht vergrößert. AVI/WMV/GIF behalten ihre bisherigen Vorgaben.
-- Tasten: Shift, Strg oder Alt; die drei Bereiche müssen unterschiedliche Tasten haben. Beim Ziehen antippen und wieder loslassen.
-- Bei Beenden mit laufenden Aufträgen werden Abbrüche angefordert; die App beendet sich nach Abschluss dieser Abbrüche. Lange Bibliotheks-/Netzwerkaufrufe können den Abbruch verzögern. Beim Verschieben können bereits abgeschlossene Bewegungen nicht automatisch zurückgenommen werden.
-
-## Start unter Windows
-
-1. ZIP komplett in einen beschreibbaren Ordner entpacken.
-2. Python 3.10 oder neuer installieren: https://www.python.org/downloads/windows/
-3. `Start.cmd` starten. Beim ersten Start installiert das Skript die Python-Abhängigkeiten aus PyPI. Bei Änderungen an requirements.txt werden sie erneut geprüft. Dafür ist Internet nötig; die Konvertierung erfolgt lokal.
-4. Das grüne OrbitDrop-Symbol erscheint neben der Uhr, eventuell unter dem Pfeil. Das Konsolenfenster bleibt für Fehler sichtbar.
-
-## Bedienung
-
-1. Datei(en) im Explorer mit linker Maustaste ziehen.
-2. **Shift** für Konvertieren, **Strg** für Bearbeiten oder **Alt** für Tools kurz antippen und wieder loslassen.
-3. Datei kurz in der Kreismitte halten. Die App prüft den Inhalt im Hintergrund und blendet passende Aktionen ein.
-4. Direkt auf das gewünschte Format, eine Bearbeitung oder ein Werkzeug im Kreis ziehen und loslassen. Während der Prüfung ist noch keine Aktion auswählbar.
-5. Für einen übersichtlicheren Kreis ungenutzte Zielformate unter **Einstellungen → Formate im Kreis** ausblenden. Alle verbleibenden Optionen sind ohne Seitennavigation sichtbar.
-
-Alternativ das grüne Symbol anklicken, danach eine Datei in den bereits geöffneten Kreis ziehen. Esc schließt den Kreis. Rechtsklick auf das Symbol bietet Anleitung und Beenden.
-
-Mehrere Dateien: Nur gemeinsame Aktionen werden angeboten. Beispiel Video mit Ton + WAV → gemeinsame Audioformate. Bild + Video → keine gemeinsame Konvertierung. Bild + PDF kann gemeinsame Bild-/Textcontainer-Ziele haben, wird jedoch pro Datei separat verarbeitet. Es findet kein Zusammenfügen statt.
-
-Bei Konvertierungen bleiben Originale erhalten. Ausgaben liegen daneben als `Name_converted.ext`; vorhandene Namen erhalten eine zusätzliche Nummer und werden nicht überschrieben. Fehlerhafte Ausgaben werden entfernt.
-
-## Dateiaktionen (Alt)
-
-Datei oder Ordner ziehen → Alt kurz antippen → auf eine Aktion loslassen. Dieser Kreis benötigt keine Medienkonverter und funktioniert auch mit unbekannten Dateiformaten und gemischten Auswahlen. Während eines Drags lässt sich mit Shift/Strg/Alt zwischen den Bereichen wechseln.
-
-| Aktion | Verhalten |
-|---|---|
-| ZIP | Einzelne oder mehrere Dateien und ganze Ordner zusammen als ZIP speichern. Ziel und Dateiname werden gewählt; keine Überschreibung bestehender ZIPs. |
-| ENTPACKEN | Erscheint bei erkannten Archiven. Zielordner wählen; jedes Archiv wird in einen neuen Unterordner `Name_entpackt` (ggf. nummeriert) entpackt. Originalarchive bleiben erhalten. |
-| ABLAGE | Schwebendes Fenster, immer im Vordergrund. Merkt sich Originalpfade, ohne Dateien zu kopieren oder zu verschieben. Einträge auswählen und in andere Apps ziehen (Kopieraktion). Mehrfachauswahl möglich. |
-| KOPIEREN | Dateien/Ordner in die Windows-Zwischenablage legen. Danach im Explorer mit Strg+V einfügen. |
-| VERSCHIEBEN | Zielordner auswählen, dann Originale dorthin verschieben. Namenskonflikte werden vorab geprüft; es wird nicht überschrieben. Keine Aktion bei Abbruch des Zielordnerdialogs. |
-| PFAD | Vollständige Pfade als Text kopieren, ein Pfad pro Zeile. |
-| TERMINAL | Windows Terminal im Ordner öffnen; bei Dateien im enthaltenden Ordner. Fallback: PowerShell. Bei mehreren Ordnern ein Fenster je Ordner. Es wird kein Befehl aus dem Dateinamen ausgeführt. |
-| EXPLORER | Einzelne Datei im Explorer markieren, Ordner öffnen. Bei mehreren Einträgen die beteiligten Ordner jeweils einmal öffnen. |
-
-AirDrop wird nicht angeboten; ebenso kein automatisches Teilen/Versenden. Stattdessen gibt es die Explorer-Aktion.
-
-Ablage über das Infobereich-Menü erneut öffnen. „Andocken“ setzt das Fenster an den rechten Rand des Monitors an der Mausposition. Es lässt sich auch normal verschieben. „Leeren“, Entf und „Aus Ablage entfernen“ löschen ausschließlich Verweise, keine Dateien. Die Ablage ist nur für die laufende Sitzung; nach Beenden der App ist sie leer. Werden Originale extern verschoben oder gelöscht, können Verweise ungültig werden.
-
-Beim Verschieben wird nach einem Fehler gestoppt. Bereits erfolgreich verschobene Einträge werden nicht automatisch zurückverschoben. Laufwerksübergreifendes Verschieben von Ordnern kann Kopieren und anschließendes Entfernen der Quelle erfordern. Bei Kopier-/Löschfehlern können Original und (teilweise) Ziel gleichzeitig vorhanden sein; die Meldung fordert dann zur Prüfung auf. Beim Fallback werden spezielle Dateisystemmetadaten/NTFS-Rechte nicht vollständig garantiert.
-
-## Zippen und Entpacken
-
-- Dateien/Ordner markieren und ziehen → **Alt** antippen → **ZIP** → Namen/Speicherort wählen. Mehrere Quellen werden gemeinsam verpackt; ein mit ausgewählter Elternordner deckt seine Kinder bereits ab. Leere Ordner werden mitgenommen.
-- ZIP ziehen → **Alt** → **ENTPACKEN** → Zielordner wählen. Mehrere Archive sind möglich; je Archiv entsteht ein eigener neuer Ordner. Die Aktion ist bei langen Menüs ggf. auf der nächsten Seite (kurz auf WEITER halten).
-- Auch TAR, TAR.GZ und reines GZIP werden entpackt. RAR braucht zusätzlich das RAR-Python-Modul und einen externen Decoder (unrar/unar/bsdtar); dieser Weg ist weiterhin nicht mit echten RAR-Dateien getestet. 7z und Passwortarchive sind nicht implementiert.
-- Keine Zusatzinstallation zum Erstellen/Entpacken normaler ZIPs. Verknüpfungen/Junctions und problematische Archivpfade werden abgelehnt; beim Entpacken gelten 2 GiB und 10000 Einträge. Fehlgeschlagene neue Entpackordner werden entfernt. Beim Zippen maximal 10000 Einträge; größere ZIPs können das Entpacklimit überschreiten.
-- Archiv-Metadaten/NTFS-Rechte werden nicht vollständig übernommen. Vorhandene Dateien werden weder beim Zippen noch beim Entpacken ersetzt; bei einem Konflikt muss ein anderer ZIP-Name gewählt werden oder der Entpackordner erhält eine Nummer.
-
-## MP4 wird nicht erkannt?
-
-Im bisherigen Paket 0.3 waren FFmpeg/FFprobe nicht enthalten. Deshalb konnten Videos trotz MP4-Endung als unbekannt erscheinen. Das heißt nicht automatisch, dass das Video defekt ist.
-
-1. OrbitDrop über das Infobereich-Menü beenden.
-2. **Medien-einrichten.cmd** doppelklicken. Es lädt einen Windows-x64-Essentials-Build von gyan.dev (einem auf ffmpeg.org verlinkten Anbieter), prüft dessen veröffentlichte SHA-256-Prüfsumme und legt ffmpeg.exe/ffprobe.exe lokal in `bin` ab. Internet und Python werden für diesen explizit gestarteten Download benötigt; keine Administratorrechte und keine globale PATH-Änderung.
-3. **Start.cmd** erneut starten und die MP4 mit Shift testen.
-4. Falls weiterhin keine Aktionen erscheinen: Rechtsklick aufs Infobereich-Symbol → **Medienkonverter prüfen**. Dort stehen gefundene Pfade und Versionen. Dateien aus OneDrive/Netzlaufwerken ggf. zuerst vollständig auf die lokale Platte kopieren.
-
-Das Downloadskript wurde auf Paketvalidierung/Prüfsummen/Dateiauswahl getestet, aber noch nicht auf Windows mit einem echten Download ausgeführt. Alternativ die beiden EXEs manuell über https://ffmpeg.org/download.html#build-windows beziehen und nach `bin` kopieren. Unter Windows ARM/32-Bit benötigt man passende eigene Builds.
-
-Version 0.4 erkennt übliche MP4/MOV-Container auch ohne installierten Konverter und meldet dann „Medienkonverter fehlt“. Für tatsächliche Stream-Erkennung/Konvertierung bleibt FFprobe/FFmpeg notwendig. Wenn der Konverter vorhanden ist, werden dessen Dateifehler angezeigt, statt sie nur als „unbekannt“ zu verbergen. Übliche Program-Files-/WinGet-Installationen werden zusätzlich zum PATH gesucht.
-
-## Formate und lokale Zusatzprogramme
-
-Die App bietet nur Aktionen an, für die ein Backend gefunden wurde. Python-Bibliotheken installiert Start.cmd. Die folgenden eigenständigen Programme sind NICHT im ZIP enthalten:
-
-| Bereich | Zusatzprogramm | Einrichtung |
-|---|---|---|
-| Audio/Video | FFmpeg + FFprobe | **Medien-einrichten.cmd** oder Windows-Build über https://ffmpeg.org/download.html#build-windows ; beide EXEs in `bin` ablegen oder in PATH installieren |
-| Office/Tabellen/Präsentationen/PDF-Export von Dokumenten | LibreOffice | https://www.libreoffice.org/download/download-libreoffice/ ; normale Windows-Installation wird unter Program Files gefunden, alternativ soffice im PATH |
-| DOCX/Markdown/TXT/EPUB/HTML untereinander | Pandoc | https://pandoc.org/installing.html ; pandoc.exe in `bin` oder PATH |
-| RAR lesen | unrar, unar oder bsdtar | Im PATH verfügbar machen. Nur unverschlüsselte RAR-Dateien; noch kein Gerätetest mit RAR |
-
-Ein Neustart von OrbitDrop nach Installation der Backends ist empfohlen.
-
-## Abgleich mit der Formatliste
-
-| Kategorie | Eingabe / Ausgabe | Umsetzung und Grenzen |
-|---|---|---|
-| Bilder | JPG, PNG, WebP, HEIC, TIFF, AVIF, BMP → dieselben Formate plus PDF | Pillow + HEIF-Plugin. Nur ein Einzelbild; mehrseitige TIFF/HEIF und APNG nicht unterstützt. JPG/BMP/PDF erhalten bei Transparenz weißen Hintergrund. HDR/Farbraum/Metadaten werden nicht originalgetreu garantiert. |
-| SVG | SVG → Bildformate/PDF | SVG-Eingabe: Rasterung über Qt. Keine Skripte, eingebetteten Bilder oder externen Referenzen. Rasterbilder können als SVG vektorisiert werden; Eingabe-SVG wird nur gerastert. |
-| Audio | MP3, M4A, WAV, FLAC, OGG, Opus, AIFF, WMA | FFprobe prüft echte Audiostreams; verfügbare FFmpeg-Encoder bestimmen die Ausgabeaktionen. Neuencodierung kann Qualität reduzieren. |
-| Video | MP4, MOV, MKV, WebM, AVI, WMV, GIF | FFmpeg. Audioexport nur bei vorhandenem Audiostream. Erstes Standbild als eigene Aktion. GIF-Ausgabe: 12 FPS, 480 Pixel Breite; kein Ton. Video nimmt den ersten echten Videostream und optional die erste Audiospur. |
-| PDF | PDF → DOCX, PPTX, XLSX, JPG, PNG, EPUB, TXT, MD | Keine OCR und keine vollständige Rekonstruktion des ursprünglichen Office-Dokuments. Details unten. **Keine Pages-Ausgabe.** |
-| Dokumente | DOCX, Markdown, TXT, EPUB; RTF/DOC/HTML als weitere Eingaben | Pandoc bzw. LibreOffice abhängig von Richtung. DOCX/MD/TXT/EPUB/HTML über Pandoc übertragen Text/Struktur, Bilder werden als [Bild] ersetzt; externe Ressourcen und Roh-HTML werden nicht übernommen. PDF-Export über LibreOffice. |
-| Apple Pages | Experimenteller Import über LibreOffice bei erkannten .pages-IWA-Paketen | Kompatibilität hängt von Dateiversion/LibreOffice ab. Kein Export und keine Garantie für erfolgreiche Konvertierung. Nicht in den Integrationstests abgedeckt. |
-| Präsentationen | PPT/PPTX → PDF/JPG/PNG | LibreOffice. JPG/PNG: alle Seiten als ZIP. PPT nur Eingabe. PDF → PPTX siehe unten. |
-| Tabellen | XLSX, ODS, CSV, TSV untereinander + PDF | LibreOffice. XLS nur Eingabe. CSV/TSV sind ein einzelnes Tabellenblatt, ohne Formeln/Formatierung/weitere Blätter; entsprechende Verluste sind möglich. CSV mit Komma/Semikolon, Textdateien aktuell UTF-8. |
-| Untertitel | SRT ↔ VTT, jeweils → TXT | Zeitmarken und Text; erweiterte VTT-Formatierung, Styles/Regionen und Cue-Positionierung werden nicht vollständig übernommen. TXT enthält Text ohne Zeitmarken. |
-| Archive | ZIP/TAR/GZIP untereinander; RAR nur Eingabe | Inhalt wird in einem temporären Ordner geprüft und neu verpackt. GZIP-Ausgabe ist TAR.GZ, weil GZIP selbst nur einen Datenstrom speichert. Reines GZIP als Eingabe ebenfalls möglich. Keine Passwortarchive. |
-| macOS-Sonderformate | RTFD und Text Clippings | Noch nicht unterstützt. RTF-Dateien werden über LibreOffice verarbeitet. |
-
-### PDF-Export ist je nach Ziel unterschiedlich
-
-- **JPG/PNG:** alle Seiten mit 300 DPI in einer ZIP-Datei, zum Beispiel `Name_converted.png.zip`.
-- **PPTX:** jede PDF-Seite wird als Bild auf eine Folie gesetzt. Optik bleibt weitgehend erhalten, die einzelnen Texte/Objekte sind nicht editierbar. Das Seitenverhältnis richtet sich nach der ersten Seite.
-- **DOCX:** extrahierter Text mit Seitenumbrüchen. Kein originalgetreues Layout, keine Bildrekonstruktion.
-- **XLSX:** erkannte Tabellen, je Tabelle ein Blatt. Ohne erkennbare Tabellen wird mit einer verständlichen Meldung abgebrochen.
-- **TXT/MD/EPUB:** extrahierter Text; MD ist in dieser Version Text ohne rekonstruierte Markdown-Struktur. Leere/gescannte PDFs melden fehlenden Text statt einer vermeintlich erfolgreichen OCR.
-
-### Archivgrenzen
-
-Maximal 2 GiB entpackte Daten und 10.000 Dateien. Keine Links/Geräte, keine Pfade außerhalb des Archivs, keine unter Windows reservierten Namen. Leere Ordner, Dateirechte und besondere Archivmetadaten werden beim Neuverpacken nicht bewahrt. Der Vorgang kann temporär entsprechenden freien Speicher benötigen.
-
-## Erkennung und Teststatus
-
-Bilder werden mit Pillow geöffnet, Office/EPUB/ODS über ihre Paketstruktur erkannt, PDFs und Archive über Inhalt/Signaturen, Audio/Video über FFprobe geprüft. Reine Textformate haben keine eindeutige Signatur: Dort werden UTF-8, Struktur und ergänzend die Endung verwendet. Ein bloß zu .mp4 umbenanntes PNG wird als Bild erkannt. Nicht alle defekten/ungewöhnlichen Dateien sind schon bei der Vorprüfung erkennbar; der eigentliche Konverter kann sie anschließend noch ablehnen.
-
-Automatische Windows-Einblendung: Shift/Strg/Alt + linke Maustaste werden global abgefragt; ein echter Explorer-Drag lässt sich damit allein noch nicht sicher nachweisen. Der Kreis kann deshalb auch bei anderen Ziehbewegungen erscheinen. Konvertierungen akzeptieren lokale Dateien; Dateiaktionen zusätzlich Ordner. Der native Drop wird immer als Kopieraktion angenommen; eine explizit gewählte Verschiebeaktion führt anschließend den getrennten Vorgang aus.
-
-**Unter Linux geprüft:** Bildkonvertierung inklusive HEIC/AVIF, echte Audio-/Videodateien, PDF-Exporte, Office-/Tabellen-/Präsentationskonvertierung, EPUB/Pandoc, Untertitel, Archive, Originalschutz, gemischte Aktionen, Qt-Menü mit Seitennavigation, Dateiaktions-Menü/Ordnerannahme, Ablage-Verweise und Verschiebe-Fallback inklusive Namenskonflikten/Kopierfehlern. Windows-spezifische Aufrufe sind nur teilweise über Mocks geprüft.
-
-**Noch unter Windows zu prüfen:** globaler Shift-Auslöser, OLE-Drop-Ziel beim laufenden Explorer-Drag, mehrere Monitore/DPI-Skalierung, konkrete Windows-Builds der Zusatzprogramme, native Explorer-Zwischenablage, Terminal-/Explorer-Aufrufe, MoveFileEx-API, Medien-Setup und EXE-Paket. Beide Programme ohne Administratorrechte starten. Keine fertige Windows-EXE liegt bei.
-
-## EXE unter Windows bauen
-
-`Build-EXE.cmd` erstellt standardmäßig ein **Ordnerpaket** unter `dist/OrbitDrop`. Den gesamten Ordner inklusive `_internal` weitergeben; darin startet OrbitDrop.exe ohne separat installiertes Python. Zum Bauen selbst werden Python, Internet für die Build-Abhängigkeiten und eine passende Windows-x64-Umgebung benötigt.
-
-`Build-Einzeldatei.cmd` erstellt alternativ eine einzelne EXE mit PyInstaller. Ein Ordnerpaket ist für die ersten Gerätetests leichter zu prüfen. Beide Wege enthalten Versionsangaben und sammeln HEIF/PDF-Abhängigkeiten mit ein. Sie sind hier nicht unter Windows ausgeführt worden; es liegt keine fertig gebaute Windows-EXE bei.
-
-FFmpeg/FFprobe aus `bin` werden eingebunden, wenn beide vorhanden sind. Das Medien-Setup aus der App kann beide Konverter später auch in einem `bin`-Ordner neben der EXE ablegen; dieser hat Vorrang vor eingebundenen Versionen. Der Installationsordner muss dafür beschreibbar sein. Pandoc/LibreOffice bleiben externe Zusatzprogramme. Keine Signatur und kein Installer enthalten.
-
-## Entwicklertests
-
-`python -m pip install -r requirements-dev.txt`
-
-`python -m unittest discover -s tests -v`
-
-Office-/Pandoc-/FFmpeg-Tests benötigen die entsprechenden installierten Programme. Qt-Oberflächentests laufen mit einer Offscreen-Oberfläche und ersetzen keinen Windows-Gerätetest. UI-Vorschau: `python orbitdrop.py --preview`.
+Dateiverarbeitung und OCR erfolgen lokal. Internet wird für gestartete Downloads, die Einrichtung zusätzlicher Komponenten und aktivierte Updateprüfungen verwendet. Es gibt keine eingebaute Telemetrie und keinen automatischen Upload deiner Dokumente.
