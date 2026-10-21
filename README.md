@@ -2,6 +2,43 @@
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
+## Quick Install · Schnellstart
+
+**[Windows-Downloads & Releases](https://github.com/Chaozz2go/OrbitDrop/releases)** · **[Quellcode als ZIP herunterladen](https://github.com/Chaozz2go/OrbitDrop/archive/refs/heads/main.zip)**
+
+> **Aktueller Download-Status:** Das Repository ist öffentlich. Die Windows-Pakete sind derzeit noch unveröffentlichte Release-Entwürfe und für Besucher nicht herunterladbar. Bis zur Veröffentlichung kannst du OrbitDrop wie unten beschrieben aus dem Quellcode starten.
+
+### Windows-App ohne Python installieren
+
+Sobald ein Windows-Release veröffentlicht ist:
+
+1. [Releases öffnen](https://github.com/Chaozz2go/OrbitDrop/releases) und beim neuesten Release **Assets** aufklappen.
+2. **`OrbitDrop-<Version>-Windows-x64-Setup.exe`** herunterladen und starten. Das Setup installiert für dein Benutzerkonto; Administratorrechte sind nicht nötig.
+3. **OrbitDrop** über das Windows-Startmenü öffnen.
+
+**Portable Alternative:** `OrbitDrop-<Version>-Windows-x64-Portable.zip` herunterladen, vollständig entpacken und `OrbitDrop.exe` im entpackten Ordner starten. Den gesamten Ordner zusammenlassen.
+
+Python, Qt, FFmpeg/FFprobe und deutsche/englische OCR-Sprachdaten sind in den Windows-Paketen enthalten. Unterstützt werden **Windows 10 ab Build 17763 und Windows 11, jeweils x64**.
+
+### Jetzt starten: Quellcode mit Python
+
+1. **Python 3.12 x64** von [python.org](https://www.python.org/downloads/windows/) installieren, einschließlich des Python-Launchers (`py`).
+2. [Quellcode-ZIP herunterladen](https://github.com/Chaozz2go/OrbitDrop/archive/refs/heads/main.zip) und vollständig entpacken.
+3. Im entpackten Projektordner **`Start.cmd`** doppelklicken. Beim ersten Start werden die Python-Abhängigkeiten automatisch installiert; dafür ist eine Internetverbindung nötig.
+4. Für Audio-/Videofunktionen zusätzlich **`Medien-einrichten.cmd`** starten. Fehlende OCR-Sprachdaten lassen sich im Fenster **Text erkennen → Deutsch/Englisch einrichten** nachladen. Manche Dokumentkonvertierungen benötigen zusätzliche Programme; Details stehen weiter unten.
+
+### Die ersten Schritte
+
+Dateien im Explorer auswählen oder zum Kreis ziehen und die gewünschte Taste verwenden:
+
+| Taste (Standard) | Bereich |
+| --- | --- |
+| **Shift** | Konvertieren: passende Zielformate anzeigen |
+| **Strg** | Bearbeiten: zum Beispiel Schnitt, Crop, Drehen oder Texterkennung |
+| **Alt** | Tools: Dateiaktionen, Einstellungen sowie **Anleitung & Info** |
+
+Die Tastenbelegung und sichtbaren Menüpunkte kannst du in den **Einstellungen** anpassen. **Alt → Anleitung & Info** erklärt alle Bereiche ausführlich. Einstellungen erreichst du auch per Rechtsklick auf das OrbitDrop-Symbol im Windows-Infobereich.
+
 ![Bildeditor mit Vorschau und Reglern](docs/preview-photo-studio.png)
 
 ## Neu in Version 0.19.0: Personalisierung und Anleitung
