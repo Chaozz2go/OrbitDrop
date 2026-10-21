@@ -1,2 +1,222 @@
-# OrbitDrop
-Windows-Dateiwerkzeug mit farbigem Aktionskreis, Konvertierung, Medienbearbeitung und Link-Downloads.
+# OrbitDrop 0.8 – Windows-Prototyp
+
+Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
+
+## Neu in Version 0.8
+
+### Drei feste Bereiche im Kreis
+
+Datei(en) ziehen → **Shift** kurz antippen → in der Mitte prüfen lassen → auf einem Bereich loslassen → Untermenü anklicken. Das erste Menü hat immer dieselben drei Bereiche:
+
+| Bereich | Farbe | Inhalt |
+|---|---|---|
+| Konvertieren | Grün | Alle für die gewählte Datei und vorhandenen Konverter verfügbaren Zielformate |
+| Bearbeiten | Orange | Bilder zuschneiden, drehen, skalieren; Audio/Video schneiden; PDFs teilen/zusammenfügen |
+| Tools | Blau | ZIP, Entpacken, Ablage, Kopieren, Verschieben, Pfad, Terminal, Explorer; Link einfügen; Programm |
+
+Nicht passende Bearbeitungen werden ausgeblendet. Bei gemischten Dateien werden nur gemeinsame Konvertierungen angeboten. **Tools → Programm** öffnet Aufträge, Einstellungen, Konverterprüfung und Hilfe. **Strg** beim Ziehen bleibt als direkter Zugang zu Dateiaktionen erhalten. Zurück führt eine Ebene zurück; die Mitte zum Startmenü. Farben bleiben auch in Untermenüs gleich.
+
+### Breite Videoschnittleiste
+
+Die breite Leiste zeigt echte Vorschaubilder über die gesamte Quelldauer. **C** teilt an der aktuellen Position. Einen Abschnitt in der Leiste anklicken, dann **Abschnitt entfernen** drücken. Entfernte Teile erscheinen dunkel und werden bei Wiedergabe und Export übersprungen. **Wiederherstellen** holt den ausgewählten Teil zurück. Die Originaldatei bleibt unverändert. Die obere Zeitskala lässt sich zum Springen ziehen. Leertaste und Einzelbildschritte bleiben erhalten; **Entf** löscht weiterhin eine ausgewählte Schnittmarke (führt die Nachbarabschnitte zusammen), nicht den Abschnitt.
+
+Die Leiste bleibt auf die Quellzeit bezogen, damit entfernte Teile wieder angeklickt werden können. Für die Vorschau werden 14 Bilder im Hintergrund geladen; bei langen Videos oder entfernten Schlüsselbildern kann dies dauern. Noch kein Zoom und keine Mehrspurbearbeitung.
+
+### Audio bearbeiten
+
+Audio → Bearbeiten → Schneiden öffnet Vorschau und Abschnittsauswahl mit C, Leertaste, Entf und Pfeiltasten (0,1 Sekunden). Abschnitte per Haken behalten, gemeinsam oder separat als MP3 exportieren. FFmpeg/FFprobe erforderlich. Audio besitzt keine Einzelbilder.
+
+### Links herunterladen
+
+- Vollständigen http(s)-Link als Text markieren und **Shift antippen**; ein Shift-Klick wird nach Loslassen der Maustaste ausgewertet. Wenn die Anwendung ihre Auswahl über Windows UI Automation bereitstellt, erscheinen **Audio laden** und **Video laden**. Die Zwischenablage wird dabei nicht verändert. Die Windows-Erkennung ist hier noch nicht auf einem echten Windows-PC getestet und funktioniert nicht in jeder Anwendung.
+- Alternativ einen Link mit Shift in den Kreis ziehen oder **Tools → Link einfügen** öffnen. Dort kann man einen kopierten Link einfügen.
+- Vor dem Download werden Titel und verfügbare Videoauflösungen geprüft. Audio wird MP3 (192 kbit/s), Video behält das verfügbare Format; getrennte Bild-/Tonspuren werden in MKV zusammengeführt. Nur ein einzelner Link, keine Playlists/Suche und kein zusätzlicher Schnitteditor.
+- Downloadordner wählen. Fortschritt, Geschwindigkeit, Abbrechen und Ergebnisse stehen unter Aufträge. Originale/vorhandene Downloads werden nicht überschrieben. Teil-Downloads liegen temporär und werden bei Fehler/Abbruch entfernt.
+- Nutzt wie die vorhandene Android-Downloader-App **yt-dlp + FFmpeg**; die Windows-Oberfläche ist neu implementiert, kein vollständiger Import der Android-App. yt-dlp und EJS werden mit den Python-Abhängigkeiten installiert. FFmpeg/FFprobe bitte über Tools → Programm → Konverter einrichten.
+- YouTube benötigt zusätzlich eine unterstützte JavaScript-Laufzeit (Deno ab 2.3 oder Node ab 22, alternativ QuickJS). Eine vorhandene Installation wird in PATH/bin erkannt. Downloadlinks: https://deno.com/ und https://nodejs.org/. Keine automatische Installation der Laufzeit und kein Download externer Challenge-Skripte; EJS kommt aus dem installierten Python-Paket. Websites können Login, Regionen oder Downloads einschränken; kein DRM-Umgehen. Bei Seitenänderungen Python-Abhängigkeiten aktualisieren: `.venv\Scripts\python.exe -m pip install --upgrade "yt-dlp[default]"`.
+- Echte Downloads mit Audio-/Video-Fixtures über lokalen HTTP-Server getestet. Live-Downloads von YouTube und Windows-Linkerkennung sind noch nicht bestätigt.
+
+## Funktionen aus Version 0.7
+
+Datei ziehen → Shift antippen → zuerst **KONVERTIEREN**, **BEARBEITEN** oder **TOOLS** wählen. Die Auswahl richtet sich nach der Datei. Untermenüs bleiben nach dem Loslassen offen und lassen sich anklicken; erneutes Ziehen ist nicht nötig. **DATEIEN** bietet ZIP, Entpacken und weitere Dateiaktionen. **Tools → Programm** öffnet Aufträge, Einstellungen, Konverterprüfung, Werkzeuge und Hilfe direkt aus dem Kreis.
+
+### Videos schneiden
+
+Video → Bearbeiten → Schneiden wählen. Im Videoschnitteditor gelten:
+
+| Taste | Aktion |
+|---|---|
+| Leertaste | Wiedergabe starten / pausieren |
+| Pfeil links / rechts | Ein tatsächliches Videobild zurück / vor |
+| C | Schnittmarke an der aktuellen Position setzen |
+| Entf | Ausgewählte Schnittmarke löschen |
+
+Die Teilstücke in der Liste lassen sich per Häkchen behalten oder ausschließen. Beim Löschen einer Marke werden benachbarte Abschnitte zusammengeführt; bei gemischter Auswahl anschließend die Häkchen prüfen. Export verbindet behaltene Abschnitte oder schreibt auf Wunsch separate Clips. Drehung links/rechts/180° ist direkt im Editor möglich. Ausgabe ist ein neu encodiertes MP4 mit den Videoeinstellungen der App; FFmpeg und FFprobe werden benötigt. Frame-Navigation verwendet PyAV und tatsächliche Zeitstempel, auch bei variabler Bildrate. Wiedergabe und Ton hängen vom verfügbaren Qt-Medienbackend ab; Windows-Wiedergabe und Audio sind noch nicht auf einem Windows-PC geprüft.
+
+### Bilder zuschneiden und drehen
+
+Bild → Bearbeiten → Zuschneiden wählen. Rahmen ziehen, verschieben oder an den Ecken verändern; freie Auswahl oder 1:1, 16:9 und 4:3. Links/rechts/180° drehen ist direkt möglich. **DREHEN** im Kreis bietet außerdem die schnelle Drehung ohne Editor. Bearbeitete Bilder werden als neue PNGs gespeichert. Originale bleiben erhalten.
+
+## Funktionen aus Version 0.6
+
+| Funktion | Bedienung |
+|---|---|
+| Aufträge und Fortschritt | Öffnet sich bei einer Konvertierung oder Archivaktion. Videos/Audio verwenden die Zeitangaben von FFmpeg, ZIP-Erstellung verarbeitete Bytes, PDFs je nach Aktion Seiten. Bei unbekanntem Fortschritt läuft eine Aktivitätsanzeige statt erfundener Prozentwerte. |
+| Abbrechen | Auftrag auswählen → Abbrechen. Laufende Konverterprozesse werden beendet, Bibliotheksaufrufe am nächsten geeigneten Verarbeitungsschritt gestoppt. Unfertige, von dieser Aktion erstellte Ausgaben werden nach Möglichkeit entfernt. Bereits fertige Konvertierungen im Stapel bleiben erhalten. |
+| Ergebnisse öffnen | Auftrag auswählen → Ergebnis öffnen oder Ordner anzeigen. Bei mehreren Ausgaben erscheint eine Auswahl. |
+| Verlauf | Letzte 50 abgeschlossene Aufträge inklusive Ausgabepfaden, Status und Fehlern, auch nach Neustart verfügbar. „Verlauf leeren“ löscht nur diese Liste, keine Ergebnisse. |
+| Einstellungen | Rechtsklick auf Infobereich-Symbol → Einstellungen: Ausgabeordner, Bildqualität, Videoqualität/-größe, Tasten und optionaler Windows-Autostart. Änderungen gelten für neue Aufträge. |
+| Konverterprüfung | Optional automatisch beim Start. „Konverter prüfen / einrichten“ prüft FFmpeg, FFprobe, Pandoc und LibreOffice. Medien-Setup startet direkt als Auftrag mit Fortschritt; Office/Pandoc-Schaltflächen öffnen die Downloadseiten. |
+| Nur eine Instanz | Zweiter Start öffnet die vorhandene Auftragsansicht. Wenn das System lokale IPC blockiert, verhindert die Sperre dennoch einen Doppelstart; nur das Hervorholen kann dann ausfallen. |
+| Zusätzliche Werkzeuge | Infobereich-Menü → „Werkzeuge: Bilder / PDF / Video“. |
+
+### Neue Werkzeuge
+
+- **Bildgröße ändern:** Breite/Höhe in Pixeln, 0 für automatische Kante, optional Seitenverhältnis beibehalten. Ergebnis ist PNG, maximal 80 Megapixel. Auch mehrere Einzelbilder.
+- **Bild drehen:** 90°, 180° oder 270°, Ergebnis PNG, Original bleibt erhalten.
+- **PDFs zusammenfügen:** mehrere PDFs auswählen und mit ↑/↓ in die gewünschte Reihenfolge bringen. Ergebnis ist ein neues PDF.
+- **PDF aufteilen:** alle oder ausgewählte Seiten (z. B. `1-3,5`), pro Seite eine neue PDF-Datei. Keine OCR, keine verschlüsselten PDFs.
+- **Video kürzen:** genau ein Video; öffnet den visuellen Schnitteditor. Neues MP4 durch Neuencodierung; nutzt Videoqualität und Größenlimit aus den Einstellungen. FFmpeg/FFprobe erforderlich.
+
+Werkzeug-Aufträge bewahren Originale. Scheitert ein solcher Werkzeug-Stapel oder wird er abgebrochen, werden seine neu erzeugten Teilergebnisse entfernt. Bereits vorhandene Dateien werden nicht ersetzt. Konvertierungs-Stapel außerhalb der Werkzeuge behalten dagegen schon fertiggestellte Dateien.
+
+### Einstellungen und Speicherung
+
+Einstellungen/Verlauf werden pro Benutzer im von Qt vorgesehenen AppLocalDataLocation-Ordner gespeichert (unter Windows typischerweise `%LOCALAPPDATA%/OrbitDrop`). Sie bleiben bei einem neuen entpackten Programmordner erhalten. Die Historie speichert lokale Pfade und Fehlermeldungen, keine Dateiinhalte. Autostart wird ausschließlich auf ausdrückliches Anhaken über den Run-Eintrag des aktuellen Windows-Benutzers gesetzt. Nach Verschieben der Installation muss der Autostart-Pfad neu gespeichert werden.
+
+- Leerer Ausgabeordner = neben der Quelldatei. Ein eingestellter Ordner muss existieren. ZIP-/Entpack-Ziele und Verschiebeziele werden weiterhin direkt gewählt.
+- Bildqualität gilt für JPG, WebP, HEIC und AVIF; verlustfreie PNGs verwenden diesen Qualitätsregler nicht.
+- Videoqualität und maximale Höhe gelten für MP4/MOV/MKV/WebM sowie MP4-Clips. Kleinere Videos werden durch das Höhenlimit nicht vergrößert. AVI/WMV/GIF behalten ihre bisherigen Vorgaben.
+- Tasten: Shift, Strg oder Alt; die beiden Kreise müssen unterschiedliche Tasten haben. Beim Ziehen antippen und wieder loslassen.
+- Bei Beenden mit laufenden Aufträgen werden Abbrüche angefordert; die App beendet sich nach Abschluss dieser Abbrüche. Lange Bibliotheks-/Netzwerkaufrufe können den Abbruch verzögern. Beim Verschieben können bereits abgeschlossene Bewegungen nicht automatisch zurückgenommen werden.
+
+## Start unter Windows
+
+1. ZIP komplett in einen beschreibbaren Ordner entpacken.
+2. Python 3.10 oder neuer installieren: https://www.python.org/downloads/windows/
+3. `Start.cmd` starten. Beim ersten Start installiert das Skript die Python-Abhängigkeiten aus PyPI. Bei Änderungen an requirements.txt werden sie erneut geprüft. Dafür ist Internet nötig; die Konvertierung erfolgt lokal.
+4. Das grüne OrbitDrop-Symbol erscheint neben der Uhr, eventuell unter dem Pfeil. Das Konsolenfenster bleibt für Fehler sichtbar.
+
+## Bedienung
+
+1. Datei(en) im Explorer mit linker Maustaste ziehen.
+2. **Shift** für den Aktionskreis oder **Strg** für Dateiaktionen kurz antippen und wieder loslassen.
+3. Datei kurz in der Kreismitte halten. Die App prüft den Inhalt im Hintergrund und blendet passende Aktionen ein.
+4. Auf eine Aktion ziehen und loslassen. Bei **KONVERTIEREN** anschließend das Zielformat im offenen Untermenü anklicken. Während der Prüfung ist noch keine Aktion auswählbar.
+5. Bei vielen Aktionen: auf **WEITER** etwa 0,65 Sekunden halten; dabei die Maustaste weiter gedrückt lassen. Die letzte Seite springt wieder zur ersten.
+
+Alternativ das grüne Symbol anklicken, danach eine Datei in den bereits geöffneten Kreis ziehen. Esc schließt den Kreis. Rechtsklick auf das Symbol bietet Anleitung und Beenden.
+
+Mehrere Dateien: Nur gemeinsame Aktionen werden angeboten. Beispiel Video mit Ton + WAV → gemeinsame Audioformate. Bild + Video → keine gemeinsame Konvertierung. Bild + PDF kann gemeinsame Bild-/Textcontainer-Ziele haben, wird jedoch pro Datei separat verarbeitet. Es findet kein Zusammenfügen statt.
+
+Bei Konvertierungen bleiben Originale erhalten. Ausgaben liegen daneben als `Name_converted.ext`; vorhandene Namen erhalten eine zusätzliche Nummer und werden nicht überschrieben. Fehlerhafte Ausgaben werden entfernt.
+
+## Dateiaktionen (Strg)
+
+Datei oder Ordner ziehen → Strg kurz antippen → auf eine Aktion loslassen. Dieser Kreis benötigt keine Medienkonverter und funktioniert auch mit unbekannten Dateiformaten und gemischten Auswahlen. Während eines Drags lässt sich mit Shift/Strg zwischen den Kreisen wechseln.
+
+| Aktion | Verhalten |
+|---|---|
+| ZIP | Einzelne oder mehrere Dateien und ganze Ordner zusammen als ZIP speichern. Ziel und Dateiname werden gewählt; keine Überschreibung bestehender ZIPs. |
+| ENTPACKEN | Erscheint bei erkannten Archiven. Zielordner wählen; jedes Archiv wird in einen neuen Unterordner `Name_entpackt` (ggf. nummeriert) entpackt. Originalarchive bleiben erhalten. |
+| ABLAGE | Schwebendes Fenster, immer im Vordergrund. Merkt sich Originalpfade, ohne Dateien zu kopieren oder zu verschieben. Einträge auswählen und in andere Apps ziehen (Kopieraktion). Mehrfachauswahl möglich. |
+| KOPIEREN | Dateien/Ordner in die Windows-Zwischenablage legen. Danach im Explorer mit Strg+V einfügen. |
+| VERSCHIEBEN | Zielordner auswählen, dann Originale dorthin verschieben. Namenskonflikte werden vorab geprüft; es wird nicht überschrieben. Keine Aktion bei Abbruch des Zielordnerdialogs. |
+| PFAD | Vollständige Pfade als Text kopieren, ein Pfad pro Zeile. |
+| TERMINAL | Windows Terminal im Ordner öffnen; bei Dateien im enthaltenden Ordner. Fallback: PowerShell. Bei mehreren Ordnern ein Fenster je Ordner. Es wird kein Befehl aus dem Dateinamen ausgeführt. |
+| EXPLORER | Einzelne Datei im Explorer markieren, Ordner öffnen. Bei mehreren Einträgen die beteiligten Ordner jeweils einmal öffnen. |
+
+AirDrop wird nicht angeboten; ebenso kein automatisches Teilen/Versenden. Stattdessen gibt es die Explorer-Aktion.
+
+Ablage über das Infobereich-Menü erneut öffnen. „Andocken“ setzt das Fenster an den rechten Rand des Monitors an der Mausposition. Es lässt sich auch normal verschieben. „Leeren“, Entf und „Aus Ablage entfernen“ löschen ausschließlich Verweise, keine Dateien. Die Ablage ist nur für die laufende Sitzung; nach Beenden der App ist sie leer. Werden Originale extern verschoben oder gelöscht, können Verweise ungültig werden.
+
+Beim Verschieben wird nach einem Fehler gestoppt. Bereits erfolgreich verschobene Einträge werden nicht automatisch zurückverschoben. Laufwerksübergreifendes Verschieben von Ordnern kann Kopieren und anschließendes Entfernen der Quelle erfordern. Bei Kopier-/Löschfehlern können Original und (teilweise) Ziel gleichzeitig vorhanden sein; die Meldung fordert dann zur Prüfung auf. Beim Fallback werden spezielle Dateisystemmetadaten/NTFS-Rechte nicht vollständig garantiert.
+
+## Zippen und Entpacken
+
+- Dateien/Ordner markieren und ziehen → **Strg** antippen → **ZIP** → Namen/Speicherort wählen. Mehrere Quellen werden gemeinsam verpackt; ein mit ausgewählter Elternordner deckt seine Kinder bereits ab. Leere Ordner werden mitgenommen.
+- ZIP ziehen → **Strg** → **ENTPACKEN** → Zielordner wählen. Mehrere Archive sind möglich; je Archiv entsteht ein eigener neuer Ordner. Die Aktion ist bei langen Menüs ggf. auf der nächsten Seite (kurz auf WEITER halten).
+- Auch TAR, TAR.GZ und reines GZIP werden entpackt. RAR braucht zusätzlich das RAR-Python-Modul und einen externen Decoder (unrar/unar/bsdtar); dieser Weg ist weiterhin nicht mit echten RAR-Dateien getestet. 7z und Passwortarchive sind nicht implementiert.
+- Keine Zusatzinstallation zum Erstellen/Entpacken normaler ZIPs. Verknüpfungen/Junctions und problematische Archivpfade werden abgelehnt; beim Entpacken gelten 2 GiB und 10000 Einträge. Fehlgeschlagene neue Entpackordner werden entfernt. Beim Zippen maximal 10000 Einträge; größere ZIPs können das Entpacklimit überschreiten.
+- Archiv-Metadaten/NTFS-Rechte werden nicht vollständig übernommen. Vorhandene Dateien werden weder beim Zippen noch beim Entpacken ersetzt; bei einem Konflikt muss ein anderer ZIP-Name gewählt werden oder der Entpackordner erhält eine Nummer.
+
+## MP4 wird nicht erkannt?
+
+Im bisherigen Paket 0.3 waren FFmpeg/FFprobe nicht enthalten. Deshalb konnten Videos trotz MP4-Endung als unbekannt erscheinen. Das heißt nicht automatisch, dass das Video defekt ist.
+
+1. OrbitDrop über das Infobereich-Menü beenden.
+2. **Medien-einrichten.cmd** doppelklicken. Es lädt einen Windows-x64-Essentials-Build von gyan.dev (einem auf ffmpeg.org verlinkten Anbieter), prüft dessen veröffentlichte SHA-256-Prüfsumme und legt ffmpeg.exe/ffprobe.exe lokal in `bin` ab. Internet und Python werden für diesen explizit gestarteten Download benötigt; keine Administratorrechte und keine globale PATH-Änderung.
+3. **Start.cmd** erneut starten und die MP4 mit Shift testen.
+4. Falls weiterhin keine Aktionen erscheinen: Rechtsklick aufs Infobereich-Symbol → **Medienkonverter prüfen**. Dort stehen gefundene Pfade und Versionen. Dateien aus OneDrive/Netzlaufwerken ggf. zuerst vollständig auf die lokale Platte kopieren.
+
+Das Downloadskript wurde auf Paketvalidierung/Prüfsummen/Dateiauswahl getestet, aber noch nicht auf Windows mit einem echten Download ausgeführt. Alternativ die beiden EXEs manuell über https://ffmpeg.org/download.html#build-windows beziehen und nach `bin` kopieren. Unter Windows ARM/32-Bit benötigt man passende eigene Builds.
+
+Version 0.4 erkennt übliche MP4/MOV-Container auch ohne installierten Konverter und meldet dann „Medienkonverter fehlt“. Für tatsächliche Stream-Erkennung/Konvertierung bleibt FFprobe/FFmpeg notwendig. Wenn der Konverter vorhanden ist, werden dessen Dateifehler angezeigt, statt sie nur als „unbekannt“ zu verbergen. Übliche Program-Files-/WinGet-Installationen werden zusätzlich zum PATH gesucht.
+
+## Formate und lokale Zusatzprogramme
+
+Die App bietet nur Aktionen an, für die ein Backend gefunden wurde. Python-Bibliotheken installiert Start.cmd. Die folgenden eigenständigen Programme sind NICHT im ZIP enthalten:
+
+| Bereich | Zusatzprogramm | Einrichtung |
+|---|---|---|
+| Audio/Video | FFmpeg + FFprobe | **Medien-einrichten.cmd** oder Windows-Build über https://ffmpeg.org/download.html#build-windows ; beide EXEs in `bin` ablegen oder in PATH installieren |
+| Office/Tabellen/Präsentationen/PDF-Export von Dokumenten | LibreOffice | https://www.libreoffice.org/download/download-libreoffice/ ; normale Windows-Installation wird unter Program Files gefunden, alternativ soffice im PATH |
+| DOCX/Markdown/TXT/EPUB/HTML untereinander | Pandoc | https://pandoc.org/installing.html ; pandoc.exe in `bin` oder PATH |
+| RAR lesen | unrar, unar oder bsdtar | Im PATH verfügbar machen. Nur unverschlüsselte RAR-Dateien; noch kein Gerätetest mit RAR |
+
+Ein Neustart von OrbitDrop nach Installation der Backends ist empfohlen.
+
+## Abgleich mit der Formatliste
+
+| Kategorie | Eingabe / Ausgabe | Umsetzung und Grenzen |
+|---|---|---|
+| Bilder | JPG, PNG, WebP, HEIC, TIFF, AVIF, BMP → dieselben Formate plus PDF | Pillow + HEIF-Plugin. Nur ein Einzelbild; mehrseitige TIFF/HEIF und APNG nicht unterstützt. JPG/BMP/PDF erhalten bei Transparenz weißen Hintergrund. HDR/Farbraum/Metadaten werden nicht originalgetreu garantiert. |
+| SVG | SVG → Bildformate/PDF | Nur Eingabe; Rasterung über Qt. Keine Skripte, eingebetteten Bilder oder externen Referenzen. Keine SVG-Ausgabe. |
+| Audio | MP3, M4A, WAV, FLAC, OGG, Opus, AIFF, WMA | FFprobe prüft echte Audiostreams; verfügbare FFmpeg-Encoder bestimmen die Ausgabeaktionen. Neuencodierung kann Qualität reduzieren. |
+| Video | MP4, MOV, MKV, WebM, AVI, WMV, GIF | FFmpeg. Audioexport nur bei vorhandenem Audiostream. Erstes Standbild als eigene Aktion. GIF-Ausgabe: 12 FPS, 480 Pixel Breite; kein Ton. Video nimmt den ersten echten Videostream und optional die erste Audiospur. |
+| PDF | PDF → DOCX, PPTX, XLSX, JPG, PNG, EPUB, TXT, MD | Keine OCR und keine vollständige Rekonstruktion des ursprünglichen Office-Dokuments. Details unten. **Keine Pages-Ausgabe.** |
+| Dokumente | DOCX, Markdown, TXT, EPUB; RTF/DOC/HTML als weitere Eingaben | Pandoc bzw. LibreOffice abhängig von Richtung. DOCX/MD/TXT/EPUB/HTML über Pandoc übertragen Text/Struktur, Bilder werden als [Bild] ersetzt; externe Ressourcen und Roh-HTML werden nicht übernommen. PDF-Export über LibreOffice. |
+| Apple Pages | Experimenteller Import über LibreOffice bei erkannten .pages-IWA-Paketen | Kompatibilität hängt von Dateiversion/LibreOffice ab. Kein Export und keine Garantie für erfolgreiche Konvertierung. Nicht in den Integrationstests abgedeckt. |
+| Präsentationen | PPT/PPTX → PDF/JPG/PNG | LibreOffice. JPG/PNG: alle Seiten als ZIP. PPT nur Eingabe. PDF → PPTX siehe unten. |
+| Tabellen | XLSX, ODS, CSV, TSV untereinander + PDF | LibreOffice. XLS nur Eingabe. CSV/TSV sind ein einzelnes Tabellenblatt, ohne Formeln/Formatierung/weitere Blätter; entsprechende Verluste sind möglich. CSV mit Komma/Semikolon, Textdateien aktuell UTF-8. |
+| Untertitel | SRT ↔ VTT, jeweils → TXT | Zeitmarken und Text; erweiterte VTT-Formatierung, Styles/Regionen und Cue-Positionierung werden nicht vollständig übernommen. TXT enthält Text ohne Zeitmarken. |
+| Archive | ZIP/TAR/GZIP untereinander; RAR nur Eingabe | Inhalt wird in einem temporären Ordner geprüft und neu verpackt. GZIP-Ausgabe ist TAR.GZ, weil GZIP selbst nur einen Datenstrom speichert. Reines GZIP als Eingabe ebenfalls möglich. Keine Passwortarchive. |
+| macOS-Sonderformate | RTFD und Text Clippings | Noch nicht unterstützt. RTF-Dateien werden über LibreOffice verarbeitet. |
+
+### PDF-Export ist je nach Ziel unterschiedlich
+
+- **JPG/PNG:** alle Seiten mit 300 DPI in einer ZIP-Datei, zum Beispiel `Name_converted.png.zip`.
+- **PPTX:** jede PDF-Seite wird als Bild auf eine Folie gesetzt. Optik bleibt weitgehend erhalten, die einzelnen Texte/Objekte sind nicht editierbar. Das Seitenverhältnis richtet sich nach der ersten Seite.
+- **DOCX:** extrahierter Text mit Seitenumbrüchen. Kein originalgetreues Layout, keine Bildrekonstruktion.
+- **XLSX:** erkannte Tabellen, je Tabelle ein Blatt. Ohne erkennbare Tabellen wird mit einer verständlichen Meldung abgebrochen.
+- **TXT/MD/EPUB:** extrahierter Text; MD ist in dieser Version Text ohne rekonstruierte Markdown-Struktur. Leere/gescannte PDFs melden fehlenden Text statt einer vermeintlich erfolgreichen OCR.
+
+### Archivgrenzen
+
+Maximal 2 GiB entpackte Daten und 10.000 Dateien. Keine Links/Geräte, keine Pfade außerhalb des Archivs, keine unter Windows reservierten Namen. Leere Ordner, Dateirechte und besondere Archivmetadaten werden beim Neuverpacken nicht bewahrt. Der Vorgang kann temporär entsprechenden freien Speicher benötigen.
+
+## Erkennung und Teststatus
+
+Bilder werden mit Pillow geöffnet, Office/EPUB/ODS über ihre Paketstruktur erkannt, PDFs und Archive über Inhalt/Signaturen, Audio/Video über FFprobe geprüft. Reine Textformate haben keine eindeutige Signatur: Dort werden UTF-8, Struktur und ergänzend die Endung verwendet. Ein bloß zu .mp4 umbenanntes PNG wird als Bild erkannt. Nicht alle defekten/ungewöhnlichen Dateien sind schon bei der Vorprüfung erkennbar; der eigentliche Konverter kann sie anschließend noch ablehnen.
+
+Automatische Windows-Einblendung: Shift/Strg + linke Maustaste werden global abgefragt; ein echter Explorer-Drag lässt sich damit allein noch nicht sicher nachweisen. Der Kreis kann deshalb auch bei anderen Ziehbewegungen erscheinen. Konvertierungen akzeptieren lokale Dateien; Dateiaktionen zusätzlich Ordner. Der native Drop wird immer als Kopieraktion angenommen; eine explizit gewählte Verschiebeaktion führt anschließend den getrennten Vorgang aus.
+
+**Unter Linux geprüft:** Bildkonvertierung inklusive HEIC/AVIF, echte Audio-/Videodateien, PDF-Exporte, Office-/Tabellen-/Präsentationskonvertierung, EPUB/Pandoc, Untertitel, Archive, Originalschutz, gemischte Aktionen, Qt-Menü mit Seitennavigation, Dateiaktions-Menü/Ordnerannahme, Ablage-Verweise und Verschiebe-Fallback inklusive Namenskonflikten/Kopierfehlern. Windows-spezifische Aufrufe sind nur teilweise über Mocks geprüft.
+
+**Noch unter Windows zu prüfen:** globaler Shift-Auslöser, OLE-Drop-Ziel beim laufenden Explorer-Drag, mehrere Monitore/DPI-Skalierung, konkrete Windows-Builds der Zusatzprogramme, native Explorer-Zwischenablage, Terminal-/Explorer-Aufrufe, MoveFileEx-API, Medien-Setup und EXE-Paket. Beide Programme ohne Administratorrechte starten. Keine fertige Windows-EXE liegt bei.
+
+## EXE unter Windows bauen
+
+`Build-EXE.cmd` erstellt standardmäßig ein **Ordnerpaket** unter `dist/OrbitDrop`. Den gesamten Ordner inklusive `_internal` weitergeben; darin startet OrbitDrop.exe ohne separat installiertes Python. Zum Bauen selbst werden Python, Internet für die Build-Abhängigkeiten und eine passende Windows-x64-Umgebung benötigt.
+
+`Build-Einzeldatei.cmd` erstellt alternativ eine einzelne EXE mit PyInstaller. Ein Ordnerpaket ist für die ersten Gerätetests leichter zu prüfen. Beide Wege enthalten Versionsangaben und sammeln HEIF/PDF-Abhängigkeiten mit ein. Sie sind hier nicht unter Windows ausgeführt worden; es liegt keine fertig gebaute Windows-EXE bei.
+
+FFmpeg/FFprobe aus `bin` werden eingebunden, wenn beide vorhanden sind. Das Medien-Setup aus der App kann beide Konverter später auch in einem `bin`-Ordner neben der EXE ablegen; dieser hat Vorrang vor eingebundenen Versionen. Der Installationsordner muss dafür beschreibbar sein. Pandoc/LibreOffice bleiben externe Zusatzprogramme. Keine Signatur und kein Installer enthalten.
+
+## Entwicklertests
+
+`python -m pip install -r requirements-dev.txt`
+
+`python -m unittest discover -s tests -v`
+
+Office-/Pandoc-/FFmpeg-Tests benötigen die entsprechenden installierten Programme. Qt-Oberflächentests laufen mit einer Offscreen-Oberfläche und ersetzen keinen Windows-Gerätetest. UI-Vorschau: `python orbitdrop.py --preview`.

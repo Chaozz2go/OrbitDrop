@@ -1,0 +1,5 @@
+FFmpeg und FFprobe: OrbitDrop beenden, danach Medien-einrichten.cmd starten.
+Alternativ ffmpeg.exe und ffprobe.exe hier ablegen oder im PATH installieren.
+Download-Einstieg: https://ffmpeg.org/download.html#build-windows
+Ohne beide Programme sind Audio-/Video-Konvertierungen deaktiviert.
+Die Dateiaktionen (Strg) funktionieren ohne diese Zusatzprogramme.
