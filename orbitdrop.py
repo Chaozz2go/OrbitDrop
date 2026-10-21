@@ -677,7 +677,7 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.8.1 · Prototyp',
+        QMessageBox.information(None, 'OrbitDrop 0.8.2 · Prototyp',
             '1. Datei im Explorer mit linker Maustaste ziehen.\n'
             '2. Shift für den Aktionskreis oder Strg für Tools kurz antippen.\n'
             '3. Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools.\n'

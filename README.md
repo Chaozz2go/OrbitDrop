@@ -1,8 +1,12 @@
-# OrbitDrop 0.8.1 – Windows-Prototyp
+# OrbitDrop 0.8.2 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
-## Neu in Version 0.8.1
+## Neu in Version 0.8.2
+
+Pandoc wird unter Windows zusätzlich in `%LOCALAPPDATA%/Pandoc`, `%LOCALAPPDATA%/Programs/Pandoc`, Program Files/Pandoc, WinGet-Paketordnern sowie üblichen Scoop-/Chocolatey-Zugängen gesucht. Außerdem wird der aktuelle Benutzer-/System-PATH aus der Windows-Registry gelesen: Eine Pandoc-Installation nach dem Start von OrbitDrop kann so über **Tools → Programm → Konverter** erneut erkannt werden. Der Prozess-PATH und der lokale bin-Ordner bleiben unterstützt. Keine Änderungen an PATH oder Registry. Nach erfolgreicher Prüfung die Datei erneut in den Kreis ziehen, damit ihre Formate neu geprüft werden.
+
+## Änderungen in Version 0.8.1
 
 **Installationsfix für Python 3.15 unter Windows:** Die benötigten yt-dlp-Zusatzpakete werden explizit installiert; das optionale Brotli-Paket entfällt. Damit wird der im Fehlerprotokoll beobachtete C++-Build von Brotli vermieden. yt-dlp und EJS sind auf die zusammengehörigen Versionen 2026.8.19 / 0.8.0 festgelegt. Keine Installation von Visual C++ Build Tools für diesen Fehler nötig. ZIP in einen neuen Ordner entpacken und Start.cmd ausführen. Ein bestehender Programmordner kann alternativ vollständig mit den neuen Quellen aktualisiert werden; Start.cmd bemerkt die geänderte requirements.txt und versucht die Installation erneut. Eigene Mediendateien unverändert lassen.
 

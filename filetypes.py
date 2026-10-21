@@ -24,15 +24,29 @@ def backend(name):
     if sys.platform == 'win32':
         local = Path(os.environ.get('LOCALAPPDATA', str(Path.home()/'AppData/Local')))
         folders += [local/'Microsoft/WinGet/Links']
+        if name=='pandoc':
+            folders += [local/'Pandoc',local/'Programs/Pandoc',Path.home()/'scoop/shims']
+            chocolatey=Path(os.environ.get('ChocolateyInstall',os.environ.get('PROGRAMDATA','C:/ProgramData')+'/chocolatey'))
+            folders += [chocolatey/'bin']
         for env in ('PROGRAMFILES','PROGRAMFILES(X86)'):
             root=Path(os.environ.get(env,'C:/Program Files'))
             folders += [root/'ffmpeg/bin',root/'FFmpeg/bin']
+            if name=='pandoc':folders.append(root/'Pandoc')
     for folder in folders:
         candidate = folder / executable
         if candidate.is_file():
             return str(candidate)
     found=shutil.which(name)
     if found:return found
+    if sys.platform=='win32' and name=='pandoc':
+        found=windows_installed_path(name)
+        if found:return found
+        packages=local/'Microsoft/WinGet/Packages'
+        if packages.is_dir():
+            for package in sorted(packages.glob('*Pandoc*')):
+                for pattern in ('pandoc.exe','*/pandoc.exe','*/bin/pandoc.exe'):
+                    for candidate in sorted(package.glob(pattern)):
+                        if candidate.is_file():return str(candidate)
     if sys.platform=='win32' and name in ('ffmpeg','ffprobe'):
         # A running process does not see PATH updates made by a new installer.
         # Search WinGet's package directories without requiring a Windows reboot.
@@ -41,6 +55,22 @@ def backend(name):
             for package in packages.glob('Gyan.FFmpeg*'):
                 for candidate in package.glob('*/bin/'+executable):
                     if candidate.is_file():return str(candidate)
+    return None
+
+
+def windows_installed_path(name):
+    """An already running process keeps its old PATH after an MSI install."""
+    try:import winreg
+    except ImportError:return None
+    paths=[]
+    for hive,key in ((winreg.HKEY_CURRENT_USER,'Environment'),(winreg.HKEY_LOCAL_MACHINE,r'SYSTEM\CurrentControlSet\Control\Session Manager\Environment')):
+        try:
+            with winreg.OpenKey(hive,key) as handle:
+                value,_=winreg.QueryValueEx(handle,'Path')
+                if isinstance(value,str):paths.append(winreg.ExpandEnvironmentStrings(value))
+        except OSError:pass
+    if paths:
+        return shutil.which(name,path=';'.join(paths))
     return None
 
 
