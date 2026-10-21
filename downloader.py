@@ -7,6 +7,7 @@ import sys
 import tempfile
 import time
 import shutil
+import threading
 from link_selection import media_link
 from filetypes import backend
 from task_runtime import checkpoint,stop_process,copy_stream
@@ -71,10 +72,32 @@ def download_link(url,mode,folder,height=0):
         raise
 
 
+class ProgressReporter:
+    """Best-effort telemetry must never interrupt a media download.
+
+    Windows may deny replacement while the parent or a virus scanner has the
+    target open. Retain the last snapshot and try again on the next update.
+    """
+    def __init__(self,path):
+        self.path=Path(path);self.lock=threading.Lock();self.last_attempt=float('-inf')
+    def __call__(self,percent,message):
+        with self.lock:
+            now=time.monotonic()
+            if now-self.last_attempt<.2:return False
+            self.last_attempt=now
+            temp=self.path.with_suffix('.tmp')
+            try:
+                temp.write_text(json.dumps({'percent':percent,'message':message}),encoding='utf-8')
+                os.replace(temp,self.path)
+                return True
+            except OSError:
+                # Progress is optional; the result file remains authoritative.
+                return False
+
+
 def worker_main(config_path):
     config=json.loads(Path(config_path).read_text(encoding='utf-8'));result=Path(config['result']);progress=Path(config['progress'])
-    def report(percent,message):
-        temp=progress.with_suffix('.tmp');temp.write_text(json.dumps({'percent':percent,'message':message}),encoding='utf-8');os.replace(temp,progress)
+    report=ProgressReporter(progress)
     class Logger:
         def debug(self,message):pass
         def warning(self,message):report(None,'Hinweis: '+str(message)[-250:])

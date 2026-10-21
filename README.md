@@ -1,8 +1,12 @@
-# OrbitDrop 0.8.2 – Windows-Prototyp
+# OrbitDrop 0.8.3 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
-## Neu in Version 0.8.2
+## Neu in Version 0.8.3
+
+Download-Fix für Windows: Wird die Fortschrittsdatei beim Umbenennen vorübergehend gesperrt (WinError 5), läuft der Download weiter. Die letzte lesbare Fortschrittsanzeige bleibt bestehen und spätere Aktualisierungen versuchen es erneut. Fortschrittsmeldungen sind auf fünf pro Sekunde begrenzt und innerhalb des Workers synchronisiert. Schreibfehler der Fortschrittsanzeige werden abgefangen; tatsächliche Download-/Exportfehler werden weiterhin gemeldet. Keine Administratorrechte oder Änderungen am Virenschutz erforderlich.
+
+## Änderungen in Version 0.8.2
 
 Pandoc wird unter Windows zusätzlich in `%LOCALAPPDATA%/Pandoc`, `%LOCALAPPDATA%/Programs/Pandoc`, Program Files/Pandoc, WinGet-Paketordnern sowie üblichen Scoop-/Chocolatey-Zugängen gesucht. Außerdem wird der aktuelle Benutzer-/System-PATH aus der Windows-Registry gelesen: Eine Pandoc-Installation nach dem Start von OrbitDrop kann so über **Tools → Programm → Konverter** erneut erkannt werden. Der Prozess-PATH und der lokale bin-Ordner bleiben unterstützt. Keine Änderungen an PATH oder Registry. Nach erfolgreicher Prüfung die Datei erneut in den Kreis ziehen, damit ihre Formate neu geprüft werden.
 
