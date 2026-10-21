@@ -106,8 +106,8 @@ def native_frame(window):
     if sys.platform!='win32':return
     # DWM rounding can add a rectangular outline around a per-pixel-alpha
     # overlay. Native frame styling belongs only to decorated app windows.
-    if window.windowFlags() & Qt.WindowType.FramelessWindowHint or window.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground):return
     try:
+        if window.windowFlags() & Qt.WindowType.FramelessWindowHint or window.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground):return
         import ctypes
         dwm=ctypes.WinDLL('dwmapi');handle=int(window.winId());enabled=ctypes.c_int(1)
         if dwm.DwmSetWindowAttribute(ctypes.c_void_p(handle),20,ctypes.byref(enabled),4):dwm.DwmSetWindowAttribute(ctypes.c_void_p(handle),19,ctypes.byref(enabled),4)

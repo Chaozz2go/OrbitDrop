@@ -7,7 +7,7 @@ permissions:
   contents: write
 concurrency:
   group: windows-package
-  cancel-in-progress: false
+  cancel-in-progress: true
 env:
   QT_QPA_PLATFORM: offscreen
   PUBLISH_RELEASE: 'false'
