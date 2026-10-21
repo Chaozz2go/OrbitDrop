@@ -29,7 +29,7 @@ def invoke_worker(config):
         try:
             while True:
                 checkpoint()
-                if time.monotonic()-start>(120 if config['operation']=='inspect' else 21600):raise TimeoutError('Zeitlimit beim Abrufen des Links erreicht.')
+                if time.monotonic()-start>(300 if config['operation']=='inspect' else 21600):raise TimeoutError('Zeitlimit beim Abrufen des Links erreicht.')
                 try:
                     state=json.loads(progress.read_text(encoding='utf-8'));checkpoint(state.get('percent'),state.get('message','Download …'))
                 except (OSError,ValueError):pass
@@ -70,6 +70,27 @@ def download_link(url,mode,folder,height=0):
     except BaseException:
         if output:output.unlink(missing_ok=True)
         raise
+
+
+def playlist_summary(info):
+    """Keep the playlist order, including unavailable rows, without resolving streams."""
+    import re
+    entries=[]
+    for number,entry in enumerate(info.get('entries') or [],1):
+        if number>10000:raise ValueError('Die Playlist enthält mehr als 10.000 Einträge. Bitte eine kleinere Liste verwenden.')
+        entry=entry or {};title=entry.get('title') or 'Nicht verfügbar';url=media_link(entry.get('webpage_url')) or media_link(entry.get('url'))
+        youtube='youtube' in str(entry.get('ie_key') or entry.get('extractor_key') or info.get('extractor_key') or info.get('extractor') or '').lower()
+        identifier=str(entry.get('id') or '')
+        if youtube and re.fullmatch(r'[A-Za-z0-9_-]{11}',identifier):url='https://www.youtube.com/watch?v='+identifier
+        reason=''
+        if entry.get('_type') in ('playlist','multi_video'):reason='Unterplaylist'
+        elif not url:reason='Kein abrufbarer Link'
+        elif entry.get('availability') in ('private','premium_only','subscriber_only','needs_auth') or title.lower() in ('[private video]','[deleted video]','private video','deleted video'):reason='Nicht öffentlich verfügbar'
+        duration=entry.get('duration')
+        if not isinstance(duration,(int,float)) or not 0<=duration<10**9:duration=None
+        entries.append({'index':entry.get('playlist_index') or number,'title':str(title)[:500],'url':url,'duration':duration,'available':not bool(reason),'reason':reason})
+    if not entries:raise ValueError('Keine Playlist-Einträge gefunden. Die Liste ist leer, privat oder nicht abrufbar.')
+    return {'title':str(info.get('title') or 'Playlist')[:500],'playlist':True,'entries':entries,'heights':[],'audio':True,'video':True}
 
 
 class ProgressReporter:
@@ -118,15 +139,19 @@ def worker_main(config_path):
         options={'quiet':True,'no_warnings':True,'logger':Logger(),'noplaylist':True,'socket_timeout':20,'retries':2,'fragment_retries':2,'js_runtimes':runtimes,'remote_components':set(),'cachedir':False}
         if backend('ffmpeg'):options['ffmpeg_location']=str(Path(backend('ffmpeg')).parent)
         if config['operation']=='inspect':
-            with yt_dlp.YoutubeDL(options) as dl:info=dl.extract_info(config['url'],download=False)
-            if not info or info.get('_type') in ('playlist','multi_video'):raise ValueError('Bitte einen einzelnen Audio-/Video-Link wählen; keine Playlist.')
+            options.update({'noplaylist':False,'extract_flat':'in_playlist','lazy_playlist':True,'playlistend':10001,'ignoreerrors':True})
+            with yt_dlp.YoutubeDL(options) as dl:
+                info=dl.extract_info(config['url'],download=False)
+                if not info:raise ValueError('Link konnte nicht abgerufen werden. Privat, gelöscht oder nicht erreichbar.')
+                playlist=playlist_summary(info) if info.get('_type') in ('playlist','multi_video') else None
             formats=info.get('formats') or [info]
             heights=sorted({int(f['height']) for f in formats if f.get('vcodec') not in (None,'none') and f.get('height')},reverse=True)
             data={'title':info.get('title','Download'),'duration':info.get('duration'),'heights':heights,'audio':any(f.get('acodec')!='none' for f in formats),'video':any(f.get('vcodec')!='none' and (f.get('height') or f.get('ext') in ('mp4','webm','mkv','mov','m4v','avi','flv','ogv','ts')) for f in formats)}
+            if playlist:data=playlist
         else:
             staging=Path(config['staging']);audio=config['mode']=='audio';height=config.get('height',0)
             limit=f'[height<={height}]' if height else ''
-            options.update({'outtmpl':str(staging/'media.%(ext)s'),'progress_hooks':[hook],'postprocessor_hooks':[lambda s:report(92,'Audio/Video wird verarbeitet …')],'overwrites':False,'format':'bestaudio/best' if audio else f'bestvideo{limit}+bestaudio/best{limit}','postprocessors':[{'key':'FFmpegExtractAudio','preferredcodec':'mp3','preferredquality':'192'}] if audio else [],'merge_output_format':'mkv'})
+            options.update({'playlist_items':'1','outtmpl':str(staging/'media.%(ext)s'),'progress_hooks':[hook],'postprocessor_hooks':[lambda s:report(92,'Audio/Video wird verarbeitet …')],'overwrites':False,'format':'bestaudio/best' if audio else f'bestvideo{limit}+bestaudio/best{limit}','postprocessors':[{'key':'FFmpegExtractAudio','preferredcodec':'mp3','preferredquality':'192'}] if audio else [],'merge_output_format':'mkv'})
             with yt_dlp.YoutubeDL(options) as dl:info=dl.extract_info(config['url'],download=True)
             outputs=[p for p in staging.iterdir() if p.is_file() and p.suffix.lower() in ('.mp3','.mp4','.webm','.mkv','.mov','.m4v','.avi','.flv','.ogv','.ts')]
             if len(outputs)!=1:raise ValueError('Download lieferte kein eindeutiges Audio-/Video-Ergebnis.')

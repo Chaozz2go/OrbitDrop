@@ -120,10 +120,17 @@ class ToolJob(ManagedJob):
     def work(self):self.outputs=tool_outputs(self.action,self.files,self.parameters,self.options)
 
 class DownloadJob(ManagedJob):
-    def __init__(self,url,mode,folder,height):super().__init__();self.url,self.download_mode,self.folder,self.height=url,mode,folder,height
+    def __init__(self,url,mode,folder,height,entries=None):
+        super().__init__();self.url,self.download_mode,self.folder,self.height=url,mode,folder,height;self.entries=entries;self.errors=[]
     def work(self):
         from downloader import download_link
-        self.outputs=download_link(self.url,self.download_mode,self.folder,self.height)
+        entries=self.entries if self.entries is not None else [{'url':self.url,'title':'Download'}]
+        for index,entry in enumerate(entries):
+            self.control.base=index/max(1,len(entries))*100;self.control.span=100/max(1,len(entries))
+            checkpoint(0,f"{index+1}/{len(entries)} · {entry['title']}")
+            try:self.outputs.extend(download_link(entry['url'],self.download_mode,self.folder,self.height))
+            except Cancelled:raise
+            except Exception as error:self.errors.append(f"{index+1}/{len(entries)} · {entry['title']}: {error}")
 
 class SelectionJob(QRunnable):
     def __init__(self):super().__init__();self.signals=Signals()
@@ -588,9 +595,12 @@ class Controller:
         QTimer.singleShot(0,lambda:present(dialog))
         dialog.exec()
         if dialog.result():QTimer.singleShot(0,self.show_tasks)
-    def submit_download(self,url,mode,folder,height):
+    def submit_download(self,url,mode,folder,height,entries=None):
+        if entries is not None:
+            if not entries or len(entries)>10000 or any(not media_link(entry.get('url')) or not entry.get('available') for entry in entries):raise ValueError('Bitte verfügbare Playlist-Titel auswählen.')
+            entries=[dict(entry) for entry in entries]
         self.prefs.update(dict(self.prefs.values,download_dir=str(Path(folder).resolve())))
-        self.submit(DownloadJob(url,mode,folder,height),'Download · '+('Audio' if mode=='audio' else 'Video'))
+        self.submit(DownloadJob(url,mode,folder,height,entries),'Download · '+('Audio' if mode=='audio' else 'Video')+(f' · {len(entries)} Titel' if entries is not None else ''))
 
     def show_tasks(self):present(self.tasks)
     def tools(self,files=None,action=None):
@@ -794,7 +804,7 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.17.1 · Prototyp',
+        QMessageBox.information(None, 'OrbitDrop 0.18.0 · Prototyp',
             '1. Datei im Explorer mit linker Maustaste ziehen.\n'
             '2. '+shortcut_hint(self.prefs.values)+'. Kurz antippen und wieder loslassen.\n'
             '3. Der passende Bereich öffnet direkt. Während des Ziehens lässt sich der Bereich mit den Tasten wechseln.\n'

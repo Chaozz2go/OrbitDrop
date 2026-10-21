@@ -1,3 +1,10 @@
-OrbitDrop 0.17.1 behebt den rechteckigen Windows-Rahmen um das transparente Kreismenü. Native Windows-Eckenrundung wird nur für normale, dekorierte Fenster aktiviert.
+OrbitDrop 0.18.0 ergänzt die Auswahl von Playlist-Titeln im Downloader.
 
-Setup kann die vorhandene Installation aktualisieren. Einstellungen und Originaldateien bleiben erhalten. Windows x64; noch nicht digital signiert.
+- YouTube-Playlist erkennen, Titel/Dauer anzeigen und alle oder einzelne Einträge auswählen.
+- Titelsuche und sichtbarer Auswahlzähler, gemeinsame Audio-/Video-Ausgabe und Zielordner.
+- Nacheinander herunterladen; Fehler einzelner Titel stoppen die übrigen nicht.
+- Abbruch behält fertige Dateien und entfernt den laufenden Teil-Download.
+- Als privat/gelöscht erkannte Einträge sind gesperrt; endgültige Verfügbarkeit wird beim Download geprüft.
+- Rahmenkorrektur aus 0.17.1 bleibt enthalten.
+
+Windows x64. Die bestehende Installation kann aktualisiert werden; noch nicht digital signiert.

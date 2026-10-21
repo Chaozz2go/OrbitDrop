@@ -1,8 +1,16 @@
-# OrbitDrop 0.17.1 – Windows
+# OrbitDrop 0.18.0 – Windows
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
 ![Bildeditor mit Vorschau und Reglern](docs/preview-photo-studio.png)
+
+## Neu in Version 0.18.0: Playlist-Auswahl
+
+Beim Prüfen eines YouTube-Playlist-Links werden die Einträge eingelesen, auch bei einem Video-Link mit angehängter Playlist. Die Liste zeigt Nummer, Titel, bekannte Dauer und Verfügbarkeit. Alle verfügbaren Einträge sind zunächst markiert. **Alle auswählen**, **Keine auswählen** und die Häkchen erlauben eine eigene Auswahl. Die Suche filtert nur die Anzeige; markierte, ausgeblendete Titel bleiben ausgewählt und werden im Zähler mitgezählt. Der Startbutton zeigt die Anzahl der ausgewählten Titel.
+
+Audio (MP3) oder Video sowie Ausgabeordner einmal wählen. Videos bieten eine gemeinsame maximale Auflösung; die konkrete Verfügbarkeit wird pro Titel beim Download geprüft. Jeder ausgewählte Eintrag wird einzeln und nacheinander geladen, nicht die gesamte Playlist über den Playlist-Link. Die ursprüngliche Reihenfolge bleibt erhalten; vorhandene Dateien werden nicht überschrieben. Ein fehlgeschlagener Titel wird in den Auftragsdetails gemeldet, die übrigen werden weitergeladen. Beim Abbruch bleiben bereits vollständig gespeicherte Titel erhalten; der laufende Teil-Download wird entfernt.
+
+Von yt-dlp als privat/gelöscht gemeldete Einträge sind nicht auswählbar. Manche Sperren werden erst beim tatsächlichen Abruf erkennbar; die Vorschau garantiert daher keine erfolgreiche Übertragung. Leere/private Playlists melden einen Fehler. Höchstens 10.000 Einträge und fünf Minuten für die Linkprüfung; größere Listen werden ausdrücklich abgewiesen. Unterplaylists werden nicht automatisch ausgeweitet. Einzelne Video-/Audio-Links funktionieren weiterhin. Schließen des Dialogs bricht eine laufende Prüfung ab.
 
 ## Korrektur in Version 0.17.1
 
