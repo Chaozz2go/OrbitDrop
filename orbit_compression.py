@@ -58,16 +58,25 @@ def probe_media(source):
     return duration,any(s.get('codec_type')=='audio' for s in info.get('streams',[]))
 
 
+def audio_target_bitrate(duration,target,bitrate):
+    if not target:return bitrate
+    budget=int(target*8/duration*.90/1000)
+    choices=[v for v in (32,40,48,56,64,80,96,112,128,160,192,224,256,320) if v<=min(budget,bitrate)]
+    if not choices:raise ValueError('Zielgröße für diese Audiodauer zu klein.')
+    return max(choices)
+
+
+def video_target_bitrate(duration,target,audio):
+    bitrate=int(target*8/duration*.94)-(96000 if audio else 0)
+    if bitrate<20000:raise ValueError('Zielgröße für diese Videodauer zu klein. Zielgröße erhöhen.')
+    return bitrate
+
+
 def compress_media(source,output,kind,p):
     duration,audio=probe_media(source);target=int(p['target_mb']*1_000_000)
     common=[backend('ffmpeg'),'-hide_banner','-loglevel','error','-nostdin','-y','-protocol_whitelist','file,pipe','-i',str(source)]
     if kind=='Audio':
-        bitrate=p['audio_kbps']
-        if target:
-            budget=int(target*8/duration*.90/1000)
-            choices=[v for v in (32,40,48,56,64,80,96,112,128,160,192,224,256,320) if v<=min(budget,bitrate)]
-            if not choices:raise ValueError('Zielgröße für diese Audiodauer zu klein.')
-            bitrate=max(choices)
+        bitrate=audio_target_bitrate(duration,target,p['audio_kbps'])
         args=common+['-map','0:a:0','-vn','-map_metadata','-1','-c:a','libmp3lame','-b:a',str(bitrate)+'k',str(output)]
         result=run(args,timeout=7200,duration=duration)
     else:
@@ -75,8 +84,7 @@ def compress_media(source,output,kind,p):
         video=['-map','0:V:0','-vf',vf,'-c:v','libx264','-pix_fmt','yuv420p','-preset','medium']
         tail=['-map','0:a:0?','-c:a','aac','-b:a','96k','-map_metadata','-1','-movflags','+faststart',str(output)]
         if target:
-            bitrate=int(target*8/duration*.94)-(96000 if audio else 0)
-            if bitrate<20000:raise ValueError('Zielgröße für diese Videodauer zu klein. Auflösung reduzieren oder Zielgröße erhöhen.')
+            bitrate=video_target_bitrate(duration,target,audio)
             with tempfile.TemporaryDirectory(prefix='orbit-pass-') as temp:
                 flags=['-b:v',str(bitrate),'-passlogfile',str(Path(temp)/'video')]
                 first=run(common+video+flags+['-pass','1','-an','-f','null',os.devnull],timeout=7200,duration=duration)

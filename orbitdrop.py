@@ -731,7 +731,7 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.14.0 · Prototyp',
+        QMessageBox.information(None, 'OrbitDrop 0.15.0 · Prototyp',
             '1. Datei im Explorer mit linker Maustaste ziehen.\n'
             '2. '+shortcut_hint(self.prefs.values)+'. Kurz antippen und wieder loslassen.\n'
             '3. Der passende Bereich öffnet direkt. Während des Ziehens lässt sich der Bereich mit den Tasten wechseln.\n'

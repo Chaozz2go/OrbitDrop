@@ -1,8 +1,16 @@
-# OrbitDrop 0.14.0 – Windows-Prototyp
+# OrbitDrop 0.15.0 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
 ![Bildeditor mit Vorschau und Reglern](docs/preview-photo-studio.png)
+
+## Neu in Version 0.15.0: Zielgröße und Komprimierungsprüfung
+
+Komprimieren zeigt die aktuelle Größe sofort, bei mehreren Dateien zusätzlich die Gesamtgröße und die Größe der ersten Datei. Der Regler setzt ein gemeinsames Größenlimit pro Datei, relativ zur ersten Datei; das MB-Feld erlaubt genaue Eingaben. 0 MB entfernt das Limit. Kleine Dateien unter 1 KB haben keinen Prozentregler. Für Bilder zeigt die Hintergrundvorschau die tatsächlich berechnete Größe und die Einsparung; ein größeres Ergebnis wird ausdrücklich angezeigt.
+
+Audio und Video werden vor dem Start auf Dauer und technisch mögliche Bitraten geprüft. Nicht erreichbare Ziele sperren den Export. Niedrige Bitraten bekommen einen Qualitätshinweis; die Einschätzung ersetzt keine visuelle oder akustische Prüfung. Bei MP3 wird eine ungefähre Ergebnisgröße angegeben. Für Videos ohne Zielgröße lässt sich die Größe bei variabler Qualitätskodierung nicht zuverlässig vorhersagen.
+
+PDFs werden im Hintergrund testweise verlustfrei optimiert. Die Probe zeigt die Größe des optimierten PDFs und meldet, wenn keine Einsparung entsteht. Der Größenregler ändert dort nur das Akzeptanzlimit, nicht die PDF-Qualität. Bei Stapeln gilt das Limit für jede Datei, nicht für den gesamten Stapel. Die Originaldateien bleiben erhalten. Zusätzliche Hinweise und Regler sind bei kleineren Fenstern scrollbar; die Start-/Schließen-Buttons bleiben sichtbar.
 
 ## Neu in Version 0.14.0: Schnittstudio-Stil in allen Fenstern
 
