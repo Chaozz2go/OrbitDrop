@@ -14,7 +14,9 @@ class ThumbnailJob(QRunnable):
             if self.stopped.is_set():return
             try:
                 image,_,_=read_frame(self.path,self.duration*(index+.5)/self.count,stopped=self.stopped)
-                image.thumbnail((180,100));self.signals.ready.emit(index,pil_qimage(image))
+                image.thumbnail((180,100))
+                if self.stopped.is_set():return
+                self.signals.ready.emit(index,pil_qimage(image))
             except Exception:return
 
 class Filmstrip(QWidget):
@@ -28,7 +30,9 @@ class Filmstrip(QWidget):
         if self.thumbnail_job:return
         job=ThumbnailJob(path,duration,stopped,self.count);self.thumbnail_job=job
         job.signals.ready.connect(self.thumbnail_ready);QThreadPool.globalInstance().start(job)
-    def thumbnail_ready(self,index,image):self.thumbnails[index]=image;self.update()
+    def thumbnail_ready(self,index,image):
+        if self.owner.stopped.is_set():return
+        self.thumbnails[index]=image;self.update()
     def isSliderDown(self):return self.dragging
     def setValue(self,value):self.position=max(0,min(1,value/100000));self.update()
     def x_for(self,time):return 10+(self.width()-20)*time/self.owner.model.duration

@@ -51,9 +51,9 @@ class ImageProcessingTests(unittest.TestCase):
         calls=[]
         class Target:
             def circle_action(self,files,action,kind):calls.append((files,action,kind))
-        wheel=Wheel(Target());self.addCleanup(wheel.close);wheel.open();wheel.files=[str(self.source)];wheel.kind='Bild';wheel.formats=['PNG','SVG'];wheel.navigate('formats');wheel.select_action('SVG')
-        self.assertEqual(wheel.node,'svg');self.assertEqual(wheel.labels,['SVG SCHNELL','SVG ERWEITERT','ZURÜCK'])
-        wheel.select_action('SVG ERWEITERT');self.app.processEvents();self.assertEqual(calls[0][1],'SVG ERWEITERT')
+        wheel=Wheel(Target());self.addCleanup(wheel.close);wheel.open();wheel.files=[str(self.source)];wheel.kind='Bild';wheel.formats=['PNG','SVG'];wheel.node='direct';wheel.all_actions=['format:SVG SCHNELL','format:SVG ERWEITERT'];wheel.display_page()
+        self.assertEqual(wheel.node,'direct');self.assertEqual(wheel.labels,['format:SVG SCHNELL','format:SVG ERWEITERT'])
+        wheel.select_action('format:SVG ERWEITERT');self.app.processEvents();self.assertEqual(calls[0][1],'SVG ERWEITERT')
     def test_invalid_settings_cleanup_reserved_output(self):
         before=set(self.root.iterdir())
         with self.assertRaises(ValueError):tool_outputs('Bild aufbereiten',[self.source],{'target':'SVG','processing':{'threshold':900}},{})

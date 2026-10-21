@@ -5,21 +5,35 @@ import uuid
 from PySide6.QtCore import Qt,QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (QWidget,QVBoxLayout,QHBoxLayout,QLabel,QPushButton,QTreeWidget,QTreeWidgetItem,QProgressBar,
- QDialog,QFormLayout,QLineEdit,QSpinBox,QComboBox,QCheckBox,QDialogButtonBox,QFileDialog,QMessageBox,QInputDialog,QTextEdit)
+ QDialog,QFormLayout,QLineEdit,QSpinBox,QComboBox,QCheckBox,QDialogButtonBox,QFileDialog,QMessageBox,QInputDialog,QTextEdit,QListWidget,QListWidgetItem,QTabWidget)
 from preferences import set_autostart
 from window_focus import present
 
-STYLE='''QWidget{background:#181d2a;color:#edf0f8;font-family:Segoe UI;font-size:10pt;}
-QTreeWidget,QTextEdit,QLineEdit,QSpinBox,QComboBox{background:#252c3e;color:#edf0f8;border:1px solid #465068;border-radius:5px;padding:5px;}
-QHeaderView::section{background:#252c3e;padding:7px;border:0;}
-QPushButton{background:#7ed9ba;color:#13241f;border:0;border-radius:6px;padding:8px 12px;}
-QPushButton:disabled{background:#394252;color:#8f9bae;}QProgressBar{border:1px solid #465068;border-radius:5px;text-align:center;}QProgressBar::chunk{background:#518f7f;}
-QComboBox QAbstractItemView{background:#252c3e;color:#edf0f8;}'''
+STYLE='''QWidget{background:#151e2b;color:#eef4ff;font-family:Segoe UI;font-size:10pt;}
+QDialog{background:#121b28;}QLabel{background:transparent;}
+QTreeWidget,QListWidget,QTextEdit,QLineEdit,QSpinBox,QDoubleSpinBox,QComboBox{background:#1d2a3a;color:#eef4ff;border:1px solid #3a4e64;border-radius:8px;padding:7px;selection-background-color:#365d70;}
+QHeaderView::section{background:#213246;padding:10px;border:0;color:#bdd8ee;}
+QPushButton{background:#25483f;color:#d5fff0;border:1px solid #5ba88b;border-radius:10px;padding:10px 15px;font-weight:600;}
+QPushButton:hover{background:#356653;border-color:#8aebc4;}QPushButton:pressed{background:#4f9275;}
+QPushButton:disabled{background:#233142;color:#7c91a8;border-color:#33475b;}
+QProgressBar{border:1px solid #3a4e64;border-radius:8px;text-align:center;}QProgressBar::chunk{background:#60bf98;border-radius:7px;}
+QComboBox QAbstractItemView{background:#1d2a3a;color:#eef4ff;}
+QSlider::groove:horizontal{height:8px;background:#293c52;border-radius:4px;}
+QSlider::sub-page:horizontal{background:#72d8ad;border-radius:4px;}
+QSlider::handle:horizontal{width:20px;height:20px;margin:-6px 0;background:#b5ffe0;border:2px solid #438a70;border-radius:10px;}
+QSlider::sub-page:horizontal:disabled{background:#465668;}QSlider::handle:horizontal:disabled{background:#647487;border-color:#465668;}
+QCheckBox{spacing:9px;}QCheckBox::indicator{width:18px;height:18px;border:1px solid #536a82;border-radius:5px;background:#1d2a3a;}
+QCheckBox::indicator:checked{background:#72d8ad;border-color:#a9f5d6;}
+QMenu{background:#151e2b;color:#eef4ff;border:1px solid #40566e;border-radius:10px;padding:7px;}QMenu::item{padding:9px 20px;border-radius:6px;}QMenu::item:selected{background:#31584e;color:#dcfff0;}QMenu::separator{height:1px;background:#354960;margin:5px;}
+QToolTip{background:#1d2a3a;color:#eef4ff;border:1px solid #56758c;padding:6px;}
+QTabWidget::pane{border:1px solid #33475e;border-radius:12px;}QTabBar::tab{background:#1c2a3b;color:#adc3da;padding:11px 22px;border-radius:6px;}QTabBar::tab:selected{background:#31584e;color:#d3ffed;}
+'''
+
 
 class SettingsDialog(QDialog):
     def __init__(self,prefs,parent=None):
         super().__init__(parent);self.prefs=prefs;self.setWindowTitle('OrbitDrop · Einstellungen');self.setMinimumWidth(620);self.setStyleSheet(STYLE)
-        layout=QVBoxLayout(self);form=QFormLayout();layout.addLayout(form);v=prefs.values
+        layout=QVBoxLayout(self);tabs=QTabWidget();layout.addWidget(tabs);general=QWidget();tabs.addTab(general,'Allgemein');form=QFormLayout(general);v=prefs.values
         row=QHBoxLayout();self.output=QLineEdit(v['output_dir']);self.output.setPlaceholderText('Leer = neben der Originaldatei');row.addWidget(self.output)
         browse=QPushButton('Wählen');browse.clicked.connect(self.choose_folder);row.addWidget(browse);form.addRow('Ausgabeordner',row)
         self.quality=QSpinBox();self.quality.setRange(10,100);self.quality.setValue(v['image_quality']);self.quality.setSuffix(' %');form.addRow('Bildqualität',self.quality)
@@ -31,6 +45,13 @@ class SettingsDialog(QDialog):
         self.files=QComboBox();self.files.addItems(['Shift','Strg','Alt']);self.files.setCurrentText(v['files_key']);form.addRow('Tools (direkter Zugang)',self.files)
         self.startup=QCheckBox('Beim Windows-Anmelden starten');self.startup.setChecked(v['autostart']);self.startup.setEnabled(sys.platform=='win32');self.startup.setToolTip('Gilt für diesen Installationspfad. Nach Verschieben des Programms erneut einstellen.');form.addRow(self.startup)
         self.backends=QCheckBox('Konverter beim Start prüfen');self.backends.setChecked(v['check_backends']);form.addRow(self.backends)
+        formats=QWidget();tabs.addTab(formats,'Formate im Kreis');format_layout=QVBoxLayout(formats)
+        format_layout.addWidget(QLabel('Haken = im Kreis anzeigen. Ausblenden entfernt nur die Menüoption.'))
+        self.format_list=QListWidget();format_layout.addWidget(self.format_list)
+        from converter import EXTENSIONS
+        for name in sorted(EXTENSIONS):
+            item=QListWidgetItem(name);item.setFlags(item.flags()|Qt.ItemFlag.ItemIsUserCheckable);item.setCheckState(Qt.CheckState.Unchecked if name in v['hidden_formats'] else Qt.CheckState.Checked);self.format_list.addItem(item)
+        restore=QPushButton('Alle Formate anzeigen');restore.clicked.connect(lambda:[self.format_list.item(i).setCheckState(Qt.CheckState.Checked) for i in range(self.format_list.count())]);format_layout.addWidget(restore)
         notice=QLabel('Gilt für neue Aufträge. ZIP-/Entpack-Ziele wählst du weiterhin direkt.');notice.setWordWrap(True);layout.addWidget(notice)
         buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Save|QDialogButtonBox.StandardButton.Cancel);buttons.button(QDialogButtonBox.StandardButton.Save).setText('Speichern');buttons.button(QDialogButtonBox.StandardButton.Cancel).setText('Abbrechen');buttons.accepted.connect(self.save);buttons.rejected.connect(self.reject);layout.addWidget(buttons)
     def choose_folder(self):
@@ -38,7 +59,7 @@ class SettingsDialog(QDialog):
         if path:self.output.setText(path)
     def save(self):
         try:
-            values=dict(self.prefs.values,output_dir=self.output.text().strip(),image_quality=self.quality.value(),video_profile=self.profile.currentText(),video_height=self.height.currentData(),convert_key=self.convert.currentText(),files_key=self.files.currentText(),autostart=self.startup.isChecked(),check_backends=self.backends.isChecked())
+            values=dict(self.prefs.values,hidden_formats=[self.format_list.item(i).text() for i in range(self.format_list.count()) if self.format_list.item(i).checkState()==Qt.CheckState.Unchecked],output_dir=self.output.text().strip(),image_quality=self.quality.value(),video_profile=self.profile.currentText(),video_height=self.height.currentData(),convert_key=self.convert.currentText(),files_key=self.files.currentText(),autostart=self.startup.isChecked(),check_backends=self.backends.isChecked())
             values=self.prefs.validate(values)
             if values['output_dir'] and not Path(values['output_dir']).is_dir():raise ValueError('Bitte einen vorhandenen Ausgabeordner wählen.')
             previous=self.prefs.values['autostart']

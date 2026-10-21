@@ -24,14 +24,12 @@ class MenuDownloadTests(unittest.TestCase):
     def setUpClass(cls):cls.app=QApplication.instance() or QApplication([])
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup);self.root=Path(self.temp.name)
-    def test_three_categories_and_nested_context(self):
-        wheel=Wheel(object());self.addCleanup(wheel.close);wheel.open();self.assertEqual(wheel.labels,['KONVERTIEREN','BEARBEITEN','TOOLS'])
-        self.assertEqual(len({action_color('home',label) for label in wheel.labels}),3)
-        wheel.files=['image.png'];wheel.kind='Bild';wheel.formats=['PNG','JPG'];wheel.select_action('BEARBEITEN');self.assertIn('ZUSCHNEIDEN',wheel.labels)
-        self.assertEqual(action_color('edit','ZUSCHNEIDEN'),action_color('home','BEARBEITEN'))
-        wheel.select_action('DREHEN');wheel.select_action('ZURÜCK');self.assertEqual(wheel.node,'edit')
-        wheel.select_action('ZURÜCK');wheel.select_action('TOOLS');self.assertIn('TERMINAL',wheel.all_actions);self.assertIn('LINK LADEN',wheel.all_actions)
-        wheel.select_action('PROGRAMM');self.assertIn('EINSTELLUNGEN',wheel.labels)
+    def test_contextual_actions_are_direct_and_grouped(self):
+        from circle_menu import direct_actions,direct_color
+        labels=direct_actions(['image.png'],'Bild',['PNG','JPG','SVG'])
+        self.assertIn('format:PNG',labels);self.assertIn('format:SVG ERWEITERT',labels);self.assertIn('edit:ZUSCHNEIDEN',labels);self.assertIn('tool:TERMINAL',labels);self.assertIn('app:EINSTELLUNGEN',labels)
+        self.assertEqual(len({direct_color(label) for label in labels}),3)
+        self.assertNotIn('DREHEN',labels);self.assertIn('edit:90° LINKS',labels)
         self.assertEqual(edit_actions(['sound.mp3'],'Audio'),['SCHNEIDEN'])
     def test_link_validation_and_drag(self):
         for bad in ['file:///tmp/a','javascript:alert(1)','https://user:secret@host/a','https://x/a\nhttps://y','not a link','https://x:bad/a']:self.assertIsNone(media_link(bad))
@@ -41,8 +39,10 @@ class MenuDownloadTests(unittest.TestCase):
             def download_dialog(self,url,mode):calls.append((url,mode))
         wheel=Wheel(Target());self.addCleanup(wheel.close);wheel.open();mime=QMimeData();mime.setUrls([QUrl('https://example.org/video')])
         enter=QDragEnterEvent(QPointF(190,190).toPoint(),Qt.DropAction.CopyAction,mime,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier);wheel.dragEnterEvent(enter)
-        self.app.processEvents();self.assertTrue(enter.isAccepted());self.assertEqual(wheel.labels,['AUDIO LADEN','VIDEO LADEN','TOOLS'])
-        drop=QDropEvent(QPointF(290,130),Qt.DropAction.CopyAction,mime,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier);wheel.dropEvent(drop);self.app.processEvents()
+        self.app.processEvents();self.assertTrue(enter.isAccepted());self.assertIn('download:AUDIO LADEN',wheel.labels)
+        from direct_wheel import geometry
+        point=next(entry[2] for entry in geometry(wheel) if entry[0]=='download:AUDIO LADEN')
+        drop=QDropEvent(point,Qt.DropAction.CopyAction,mime,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier);wheel.dropEvent(drop);self.app.processEvents()
         self.assertEqual(calls,[('https://example.org/video','audio')])
     def test_download_output_collision_and_cancel_cleanup(self):
         existing=self.root/'Title_converted.mp3';existing.write_bytes(b'old')

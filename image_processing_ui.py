@@ -2,8 +2,9 @@ from pathlib import Path
 from PySide6.QtCore import Qt,QObject,Signal,QRunnable,QThreadPool,QTimer
 from PySide6.QtGui import QPixmap,QImage,QPainter
 from PySide6.QtSvg import QSvgRenderer
-from PySide6.QtWidgets import QDialog,QVBoxLayout,QHBoxLayout,QFormLayout,QLabel,QComboBox,QSpinBox,QDoubleSpinBox,QCheckBox,QPushButton,QMessageBox
+from PySide6.QtWidgets import QDialog,QVBoxLayout,QHBoxLayout,QFormLayout,QLabel,QComboBox,QSpinBox,QDoubleSpinBox,QCheckBox,QPushButton,QMessageBox,QScrollArea,QWidget
 from app_ui import STYLE
+from slider_field import SliderField
 from image_editor import pil_qimage
 from image_processing import load_image,prepare_image,trace_svg,settings
 
@@ -29,7 +30,7 @@ class ImageProcessingDialog(QDialog):
         row=QHBoxLayout();layout.addLayout(row,1);self.previews=[]
         for title in ('Original','Vorschau'):
             label=QLabel(title);label.setAlignment(Qt.AlignmentFlag.AlignCenter);label.setMinimumSize(360,280);label.setStyleSheet('background:#ffffff;color:#18202c;border-radius:8px;');row.addWidget(label,1);self.previews.append(label)
-        form=QFormLayout();layout.addLayout(form);self.fields={}
+        controls=QWidget();form=QFormLayout(controls);scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(controls);scroll.setMinimumHeight(200);layout.addWidget(scroll,1);self.fields={};self.slider_fields={}
         self.mode=QComboBox();self.mode.addItem('Schwarzweiß · 1 Bit','binary');self.mode.addItem('Graustufen','gray')
         if target=='SVG':self.mode.addItem('Farbe','color')
         form.addRow('Bildmodus',self.mode)
@@ -37,12 +38,12 @@ class ImageProcessingDialog(QDialog):
         for key,title,default,low,high,decimals in [('threshold','Schwellwert',128,0,255,0),('contrast','Kontrast',1,.1,3,2),('brightness','Helligkeit',1,.1,3,2),('blur','Glätten vor Umwandlung',0,0,3,1)]:
             box=QSpinBox() if decimals==0 else QDoubleSpinBox();box.setRange(low,high)
             if decimals:box.setDecimals(decimals);box.setSingleStep(.1)
-            box.setValue(default);form.addRow(title,box);self.fields[key]=box
+            box.setValue(default);field=SliderField(box,decimals);form.addRow(title,field);self.slider_fields[key]=field;self.fields[key]=box
         self.invert=QCheckBox('Farben umkehren');form.addRow(self.invert);self.dither=QCheckBox('Rasterung (Floyd–Steinberg) · eher für Fotos');form.addRow(self.dither)
         if target=='SVG':
             for key,title,default,low,high in [('max_edge','Arbeitsauflösung · längste Kante',1600,256,2400),('speckle','Kleine Flecken entfernen · Pixel',4,0,100),('colors','Maximale Farben / Grautöne',16,2,64)]:
-                box=QSpinBox();box.setRange(low,high);box.setValue(default);form.addRow(title,box);self.fields[key]=box
-            box=QDoubleSpinBox();box.setRange(0,5);box.setSingleStep(.1);box.setValue(1);form.addRow('Konturen vereinfachen',box);self.fields['simplify']=box
+                box=QSpinBox();box.setRange(low,high);box.setValue(default);field=SliderField(box);form.addRow(title,field);self.slider_fields[key]=field;self.fields[key]=box
+            box=QDoubleSpinBox();box.setRange(0,5);box.setSingleStep(.1);box.setValue(1);field=SliderField(box,2);form.addRow('Konturen vereinfachen',field);self.slider_fields['simplify']=field;self.fields['simplify']=box
             self.curve=QComboBox()
             for title,value in [('Weiche Kurven','spline'),('Gerade Kanten','polygon'),('Pixelkonturen','pixel')]:self.curve.addItem(title,value)
             form.addRow('Konturform',self.curve);self.white=QCheckBox('Weißen Hintergrund in SVG aufnehmen');form.addRow(self.white)
@@ -55,6 +56,7 @@ class ImageProcessingDialog(QDialog):
         if initial:self.mode.setCurrentIndex(self.mode.findData(initial))
         if target=='BITMAP':self.mode.setEnabled(False)
         self.changed()
+        area=self.screen().availableGeometry();self.resize(min(1120,area.width()-40),min(790,area.height()-50))
     def options(self):
         values={key:widget.value() for key,widget in self.fields.items()};values.update(mode=self.mode.currentData(),auto_threshold=self.auto.isChecked(),invert=self.invert.isChecked(),dither=self.dither.isChecked())
         if self.target=='SVG':values.update(curve=self.curve.currentData(),white_background=self.white.isChecked())
@@ -62,6 +64,7 @@ class ImageProcessingDialog(QDialog):
     def changed(self,*args):
         binary=self.mode.currentData()=='binary';self.auto.setEnabled(binary);self.fields['threshold'].setEnabled(binary and not self.auto.isChecked() and not self.dither.isChecked());self.dither.setEnabled(binary)
         if 'colors' in self.fields:self.fields['colors'].setEnabled(not binary)
+        for field in self.slider_fields.values():field.update_enabled()
         self.valid=False;self.save_button.setEnabled(False);self.pending=True;self.timer.start(300)
     def refresh(self):
         if self.closed or self.job:return

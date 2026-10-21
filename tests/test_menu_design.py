@@ -10,14 +10,13 @@ from circle_menu import action_color
 class MenuDesignTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):cls.app=QApplication.instance() or QApplication([])
-    def test_outer_labels_are_targets_and_side_cards_are_clickable(self):
+    def test_direct_ring_targets_are_clickable(self):
+        from direct_wheel import geometry
         calls=[]
         class Target:
             def circle_action(self,files,action,kind):calls.append(action)
-        wheel=Wheel(Target());self.addCleanup(wheel.close);wheel.open();self.app.processEvents()
-        self.assertEqual(wheel.segment(QPointF(402,88)),0)
-        QTest.mouseClick(wheel,Qt.MouseButton.LeftButton,pos=QPointF(402,88).toPoint());self.app.processEvents();self.assertEqual(wheel.node,'formats');self.assertGreater(wheel.width(),800)
-        wheel.navigate('svg');self.app.processEvents();self.assertEqual(action_color('svg','SVG SCHNELL'),action_color('formats','PNG'))
-        QTest.mouseClick(wheel,Qt.MouseButton.LeftButton,pos=QPointF(550,150).toPoint());self.app.processEvents();self.assertEqual(calls,['SVG SCHNELL'])
+        wheel=Wheel(Target());self.addCleanup(wheel.close);wheel.open();wheel.all_actions=['format:SVG SCHNELL','format:SVG ERWEITERT','app:EINSTELLUNGEN'];wheel.display_page();self.app.processEvents()
+        point=next(entry[2] for entry in geometry(wheel) if entry[0]=='format:SVG SCHNELL')
+        QTest.mouseClick(wheel,Qt.MouseButton.LeftButton,pos=point.toPoint());self.app.processEvents();self.assertEqual(calls,['SVG SCHNELL'])
 
 if __name__=='__main__':unittest.main()

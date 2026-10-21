@@ -21,3 +21,23 @@ MENU_LABELS={'SCHWARZWEISS':'SCHWARZ-\nWEISS','SVG SCHNELL':'SVG\nSCHNELL','SVG 
 def action_color(node,label):
     if node=='home':return dict(zip(HOME,[COLORS['formats'],COLORS['edit'],COLORS['tools']])).get(label,COLORS['download'] if label in ('AUDIO LADEN','VIDEO LADEN') else COLORS['tools'])
     return COLORS.get(node,COLORS['tools'])
+
+
+def direct_actions(files,kind,formats,hidden=(),files_only=False):
+    from file_actions import available_file_actions
+    actions=[]
+    if not files_only:
+        for target in formats:
+            if target in hidden:continue
+            if target=='SVG':actions+=['format:SVG SCHNELL','format:SVG ERWEITERT']
+            else:actions.append('format:'+target)
+        for action in edit_actions(files,kind):
+            if action=='DREHEN':actions+=['edit:90° LINKS','edit:90° RECHTS','edit:180°']
+            else:actions.append('edit:'+action)
+    if files:actions+=['tool:'+action for action in available_file_actions(files)]
+    actions+=['app:LINK LADEN','app:AUFTRÄGE','app:EINSTELLUNGEN','app:KONVERTER','app:DEBUGGING','app:HILFE']
+    return actions
+
+
+def direct_color(key):
+    return COLORS['formats'] if key.startswith(('format:','download:')) else COLORS['edit'] if key.startswith('edit:') else COLORS['tools']

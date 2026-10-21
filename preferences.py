@@ -7,7 +7,7 @@ import subprocess
 import sys
 import tempfile
 
-DEFAULTS={'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
+DEFAULTS={'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
           'convert_key':'Shift','files_key':'Strg','autostart':False,'check_backends':True}
 KEY_CODES={'Shift':0x10,'Strg':0x11,'Alt':0x12}
 
@@ -34,6 +34,9 @@ class Preferences:
         result={key:values.get(key,value) for key,value in DEFAULTS.items()}
         if result['convert_key'] not in KEY_CODES or result['files_key'] not in KEY_CODES:raise ValueError('Ungültige Taste.')
         if result['convert_key']==result['files_key']:raise ValueError('Bitte unterschiedliche Tasten wählen.')
+        hidden=result['hidden_formats']
+        if not isinstance(hidden,list) or len(hidden)>100 or any(not isinstance(value,str) or len(value)>40 for value in hidden):raise ValueError('Ungültige Formatliste.')
+        result['hidden_formats']=sorted(set(hidden))
         quality=int(result['image_quality'])
         if not 10<=quality<=100:raise ValueError('Bildqualität muss zwischen 10 und 100 liegen.')
         result['image_quality']=quality

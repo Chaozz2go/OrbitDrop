@@ -12,11 +12,11 @@ from shelf import Shelf
 from archives import create_zip, extract_archive
 from task_runtime import TaskControl, Cancelled, checkpoint
 from preferences import Preferences,KEY_CODES
-from app_ui import SettingsDialog,TasksWindow
+from app_ui import SettingsDialog,TasksWindow,STYLE
 from single_instance import SingleInstance
 from tools import tool_outputs
 from tools_ui import ToolsDialog
-from circle_menu import home_actions,edit_actions,MENU_LABELS,action_color
+from circle_menu import home_actions,edit_actions,MENU_LABELS,action_color,direct_actions
 from link_selection import media_link
 from window_focus import present
 
@@ -164,6 +164,7 @@ class Wheel(QWidget):
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
         self.resize(380, 410)
+        self.circle_size=700
         self.preview=None;self.ring_paths=[]
         self.selected = -1
         self.labels = []
@@ -190,7 +191,7 @@ class Wheel(QWidget):
 
     def open(self, automatic=False, mode='home'):
         mode='home' if mode=='convert' else mode
-        self.node='files' if mode=='files' else 'home'
+        self.node='direct'
         self.formats=[]
         self.preview=None
         self.link=None
@@ -207,15 +208,15 @@ class Wheel(QWidget):
         self.files = []
         self.kind = 'Dateiaktionen' if self.mode == 'files' else 'OrbitDrop'
         self.message = 'Dateien oder Ordner hineinziehen' if self.mode == 'files' else 'Datei in den Kreis ziehen'
-        self.all_actions=list(available_file_actions())+['ZURÜCK'] if self.mode=='files' else home_actions([],None,[])
+        self.all_actions=direct_actions([],None,[])
         self.display_page()
         self.revision += 1
         self.checking = False
         cursor = QCursor.pos()
         screen = QApplication.screenAt(cursor) or QApplication.primaryScreen()
         area = screen.availableGeometry()
-        self.move(max(area.left(), min(cursor.x()-190, area.right()-self.width()+1)),
-                  max(area.top(), min(cursor.y()-190, area.bottom()-self.height()+1)))
+        self.move(max(area.left(), min(cursor.x()-(self.circle_size//2 if self.node=='direct' else 190), area.right()-self.width()+1)),
+                  max(area.top(), min(cursor.y()-(self.circle_size//2 if self.node=='direct' else 190), area.bottom()-self.height()+1)))
         self.show()
         self.raise_()
         self.update()
@@ -226,7 +227,7 @@ class Wheel(QWidget):
             return
         files=self.files[:]
         self.mode=mode
-        self.node='files' if mode=='files' else 'home'
+        self.node='direct'
         self.latched=False
         self.revision+=1
         self.page_timer.stop()
@@ -239,7 +240,7 @@ class Wheel(QWidget):
         self.kind='Dateiaktionen' if mode=='files' else 'OrbitDrop'
         self.message='Dateien oder Ordner hineinziehen' if mode=='files' else 'Datei hineinziehen'
         if mode=='files':
-            self.all_actions=list(available_file_actions())+['ZURÜCK'];self.display_page()
+            self.all_actions=direct_actions([],None,[],files_only=True);self.display_page()
         if files:self.inspect(files)
         self.repaint()
 
@@ -254,7 +255,7 @@ class Wheel(QWidget):
     def open_link(self,url):
         if not media_link(url):return
         self.open();self.link=url;self.kind='Link';self.message='Download wählen · Audio oder Video';self.automatic=False;self.latched=True
-        self.all_actions=['AUDIO LADEN','VIDEO LADEN','TOOLS'];self.display_page()
+        self.node='direct';self.all_actions=['download:AUDIO LADEN','download:VIDEO LADEN']+direct_actions([],None,[]);self.display_page()
 
     def inspect(self, files):
         if self.files == files:
@@ -268,7 +269,7 @@ class Wheel(QWidget):
             self.checking = False
             self.kind = 'Dateiaktionen'
             self.message = f'{len(files)} Datei(en)/Ordner'
-            self.all_actions = list(available_file_actions(files))+['ZURÜCK']
+            self.node='direct';self.all_actions=direct_actions(files,None,[],files_only=True)
             self.page = 0
             self.display_page()
             return
@@ -292,8 +293,9 @@ class Wheel(QWidget):
         self.formats = list(actions)
         self.kind, self.message = details
         self.preview=getattr(job,'preview',None)
-        self.node='home'
-        self.all_actions=home_actions(self.files,self.kind,self.formats)
+        self.node='direct'
+        hidden=getattr(getattr(self.controller,'prefs',None),'values',{}).get('hidden_formats',[])
+        self.all_actions=direct_actions(self.files,self.kind,self.formats,hidden)
         self.message='Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools' if actions else self.message
         self.page = 0
         self.display_page()
@@ -322,6 +324,13 @@ class Wheel(QWidget):
         self.display_page();self.show();self.raise_()
 
     def select_action(self,target):
+        if self.node=='direct':
+            category,action=target.split(':',1);files=self.files[:];kind=self.kind;url=self.link;self.hide()
+            if category=='download' or action=='LINK LADEN':QTimer.singleShot(0,lambda:self.controller.download_dialog(url,'video' if action=='VIDEO LADEN' else 'audio'))
+            elif category=='format' and action not in ('SVG SCHNELL','SVG ERWEITERT'):QTimer.singleShot(0,lambda:self.controller.convert_files(files,action))
+            elif category=='tool':QTimer.singleShot(0,lambda:self.controller.file_action(files,action))
+            else:QTimer.singleShot(0,lambda:self.controller.circle_action(files,action,kind))
+            return
         if target=='WEITER':self.next_page();return
         if target=='ZURÜCK':self.navigate('edit' if self.node=='rotate' else 'formats' if self.node=='svg' else 'tools' if self.node=='more' else 'home');return
         branches={'KONVERTIEREN':'formats','UMWANDELN':'formats','BEARBEITEN':'edit','TOOLS':'tools','DATEIEN':'tools','PROGRAMM':'more','MEHR':'more','DREHEN':'rotate'}
@@ -336,6 +345,11 @@ class Wheel(QWidget):
         else:QTimer.singleShot(0,lambda:self.controller.circle_action(files,target,kind))
 
     def display_page(self):
+        if self.node=='direct':
+            self.labels=self.all_actions[:];self.selected=-1
+            screen=QApplication.screenAt(self.pos()) or QApplication.primaryScreen();area=screen.availableGeometry()
+            self.circle_size=max(320,min(720,area.width()-20,area.height()-90));self.resize(self.circle_size,self.circle_size+65)
+            self.move(max(area.left(),min(self.x(),area.right()-self.width()+1)),max(area.top(),min(self.y(),area.bottom()-self.height()+1)));self.repaint();return
         if len(self.all_actions) <= 6:
             self.labels = self.all_actions[:]
         else:
@@ -356,6 +370,9 @@ class Wheel(QWidget):
         self.update()
 
     def paintEvent(self,event):
+        if self.node=='direct':
+            from direct_wheel import paint_direct
+            paint_direct(self);return
         from wheel_render import paint_wheel
         paint_wheel(self)
 
@@ -365,7 +382,7 @@ class Wheel(QWidget):
 
     def accept_files(self, event):
         mime = event.mimeData()
-        valid = bool(self.dropped_link(mime)) or mime.hasUrls() and bool(mime.urls()) and all(u.isLocalFile() and (Path(u.toLocalFile()).is_file() or (self.node in ('home','files','tools') and Path(u.toLocalFile()).is_dir())) for u in mime.urls())
+        valid = bool(self.dropped_link(mime)) or mime.hasUrls() and bool(mime.urls()) and all(u.isLocalFile() and (Path(u.toLocalFile()).is_file() or (self.node in ('home','files','tools','direct') and Path(u.toLocalFile()).is_dir())) for u in mime.urls())
         if valid and event.possibleActions() & Qt.DropAction.CopyAction:
             event.setDropAction(Qt.DropAction.CopyAction)
             event.accept()
@@ -378,7 +395,7 @@ class Wheel(QWidget):
         if self.receiving:
             url=self.dropped_link(event.mimeData())
             if url:
-                if self.link!=url:self.revision+=1;self.link=url;self.checking=False;self.files=[];self.kind='Link';self.node='home';self.all_actions=['AUDIO LADEN','VIDEO LADEN','TOOLS'];self.message='Download wählen · Audio oder Video';self.display_page()
+                if self.link!=url:self.revision+=1;self.link=url;self.checking=False;self.files=[];self.kind='Link';self.node='direct';self.all_actions=['download:AUDIO LADEN','download:VIDEO LADEN']+direct_actions([],None,[]);self.message='Download wählen · Audio oder Video';self.display_page()
             else:self.inspect([u.toLocalFile() for u in event.mimeData().urls()])
         self.selected = self.segment(event.position()) if self.receiving else -1
         self.update()
@@ -415,9 +432,16 @@ class Wheel(QWidget):
             event.ignore();return
         self.select_action(self.labels[index])
 
+    def mouseMoveEvent(self,event):
+        self.selected=self.segment(event.position());self.update()
+
+    def leaveEvent(self,event):
+        self.selected=-1;self.update();super().leaveEvent(event)
+
     def mousePressEvent(self,event):
         index=self.segment(event.position())
         if index>=0:self.select_action(self.labels[index])
+        elif self.node=='direct':self.hide()
         elif self.node!='home' and any(path.contains(event.position()) for path in self.ring_paths):
             index=next(i for i,path in enumerate(self.ring_paths) if path.contains(event.position()))
             self.navigate(('formats','edit','tools')[index])
@@ -672,11 +696,11 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.9.0 · Prototyp',
+        QMessageBox.information(None, 'OrbitDrop 0.10.0 · Prototyp',
             '1. Datei im Explorer mit linker Maustaste ziehen.\n'
             '2. Shift für den Aktionskreis oder Strg für Tools kurz antippen.\n'
-            '3. Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools.\n'
-            '4. Auf der Aktion loslassen. Untermenüs anschließend anklicken.\n'
+            '3. Alle Aktionen direkt im Kreis: Grün = Formate, Orange = Bearbeiten, Blau = Tools.\n'
+            '4. Direkt auf der gewünschten Aktion loslassen.\n'
             'Einstellungen/Verlauf: Tools → Programm. Link markieren + Shift: Download auswählen.\n\n'
             'Falls kein Kreis erscheint: Kreis über das Infobereich-Symbol öffnen, '
             'danach das Bild auf ein Segment ziehen. Esc bricht ab.\n\n'
@@ -704,6 +728,7 @@ if __name__ == '__main__':
             QMessageBox.information(None,'Medien-Setup','Einrichtung abgeschlossen. OrbitDrop neu starten.' if not result else 'Einrichtung fehlgeschlagen. Bitte FFmpeg/FFprobe manuell in bin ablegen.')
         sys.exit(result)
     app = QApplication(sys.argv)
+    app.setStyleSheet(STYLE)
     app.setApplicationName('OrbitDrop')
     app.setQuitOnLastWindowClosed(False)
     state_root=QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation)

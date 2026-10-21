@@ -1,8 +1,24 @@
-# OrbitDrop 0.9.0 – Windows-Prototyp
+# OrbitDrop 0.10.0 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
-## Neu in Version 0.9.0
+## Neu in Version 0.10.0
+
+### Alle Aktionen direkt im großen Kreis
+
+Datei ziehen → Shift antippen → kurz im Kreis prüfen lassen → direkt auf die gewünschte Aktion loslassen. Keine Kategorien und keine rechte Menüfläche mehr. Außen liegen Dateiwerkzeuge und Programmfunktionen (blau), im mittleren Ring passende Konvertierungen (grün), innen Bearbeitungen (orange). Ohne passende Aktionen werden leere Ringe weggelassen. Alle angebotenen Aktionen stehen gleichzeitig im Kreis; keine WEITER-Seiten. Bei Videos/Audio richten sich die Ziele nach den tatsächlich verfügbaren Konvertern und Streams. Die Kreisgröße passt sich an die verfügbare Bildschirmfläche an. Auf kleinen Bildschirmen können viele Einträge eng stehen; dafür ungenutzte Formate ausblenden. Anzeige/Explorer-Drop bei Windows-DPI bitte weiterhin am Gerät testen.
+
+Bildbearbeitung bietet Drehungen links/rechts/180° direkt. SVG Schnell und SVG Erweitert stehen als zwei grüne Aktionen direkt im Kreis. ZIP als Konvertierung und ZIP als Dateiwerkzeug können beide vorkommen; die Farbe unterscheidet sie. Einstellungen, Aufträge, Konverter und Debugging sind ebenfalls ohne Programm-Untermenü direkt erreichbar. Strg bleibt der direkte Dateiwerkzeug-Zugang ohne Formatprüfung. Ein Link bietet Audio/Video direkt im Kreis.
+
+### Unbenutzte Zielformate ausblenden
+
+**Einstellungen → Formate im Kreis**: Haken entfernen, Speichern. Die Auswahl gilt beim nächsten Öffnen für alle Dateitypen und bleibt nach Neustart erhalten. SVG ausblenden entfernt beide SVG-Varianten. Die eigentlichen Konverter werden nicht deinstalliert oder gesperrt; nur ihre Format-Einträge verschwinden aus dem Kreis. Bearbeitungen wie Bitmap bleiben unabhängig sichtbar. **Alle Formate anzeigen** setzt die Haken zurück; anschließend speichern. Eine gemischte Dateiauswahl bleibt nach dem eigentlichen Inhalt geprüft, auch wenn alle ihre Formate ausgeblendet wurden.
+
+### Schieberegler und gemeinsamer Dialogstil
+
+Bitmap-/Schwarzweiß- und SVG-Dialoge bieten für jeden numerischen Parameter Schieberegler plus synchronisiertes Zahlenfeld. Automatische Schwelle deaktiviert den manuellen Schwellenregler. Regleränderungen aktualisieren die Vorschau nach einer kurzen Pause; genaue Werte sind weiterhin eintippbar. Kontrast/Helligkeit und Vereinfachung unterstützen Nachkommastellen. Zurücksetzen setzt Regler und Felder gemeinsam zurück. Alle Qt-Dialoge verwenden den gemeinsamen dunklen Stil mit mintfarbenen Reglern, abgerundeten Flächen und deutlichen Hover-Zuständen; native Windows-Dateiauswahldialoge folgen weiterhin Windows.
+
+## Änderungen in Version 0.9.0
 
 ### Neues Menü nach dem freigegebenen Mockup
 
@@ -148,8 +164,8 @@ Einstellungen/Verlauf werden pro Benutzer im von Qt vorgesehenen AppLocalDataLoc
 1. Datei(en) im Explorer mit linker Maustaste ziehen.
 2. **Shift** für den Aktionskreis oder **Strg** für Dateiaktionen kurz antippen und wieder loslassen.
 3. Datei kurz in der Kreismitte halten. Die App prüft den Inhalt im Hintergrund und blendet passende Aktionen ein.
-4. Auf eine Aktion ziehen und loslassen. Bei **KONVERTIEREN** anschließend das Zielformat im offenen Untermenü anklicken. Während der Prüfung ist noch keine Aktion auswählbar.
-5. Bei vielen Aktionen: auf **WEITER** etwa 0,65 Sekunden halten; dabei die Maustaste weiter gedrückt lassen. Die letzte Seite springt wieder zur ersten.
+4. Direkt auf das gewünschte Format, eine Bearbeitung oder ein Werkzeug im Kreis ziehen und loslassen. Während der Prüfung ist noch keine Aktion auswählbar.
+5. Für einen übersichtlicheren Kreis ungenutzte Zielformate unter **Einstellungen → Formate im Kreis** ausblenden. Alle verbleibenden Optionen sind ohne Seitennavigation sichtbar.
 
 Alternativ das grüne Symbol anklicken, danach eine Datei in den bereits geöffneten Kreis ziehen. Esc schließt den Kreis. Rechtsklick auf das Symbol bietet Anleitung und Beenden.
 

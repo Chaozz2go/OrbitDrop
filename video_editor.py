@@ -198,4 +198,10 @@ class VideoEditor(QDialog):
         if not ranges:QMessageBox.information(self,'Videoschnitt','Bitte mindestens einen Abschnitt behalten.');return
         self.player.pause();self.submit('Video bearbeiten',[self.path],{'ranges':ranges,'angle':self.angle,'separate':self.separate.isChecked()});self.accept()
     def done(self,result):
-        self.stopped.set();self.player.stop();self.player.setSource(QUrl());super().done(result)
+        if not self.stopped.is_set():
+            self.stopped.set()
+            self.player.stop();self.player.setVideoSink(None);self.player.setAudioOutput(None)
+            try:self.sink.videoFrameChanged.disconnect(self.video_frame)
+            except (RuntimeError,TypeError):pass
+            self.player.setSource(QUrl())
+        super().done(result)
