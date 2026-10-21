@@ -3,7 +3,7 @@ os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 import hashlib,json,shutil,subprocess,tempfile,unittest,wave
 from pathlib import Path
 from unittest.mock import patch
-from updater import release_info,checksum_for,download_release,verify_installer,REPOSITORY
+from updater import release_info,checksum_for,download_release,verify_installer,REPOSITORY,latest_release,API
 from audio_tools import improve_audio,edge_silence,audio_settings,loudness_stats
 from local_ocr import recognize_text,ocr_pdf
 from ocr_data import find_tessdata,install_languages
@@ -20,6 +20,17 @@ class DesktopReleaseTests(unittest.TestCase):
             with self.subTest(change=change),self.assertRaises(ValueError):release_info({**data,**change})
         data['assets'][0]['browser_download_url']='https://evil.invalid/Setup.exe'
         with self.assertRaises(ValueError):release_info(data)
+    def test_start_update_queries_our_public_repository_and_explains_drafts(self):
+        from unittest.mock import Mock
+        response=Mock(status_code=200,content=b'{}');response.json.return_value=self.release()
+        with patch('requests.get',return_value=response) as request:
+            self.assertTrue(latest_release('0.1.0')['newer'])
+            self.assertEqual(request.call_args.args[0], 'https://api.github.com/repos/Chaozz2go/OrbitDrop/releases/latest')
+            self.assertEqual(request.call_args.kwargs['timeout'], (10,30))
+        response.status_code=404
+        with patch('requests.get',return_value=response),self.assertRaisesRegex(ValueError,'Release-Entwürfe'):
+            latest_release()
+
     def test_verified_download_and_tamper_rejection(self):
         info=release_info(self.release());binary=b'MZ'+b'test installer'*200;digest=hashlib.sha256(binary).hexdigest()
         class Response:

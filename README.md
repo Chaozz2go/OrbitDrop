@@ -234,6 +234,8 @@ Benennen gehört an das Ende. Gespeicherte Abläufe erscheinen für Bilder direk
 
 Mehrdeutige Belegungen wie Shift und Shift+F9 werden abgewiesen. Strg+Alt bleibt für AltGr reserviert; Esc, Win-Kombinationen und Alt+F4 sind nicht belegbar. Die ursprünglichen Windows-Funktionen gewählter Tasten bleiben aktiv. Die Tastatursteuerung innerhalb der Editoren wird dadurch nicht geändert.
 
+**Spielschutz:** Automatische Datei-Tastenzugänge reagieren nur im Explorer, auf dem Desktop, in OrbitDrop und in unterstützten Dateimanagern (Total Commander, Double Commander, Directory Opus, FreeCommander und Files). In anderen Apps – auch Spielen im Fenstermodus – öffnet Shift/Strg/Alt plus Mausklick keinen automatischen Kreis. Dort kannst du den Kreis über das OrbitDrop-Symbol öffnen und anschließend eine Datei hineinziehen. Markierte Links lassen sich ohne gedrückte Maustaste aus Edge, Chrome, Firefox, Brave, Vivaldi, Opera, LibreWolf, Waterfox und Floorp übernehmen; im Browser-Vollbild ist das gesperrt. Für Browser-Spiele kannst du zusätzlich im Tray **Tastenzugänge pausieren** aktivieren. Die Pause gilt bis zum erneuten Abschalten oder Programmneustart. Die manuelle Bedienung bleibt möglich.
+
 Ausblendungen gelten im Kreis und in der Aktionssuche, auch für Favoriten. Falls du Einstellungen oder alle Menüpunkte ausgeblendet hast: **Rechtsklick auf das OrbitDrop-Symbol im Windows-Infobereich → Einstellungen → Alle Menüpunkte wieder anzeigen.** Änderungen gelten beim nächsten Öffnen des Kreises.
 
 ### 13. Aufträge, Fehler und Updates
@@ -244,7 +246,7 @@ Normale Konvertierungen und Bearbeitungen erstellen neue Dateien; vorhandene Nam
 
 **Datei nicht erkannt?** Unter **Alt → Konverter** prüfen, ob benötigte Programme gefunden werden. Dateien aus Cloud- oder Netzlaufwerken gegebenenfalls erst vollständig lokal speichern. Nicht erkannte Typen erscheinen unter **Debugging** und können für die Fehlersuche exportiert werden. Vor dem Weitergeben persönliche Dateipfade und Fehlermeldungen prüfen.
 
-**Alt → Updates** sucht nach veröffentlichten stabilen GitHub-Releases. Die tägliche Prüfung beim Start ist zunächst aus und kann dort eingeschaltet werden. Release-Entwürfe werden nicht angeboten. Download-Prüfsummen werden geprüft; die Installation startest du ausdrücklich, sobald keine Hintergrundaufträge mehr laufen.
+**Alt → Updates** sucht nach veröffentlichten stabilen GitHub-Releases. Bei jedem Programmstart wird standardmäßig nach Updates gesucht. Das lässt sich unter **Einstellungen** oder **Updates** ausschalten. Bei bestehenden Installationen wird die neue Startprüfung einmalig aktiviert; eine anschließend gespeicherte Abwahl bleibt erhalten. Release-Entwürfe werden nicht angeboten. Download-Prüfsummen werden geprüft; die Installation startest du ausdrücklich, sobald keine Hintergrundaufträge mehr laufen.
 
 Die vollständige Hilfe findest du jederzeit direkt im Programm unter **Alt → Anleitung & Info**. Sie zeigt auch deine aktuelle Tastenbelegung.
 

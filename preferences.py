@@ -7,7 +7,7 @@ import subprocess
 import sys
 import tempfile
 
-DEFAULTS={'check_updates':False,'hidden_actions':[],'favorite_actions':[],'workflows':[],'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
+DEFAULTS={'startup_update_policy':2,'check_updates':True,'hidden_actions':[],'favorite_actions':[],'workflows':[],'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
           'convert_key':'Shift','edit_key':'Strg','files_key':'Alt','autostart':False,'check_backends':True}
 from shortcuts import KEY_CODES,pressed_mode,validate_bindings,polling_keys
 
@@ -20,6 +20,9 @@ class Preferences:
             if not isinstance(data,dict):raise ValueError('Ungültige Einstellungen.')
             # Old two-key setups used Ctrl for Tools; migrate to the new three-key defaults.
             if 'edit_key' not in data:data={**data,'convert_key':'Shift','edit_key':'Strg','files_key':'Alt'}
+            # Enable the new per-start policy once for existing installations.
+            # A later explicit opt-out is preserved by the policy marker.
+            if data.get('startup_update_policy') != 2:data={**data,'check_updates':True}
             self.values.update({key:data[key] for key in DEFAULTS if key in data})
             self.values=self.validate(self.values)
         except (OSError,ValueError,TypeError):self.values=DEFAULTS.copy()
@@ -35,6 +38,7 @@ class Preferences:
         finally:Path(temp).unlink(missing_ok=True)
     def validate(self,values):
         result={key:values.get(key,value) for key,value in DEFAULTS.items()}
+        result['startup_update_policy']=2
         result.update(validate_bindings(result))
         hidden_actions=result['hidden_actions']
         if not isinstance(hidden_actions,list) or len(hidden_actions)>1000 or any(not isinstance(key,str) or len(key)>150 or ':' not in key for key in hidden_actions):raise ValueError('Ungültige Menüauswahl.')

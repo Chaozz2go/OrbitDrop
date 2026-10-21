@@ -494,7 +494,9 @@ class Controller:
         self.diagnostic_jobs=set()
         self.tasks=TasksWindow(self.prefs)
         self.was_keys={key:False for key in KEY_CODES}
-        self.selection_job=None;self.selection_pending=False;self.selection_revision=0
+        self.selection_job=None;self.selection_pending=False;self.selection_revision=0;self.selection_origin=None
+        from activation_guard import ActivationGuard
+        self.activation_guard=ActivationGuard();self.shortcuts_paused=False;self.update_job=None
         self.backend_check=None
         self.backend_status=[]
         self.backend_missing=[]
@@ -529,6 +531,7 @@ class Controller:
             action = QAction(label, menu)
             action.triggered.connect(callback)
             menu.addAction(action)
+        pause=QAction('Tastenzugänge pausieren',menu);pause.setCheckable(True);pause.toggled.connect(self.pause_shortcuts);menu.insertAction(menu.actions()[-1],pause)
         self.tray.setContextMenu(menu)
         self.tray.activated.connect(self.activated)
         self.tray.show()
@@ -539,19 +542,16 @@ class Controller:
         self.tray.showMessage('OrbitDrop bereit','Datei ziehen: '+shortcut_hint(self.prefs.values))
         if '--preview' in sys.argv:self.wheel.open()
         if self.prefs.values['check_backends']:QTimer.singleShot(300,lambda:self.check_backends(False))
-        if self.prefs.values.get('check_updates'):
-            import time
-            marker=self.prefs.root/'update-check.time'
-            try:last=float(marker.read_text())
-            except (OSError,ValueError):last=0
-            if time.time()-last>86400:
-                try:marker.write_text(str(time.time()))
-                except OSError:pass
-                QTimer.singleShot(1500,self.auto_update_check)
+        if self.prefs.values.get('check_updates',True):QTimer.singleShot(1500,self.auto_update_check)
 
     def activated(self, reason):
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
             self.wheel.open()
+
+    def pause_shortcuts(self,paused):
+        self.shortcuts_paused=paused;self.selection_pending=False;self.selection_revision+=1
+        if paused and self.wheel.automatic:self.wheel.hide()
+        self.tray.setToolTip('OrbitDrop · Tastenzugänge pausiert' if paused else 'OrbitDrop · '+shortcut_hint(self.prefs.values))
 
     def poll(self):
         if sys.platform != 'win32':
@@ -559,20 +559,18 @@ class Controller:
         key = ctypes.windll.user32.GetAsyncKeyState
         states={name:bool(key(code)&0x8000) for name,code in polling_keys(self.prefs.values).items()}
         left,escape=bool(key(0x01)&0x8000),bool(key(0x1B)&0x8000)
-        if QApplication.activeModalWidget() is not None:
+        if self.shortcuts_paused or QApplication.activeModalWidget() is not None:
             self.was_keys=states;self.selection_pending=False;return
         mode=pressed_mode(self.prefs.values,states,self.was_keys)
-        if mode and left:
+        context=self.activation_guard.context()
+        if mode and left and context.drag:
             if self.wheel.isVisible():self.wheel.switch_mode(mode)
             else:self.wheel.open(automatic=True,mode=mode)
-        if mode=='convert':
-            self.selection_pending=True
-            if not left:self.request_selection()
+        if mode=='convert' and not left and context.selection:self.request_selection()
         self.was_keys=states
-        if self.selection_pending and not left:
-            self.selection_pending=False
-            if self.wheel.isVisible() and self.wheel.files:pass
-            elif not self.selection_job:self.request_selection()
+        self.selection_pending=False
+        if not context.drag and self.wheel.isVisible() and self.wheel.automatic:
+            self.wheel.hide();self.released=0
         if escape:
             self.selection_pending=False;self.selection_revision+=1;self.wheel.hide()
         if self.wheel.isVisible() and self.wheel.automatic and not left:
@@ -584,13 +582,18 @@ class Controller:
             self.released = 0
 
     def request_selection(self):
-        if self.selection_job:return
+        if self.selection_job or self.shortcuts_paused:return
+        context=self.activation_guard.context()
+        if not context.selection:return
+        self.selection_origin=context.token
         self.selection_pending=False;self.selection_revision+=1;revision=self.selection_revision
         job=SelectionJob();self.selection_job=job
         job.signals.done.connect(lambda url,unused:self.selection_ready(job,revision,url));self.pool.start(job)
     def selection_ready(self,job,revision,url):
         if self.selection_job is job:self.selection_job=None
-        if revision!=self.selection_revision or (self.wheel.isVisible() and self.wheel.files):return
+        if revision!=self.selection_revision or self.shortcuts_paused or (self.wheel.isVisible() and self.wheel.files):return
+        context=self.activation_guard.context()
+        if not context.selection or context.token!=self.selection_origin:return
         if url:self.wheel.open_link(url)
     def download_dialog(self,url=None,mode='audio'):
         from download_ui import DownloadDialog
@@ -696,6 +699,7 @@ class Controller:
         if self.jobs or self.tasks.has_running() or self.pool.activeThreadCount():raise ValueError('Noch Hintergrundaufträge aktiv. Bitte kurz warten oder laufende Aufträge beenden.')
         path=verify_installer(installer,self.prefs.root);subprocess.Popen([str(path)]);QTimer.singleShot(100,self.app.quit)
     def auto_update_check(self):
+        if self.update_job or not self.prefs.values.get('check_updates',True):return
         from update_ui import UpdateJob
         from updater import latest_release
         self.update_job=UpdateJob(lambda progress:latest_release());self.update_job.signals.done.connect(self.update_checked);self.pool.start(self.update_job)

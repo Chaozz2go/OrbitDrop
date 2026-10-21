@@ -26,7 +26,7 @@ class ShortcutTests(unittest.TestCase):
             self.assertEqual(pressed_mode(DEFAULTS,{key:True},{}),mode);self.assertIsNone(pressed_mode(DEFAULTS,{key:True},{key:True}))
         self.assertIsNone(pressed_mode(DEFAULTS,{'Alt':True,'Strg':True},{}))
     def test_poll_opens_direct_modes_only_during_drag(self):
-        controller=Controller.__new__(Controller);controller.prefs=SimpleNamespace(values=DEFAULTS);controller.wheel=Mock();controller.wheel.isVisible.return_value=False;controller.selection_pending=False;controller.selection_revision=0;controller.selection_job=None;controller.released=0;controller.request_selection=Mock()
+        controller=Controller.__new__(Controller);controller.prefs=SimpleNamespace(values=DEFAULTS);controller.wheel=Mock();controller.wheel.isVisible.return_value=False;controller.selection_pending=False;controller.selection_revision=0;controller.selection_job=None;controller.released=0;controller.request_selection=Mock();controller.shortcuts_paused=False;controller.activation_guard=Mock();controller.activation_guard.context.return_value=SimpleNamespace(drag=True,selection=True,token=(1,2))
         for name,mode in [('Shift','convert'),('Strg','edit'),('Alt','files')]:
             controller.was_keys={key:False for key in KEY_CODES}
             def state(code):return 0x8000 if code in (KEY_CODES[name],1) else 0

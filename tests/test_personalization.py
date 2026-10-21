@@ -43,7 +43,7 @@ class PersonalizationTests(unittest.TestCase):
             event=QKeyEvent(QEvent.Type.KeyPress,Qt.Key.Key_1,Qt.KeyboardModifier.KeypadModifier,0,0x61,0,'1');capture.keyPressEvent(event);capture.keyReleaseEvent(event);self.assertEqual(choice.currentText(),'Num1')
 
     def test_poll_custom_shortcut_and_modal_suppression(self):
-        values=dict(DEFAULTS,convert_key='F8',edit_key='Strg+E',files_key='F9');controller=Controller.__new__(Controller);controller.prefs=SimpleNamespace(values=values);controller.wheel=Mock();controller.wheel.isVisible.return_value=False;controller.was_keys={};controller.selection_pending=False;controller.selection_revision=0;controller.selection_job=None;controller.released=0;controller.request_selection=Mock()
+        values=dict(DEFAULTS,convert_key='F8',edit_key='Strg+E',files_key='F9');controller=Controller.__new__(Controller);controller.prefs=SimpleNamespace(values=values);controller.wheel=Mock();controller.wheel.isVisible.return_value=False;controller.was_keys={};controller.selection_pending=False;controller.selection_revision=0;controller.selection_job=None;controller.released=0;controller.request_selection=Mock();controller.shortcuts_paused=False;controller.activation_guard=Mock();controller.activation_guard.context.return_value=SimpleNamespace(drag=True,selection=True,token=(1,2))
         codes={KEY_CODES['Strg'],KEY_CODES['E'],1}
         with patch('orbitdrop.sys.platform','win32'),patch('orbitdrop.ctypes.windll',SimpleNamespace(user32=SimpleNamespace(GetAsyncKeyState=lambda code:0x8000 if code in codes else 0)),create=True):controller.poll()
         controller.wheel.open.assert_called_once_with(automatic=True,mode='edit');controller.wheel.open.reset_mock();controller.was_keys={}

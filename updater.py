@@ -33,7 +33,7 @@ def latest_release(current=VERSION):
     import requests
     try:
         response=requests.get(API,headers={'User-Agent':'OrbitDrop/'+current,'Accept':'application/vnd.github+json'},timeout=(10,30))
-        if response.status_code==404:raise ValueError('Kein öffentlich erreichbares Release. Das Repository ist eventuell noch privat. Releases im Browser öffnen.')
+        if response.status_code==404:raise ValueError('Noch kein veröffentlichtes Release mit Windows-Setup verfügbar. Release-Entwürfe werden nicht als Updates angeboten.')
         if response.status_code==403:raise ValueError('GitHub lehnt die Updateprüfung momentan ab (z. B. Zugriffslimit). Später erneut versuchen.')
         response.raise_for_status()
         if len(response.content)>2_000_000:raise ValueError('Updateantwort zu groß.')

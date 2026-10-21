@@ -1,9 +1,10 @@
-OrbitDrop 0.19.0 ergänzt Personalisierung und ein lokales Handbuch.
+OrbitDrop 0.20.0 verbessert Start-Updates und verhindert automatische Kreismenüs in normalen Spielen.
 
-- Eigene Tasten und Tastenkombinationen für Konvertieren, Bearbeiten und Tools; Aufnahmefeld und Standard-Wiederherstellung.
-- Jeden funktionalen Menüeintrag ausblenden, inklusive Formaten, Downloads, eigenen Abläufen, Kategorien und Zurück. Gruppen-Checkboxen und Suche; alte Formatwahl wird übernommen.
-- Versteckte Einträge bleiben auch in Favoriten/Aktionssuche verborgen. Wiederherstellung jederzeit über die Tray-Einstellungen.
-- Anleitung & Info im Tools-Kreis: ausführliche, durchsuchbare Themen mit aktueller Tastenbelegung und Lizenzanzeige.
-- Projektlizenz GNU AGPL v3; Drittanbieter behalten eigene Bedingungen.
+- Bei jedem Programmstart standardmäßig Updateprüfung auf veröffentlichte stabile Releases in Chaozz2go/OrbitDrop. Download und Installation bleiben manuell.
+- Bestehende Einstellungen werden einmalig auf die neue Startprüfung umgestellt; danach bleibt eine gespeicherte Abwahl erhalten. Schalter in Einstellungen und Updates.
+- Automatisches Datei-Kreismenü nur für Explorer, Desktop, OrbitDrop und unterstützte Dateimanager. Native Spiele sind dadurch auch im Fenstermodus ausgeschlossen.
+- Linkübernahme ohne gedrückte Maustaste aus unterstützten Browsern außerhalb des Vollbilds; verspätete Ergebnisse öffnen nach einem Fensterwechsel keinen Kreis.
+- Tray-Schalter „Tastenzugänge pausieren“, etwa für Browser-Spiele. Manuelles Öffnen bleibt möglich.
+- README mit Funktionsanleitung und echter Aufnahme des Kreismenüs; integrierte Hilfe aktualisiert.
 
-Windows x64. Belegungen und Sichtbarkeit nach Speichern beim nächsten Öffnen verwenden. Setup kann die vorhandene Installation aktualisieren.
+Windows x64. Nicht digital signiert. Release-Entwürfe werden weiterhin nicht als Updates angeboten.
