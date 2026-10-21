@@ -1,8 +1,12 @@
-# OrbitDrop 0.17.0 – Windows
+# OrbitDrop 0.17.1 – Windows
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
 ![Bildeditor mit Vorschau und Reglern](docs/preview-photo-studio.png)
+
+## Korrektur in Version 0.17.1
+
+Das transparente Kreismenü wird nicht mehr mit nativer Windows-Eckenrundung versehen. Dadurch wird der rechteckige Windows-Rahmen um das gesamte Menü vermieden. Normale Programmfenster behalten ihren dunklen Windows-Rahmen.
 
 ## Neu in Version 0.17.0: Windows-Paket, Updates, OCR und Audio
 

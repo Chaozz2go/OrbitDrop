@@ -104,6 +104,9 @@ def paint_excluded(p,rect):
 
 def native_frame(window):
     if sys.platform!='win32':return
+    # DWM rounding can add a rectangular outline around a per-pixel-alpha
+    # overlay. Native frame styling belongs only to decorated app windows.
+    if window.windowFlags() & Qt.WindowType.FramelessWindowHint or window.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground):return
     try:
         import ctypes
         dwm=ctypes.WinDLL('dwmapi');handle=int(window.winId());enabled=ctypes.c_int(1)
