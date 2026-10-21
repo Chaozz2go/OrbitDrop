@@ -1,8 +1,30 @@
-# OrbitDrop 0.10.1 – Windows-Prototyp
+# OrbitDrop 0.11.0 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
-## Neu in Version 0.10.1
+![Bildeditor mit Vorschau und Reglern](docs/preview-image-editor.png)
+
+## Neu in Version 0.11.0
+
+### Neuer Kreis: ruhige Flächen, klare Aktionen
+
+Der erste Kreis bietet weiterhin **Konvertieren / Bearbeiten / Tools**. Alle Kreise verwenden abgerundete Segmente mit dunklen Flächen. Grün, Orange und Blau markieren die Bereiche und die jeweils aktive Aktion. Die Optionen haben eigene gezeichnete Vektorsymbole; die Erklärung unter dem Kreis beschreibt die gewählte Aktion. Bei mehr als zehn Optionen pro Gruppe entstehen zusätzliche konzentrische Ringe statt immer schmalerer Segmente. Alle Optionen bleiben gleichzeitig sichtbar. Ausblendbare Formate gelten weiterhin. Auf sehr kleinen Monitoren können umfangreiche Listen trotzdem eng werden.
+
+### Ein Bildeditor für Ausschnitt, Farbe und Größe
+
+**Bearbeiten → Bild bearbeiten** öffnet die große Vorschau mit seitlichen Reglern für Helligkeit, Kontrast, Sättigung, Schärfe und Wärme. Schwarzweiß/Graustufen ist zuschaltbar. **Original zum Vergleichen halten** zeigt das unbearbeitete Bild in seiner aktuellen Drehung, mit der gewählten Ausschnittmarkierung. Die Farbkorrektur wird für eine verkleinerte Vorschau im Hintergrund berechnet; gespeichert wird in voller Ausgabeauflösung. Schärfe kann in der verkleinerten Vorschau anders wirken als bei Betrachtung des Exports in voller Auflösung.
+
+Ausschnitt direkt im Bild ziehen, an Ecken ändern oder verschieben. Freies Format, Quadrat, 16:9, 4:3 und 9:16 stehen zur Auswahl. Drehungen und Ausgabegröße liegen im selben Fenster. **Zuschneiden** sowie **Bildgröße** bei einer einzelnen Datei öffnen ebenfalls diesen Editor. Stapel-Bildgröße bleibt über das bisherige Werkzeug verfügbar. Bei der Größe bedeutet 0 / Automatisch die passende Originalkante; mit aktiviertem Seitenverhältnis sind zwei Werte ein Begrenzungsrahmen. **Alles zurücksetzen** stellt Farbe, Drehung, Ausschnitt und Größe wieder her.
+
+Der Export speichert eine neue PNG-Datei neben dem Original bzw. im eingestellten Ausgabeordner. Transparenz bleibt erhalten; die Originaldatei wird nicht überschrieben. Animierte Bilder sind für diesen Editor nicht vorgesehen. Der Editor ist kein vollständiger professioneller Farbmanagement-/RAW-Workflow.
+
+### Einheitliche Spezialdialoge
+
+Schwarzweiß, 1-Bit-Bitmap und SVG nutzen dieselben Überschriften, Seitenflächen und primären Speicherbuttons. Original und Ergebnis stehen nebeneinander, die Regler rechts in einem scrollbaren Bereich. Schwellwertregler und SVG-Einstellungen bleiben erhalten.
+
+Diese Version setzt den ersten Ausbau nach der Tangerine-Recherche um: Kreisgestaltung und Bildeditor. Beschriftungen, Collagen, Metadateneditor, Komprimierungsdialoge, zusätzliche Audio-/Videowerkzeuge, OCR und visuelle PDF-Seitenverwaltung sind noch nicht Teil dieses Schritts. Details stehen in [ROADMAP.md](ROADMAP.md).
+
+## Änderungen in Version 0.10.1
 
 ### Zuerst Bereich wählen, dann alle passenden Optionen im Kreis
 

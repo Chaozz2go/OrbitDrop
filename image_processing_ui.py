@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt,QObject,Signal,QRunnable,QThreadPool,QTimer
 from PySide6.QtGui import QPixmap,QImage,QPainter
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import QDialog,QVBoxLayout,QHBoxLayout,QFormLayout,QLabel,QComboBox,QSpinBox,QDoubleSpinBox,QCheckBox,QPushButton,QMessageBox,QScrollArea,QWidget
-from app_ui import STYLE
+from editor_chrome import EDITOR_STYLE,heading
 from slider_field import SliderField
 from image_editor import pil_qimage
 from image_processing import load_image,prepare_image,trace_svg,settings
@@ -25,12 +25,16 @@ class ImagePreviewJob(QRunnable):
 class ImageProcessingDialog(QDialog):
     def __init__(self,path,target,submit,initial=None):
         super().__init__();self.path=str(path);self.target=target;self.submit=submit;self.job=None;self.pending=False;self.valid=False;self.images=[];self.closed=False
-        self.setWindowTitle('OrbitDrop · '+('SVG vektorisieren' if target=='SVG' else 'Schwarzweiß / Bitmap')+' · '+Path(path).name);self.resize(1120,790);self.setStyleSheet(STYLE)
-        layout=QVBoxLayout(self);layout.addWidget(QLabel('ORIGINAL                                      VORSCHAU · Ergebnis mit aktuellen Einstellungen'))
-        row=QHBoxLayout();layout.addLayout(row,1);self.previews=[]
-        for title in ('Original','Vorschau'):
-            label=QLabel(title);label.setAlignment(Qt.AlignmentFlag.AlignCenter);label.setMinimumSize(360,280);label.setStyleSheet('background:#ffffff;color:#18202c;border-radius:8px;');row.addWidget(label,1);self.previews.append(label)
-        controls=QWidget();form=QFormLayout(controls);scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(controls);scroll.setMinimumHeight(200);layout.addWidget(scroll,1);self.fields={};self.slider_fields={}
+        self.setWindowTitle('OrbitDrop · '+('SVG vektorisieren' if target=='SVG' else 'Schwarzweiß / Bitmap')+' · '+Path(path).name);self.resize(1120,790);self.setStyleSheet(EDITOR_STYLE)
+        layout=QVBoxLayout(self);layout.setContentsMargins(22,18,22,18);layout.setSpacing(12)
+        heading(layout,'SVG vektorisieren' if target=='SVG' else 'Bitmap erstellen' if target=='BITMAP' else 'Schwarzweiß',Path(path).name+' · Original und Ergebnis im direkten Vergleich')
+        body=QHBoxLayout();body.setSpacing(16);layout.addLayout(body,1)
+        previews=QHBoxLayout();body.addLayout(previews,1);self.previews=[]
+        for title in ('ORIGINAL','ERGEBNIS'):
+            column=QVBoxLayout();previews.addLayout(column,1);caption=QLabel(title);caption.setObjectName('editorSubtitle');column.addWidget(caption)
+            label=QLabel('Vorschau wird erstellt …');label.setAlignment(Qt.AlignmentFlag.AlignCenter);label.setMinimumSize(180,200);label.setStyleSheet('background:#0f1723;color:#a5b7cd;border:1px solid #34475d;border-radius:12px;');column.addWidget(label,1);self.previews.append(label)
+        controls=QWidget();controls.setObjectName('editorControls');form=QFormLayout(controls);form.setContentsMargins(16,16,16,16);form.setSpacing(12);form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
+        scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(controls);scroll.setMinimumWidth(320);scroll.setMaximumWidth(370);body.addWidget(scroll);self.fields={};self.slider_fields={}
         self.mode=QComboBox();self.mode.addItem('Schwarzweiß · 1 Bit','binary');self.mode.addItem('Graustufen','gray')
         if target=='SVG':self.mode.addItem('Farbe','color')
         form.addRow('Bildmodus',self.mode)
@@ -38,17 +42,17 @@ class ImageProcessingDialog(QDialog):
         for key,title,default,low,high,decimals in [('threshold','Schwellwert',128,0,255,0),('contrast','Kontrast',1,.1,3,2),('brightness','Helligkeit',1,.1,3,2),('blur','Glätten vor Umwandlung',0,0,3,1)]:
             box=QSpinBox() if decimals==0 else QDoubleSpinBox();box.setRange(low,high)
             if decimals:box.setDecimals(decimals);box.setSingleStep(.1)
-            box.setValue(default);field=SliderField(box,decimals);form.addRow(title,field);self.slider_fields[key]=field;self.fields[key]=box
+            box.setValue(default);field=SliderField(box,decimals);field.slider.setMinimumWidth(120);form.addRow(title,field);self.slider_fields[key]=field;self.fields[key]=box
         self.invert=QCheckBox('Farben umkehren');form.addRow(self.invert);self.dither=QCheckBox('Rasterung (Floyd–Steinberg) · eher für Fotos');form.addRow(self.dither)
         if target=='SVG':
             for key,title,default,low,high in [('max_edge','Arbeitsauflösung · längste Kante',1600,256,2400),('speckle','Kleine Flecken entfernen · Pixel',4,0,100),('colors','Maximale Farben / Grautöne',16,2,64)]:
-                box=QSpinBox();box.setRange(low,high);box.setValue(default);field=SliderField(box);form.addRow(title,field);self.slider_fields[key]=field;self.fields[key]=box
-            box=QDoubleSpinBox();box.setRange(0,5);box.setSingleStep(.1);box.setValue(1);field=SliderField(box,2);form.addRow('Konturen vereinfachen',field);self.slider_fields['simplify']=field;self.fields['simplify']=box
+                box=QSpinBox();box.setRange(low,high);box.setValue(default);field=SliderField(box);field.slider.setMinimumWidth(120);form.addRow(title,field);self.slider_fields[key]=field;self.fields[key]=box
+            box=QDoubleSpinBox();box.setRange(0,5);box.setSingleStep(.1);box.setValue(1);field=SliderField(box,2);field.slider.setMinimumWidth(120);form.addRow('Konturen vereinfachen',field);self.slider_fields['simplify']=field;self.fields['simplify']=box
             self.curve=QComboBox()
             for title,value in [('Weiche Kurven','spline'),('Gerade Kanten','polygon'),('Pixelkonturen','pixel')]:self.curve.addItem(title,value)
             form.addRow('Konturform',self.curve);self.white=QCheckBox('Weißen Hintergrund in SVG aufnehmen');form.addRow(self.white)
         self.status=QLabel('Vorschau wird erstellt …');self.status.setWordWrap(True);layout.addWidget(self.status)
-        bottom=QHBoxLayout();layout.addLayout(bottom);reset=QPushButton('Zurücksetzen');reset.clicked.connect(self.reset);bottom.addWidget(reset);bottom.addStretch();self.save_button=QPushButton('Als '+('SVG' if target=='SVG' else 'BMP · 1 Bit' if target=='BITMAP' else 'PNG')+' speichern');self.save_button.setEnabled(False);self.save_button.clicked.connect(self.save);bottom.addWidget(self.save_button);close=QPushButton('Schließen');close.clicked.connect(self.reject);bottom.addWidget(close)
+        bottom=QHBoxLayout();layout.addLayout(bottom);reset=QPushButton('Zurücksetzen');reset.clicked.connect(self.reset);bottom.addWidget(reset);bottom.addStretch();self.save_button=QPushButton('Als '+('SVG' if target=='SVG' else 'BMP · 1 Bit' if target=='BITMAP' else 'PNG')+' speichern');self.save_button.setObjectName('primaryAction');self.save_button.setEnabled(False);self.save_button.clicked.connect(self.save);bottom.addWidget(self.save_button);close=QPushButton('Schließen');close.clicked.connect(self.reject);bottom.addWidget(close)
         self.timer=QTimer(self);self.timer.setSingleShot(True);self.timer.timeout.connect(self.refresh)
         self.mode.currentIndexChanged.connect(self.changed);self.auto.toggled.connect(self.changed);self.invert.toggled.connect(self.changed);self.dither.toggled.connect(self.changed)
         for widget in self.fields.values():widget.valueChanged.connect(self.changed)

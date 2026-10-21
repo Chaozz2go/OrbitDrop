@@ -57,6 +57,7 @@ def tool_outputs(action,files,parameters,options):
             if len(sources)!=1:raise ValueError('Bitte genau ein Bild auswählen.')
             with Image.open(sources[0]) as original:
                 if getattr(original,'n_frames',1)>1:raise ValueError('Nur Einzelbilder können zugeschnitten werden.')
+                if original.width*original.height>80_000_000:raise ValueError('Bild überschreitet 80 Megapixel.')
                 image=ImageOps.exif_transpose(original)
                 angle=int(parameters.get('angle',0))%360
                 if angle not in (0,90,180,270):raise ValueError('Ungültige Bilddrehung.')
@@ -66,7 +67,10 @@ def tool_outputs(action,files,parameters,options):
                     left,top,right,bottom=map(int,crop)
                     if not (0<=left<right<=image.width and 0<=top<bottom<=image.height):raise ValueError('Ausschnitt liegt außerhalb des Bilds.')
                     image=image.crop((left,top,right,bottom))
-                checkpoint(50,'Bild wird zugeschnitten …')
+                from photo_effects import adjust_photo,resize_photo
+                image=adjust_photo(image,parameters.get('adjustments'))
+                image=resize_photo(image,parameters.get('resize',{}))
+                checkpoint(50,'Bild wird bearbeitet …')
                 output=reserve(sources[0],'.png',folder);created.append(output);image.save(output,format='PNG')
             checkpoint(100,'Bild gespeichert');return [str(output)]
         if action in ('Bildgröße ändern','Bild drehen'):

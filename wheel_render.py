@@ -4,6 +4,7 @@ from pathlib import Path
 from PySide6.QtCore import Qt,QRectF,QPointF
 from PySide6.QtGui import QPainter,QPainterPath,QPen,QColor,QFont,QLinearGradient,QFontMetrics,QPixmap
 from circle_menu import HOME,action_color,MENU_LABELS
+from radial_style import rounded_sector,surface
 
 TITLES={'formats':'Konvertieren','edit':'Bearbeiten','tools':'Tools','files':'Tools','more':'Programm','rotate':'Drehen','svg':'Konvertieren  /  SVG'}
 CAPTIONS={'SVG SCHNELL':('Schnell','Automatisch vorbereiten und vektorisieren'),'SVG ERWEITERT':('Erweitert','Vorschau, Schwarzweiß und Konturen anpassen'),'SCHWARZWEISS':('Schwarzweiß','Graustufen oder zwei Farben mit Vorschau'),'BITMAP':('Bitmap','Echte 1-Bit-Datei erstellen'),'ZUSCHNEIDEN':('Zuschneiden','Bildausschnitt wählen'),'SCHNEIDEN':('Schneiden','Vorschau und Abschnitte bearbeiten'),'GRÖSSE':('Bildgröße','Breite und Höhe ändern'),'LINK LADEN':('Link einfügen','Audio oder Video herunterladen'),'PROGRAMM':('Programm','Aufträge, Einstellungen und Debugging'),'ZURÜCK':('Zurück',''),'WEITER':('Weitere Optionen','Nächste Seite')}
@@ -23,11 +24,11 @@ def ring(p,w,labels):
     p.setPen(Qt.PenStyle.NoPen);p.setBrush(QColor(0,0,0,55));p.drawEllipse(QRectF(20,23,342,342))
     outer,inner=QRectF(24,24,332,332),QRectF(107,107,166,166);paths=[];step=360/len(labels)
     for i,label in enumerate(labels):
-        start=88-i*step;path=QPainterPath();path.arcMoveTo(outer,start);path.arcTo(outer,start,-(step-4));end=math.radians(start-(step-4));path.lineTo(190+83*math.cos(end),190-83*math.sin(end));path.arcTo(inner,start-(step-4),step-4);path.closeSubpath();paths.append(path)
+        path=rounded_sector(QPointF(190,190),166,83,i*step+2,step-4,12);paths.append(path)
         accent=QColor(action_color('home',label));selected=w.node=='home' and w.selected==i
-        gradient=QLinearGradient(30,24,330,350);gradient.setColorAt(0,accent.lighter(128));gradient.setColorAt(1,accent.darker(122 if selected else 145));p.setBrush(gradient);p.setPen(QPen(accent.lighter(130),1.3));p.drawPath(path)
+        surface(p,path,accent,selected)
         angle=math.radians(-90+step/2+i*step);x,y=190+125*math.cos(angle),190+125*math.sin(angle)
-        p.setPen(QPen(QColor('#f5fffa'),2.3,Qt.PenStyle.SolidLine,Qt.PenCapStyle.RoundCap,Qt.PenJoinStyle.RoundJoin))
+        p.setPen(QPen(accent if selected else QColor('#c9d8e8'),2.3,Qt.PenStyle.SolidLine,Qt.PenCapStyle.RoundCap,Qt.PenJoinStyle.RoundJoin))
         if label in HOME or label in ('AUDIO LADEN','VIDEO LADEN'):icon(p,label,x,y,38)
         else:
             p.setFont(QFont('Segoe UI',10,QFont.Weight.Bold));p.drawText(QRectF(x-48,y-22,96,44),Qt.AlignmentFlag.AlignCenter,MENU_LABELS.get(label,label))

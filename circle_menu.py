@@ -7,7 +7,7 @@ def home_actions(files,kind,formats):return list(HOME)
 def edit_actions(files,kind):
     actions=[]
     if kind=='Bild':
-        if len(files)==1:actions.append('ZUSCHNEIDEN')
+        if len(files)==1:actions+=['BILD EDITOR','ZUSCHNEIDEN']
         actions+=['DREHEN','GRÖSSE','SCHWARZWEISS','BITMAP']
     elif kind=='Video' and len(files)==1:actions+=['SCHNEIDEN','DREHEN']
     elif kind=='Audio' and len(files)==1:actions+=['SCHNEIDEN']

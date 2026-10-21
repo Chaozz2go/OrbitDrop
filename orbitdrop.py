@@ -588,7 +588,7 @@ class Controller:
                 if len(files)==1:ImageProcessingDialog(files[0],target,self.submit_editor,initial='gray' if action=='SCHWARZWEISS' else None).exec()
                 else:self.submit(ToolJob('Bild aufbereiten',files,{'target':target,'processing':{'mode':'gray' if action=='SCHWARZWEISS' else 'binary'}},self.prefs.values),'Bilder aufbereiten')
             elif action=='SVG SCHNELL':self.submit(Conversion(files,'SVG',self.prefs.values),'Bilder → SVG')
-            elif action=='ZUSCHNEIDEN':
+            elif action in ('ZUSCHNEIDEN','BILD EDITOR') or (action=='GRÖSSE' and len(files)==1):
                 from image_editor import ImageEditor
                 ImageEditor(files[0],self.submit_editor).exec()
             elif action in ('90° LINKS','90° RECHTS','180°'):
@@ -696,7 +696,7 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.10.1 · Prototyp',
+        QMessageBox.information(None, 'OrbitDrop 0.11.0 · Prototyp',
             '1. Datei im Explorer mit linker Maustaste ziehen.\n'
             '2. Shift für den Aktionskreis oder Strg für Tools kurz antippen.\n'
             '3. Alle Aktionen direkt im Kreis: Grün = Formate, Orange = Bearbeiten, Blau = Tools.\n'
