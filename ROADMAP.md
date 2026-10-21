@@ -1,10 +1,10 @@
 # OrbitDrop: Ausbau für Windows
 
-Stand 0.11.0. Eigenständige Oberfläche und Implementierung, inspiriert vom schnellen Drag-and-drop-Konzept. Die folgende Liste beschreibt geplante Arbeit, keine bereits zugesicherten Funktionen.
+Stand 0.11.1. Eigenständige Oberfläche und Implementierung, inspiriert vom schnellen Drag-and-drop-Konzept. Die folgende Liste beschreibt geplante Arbeit, keine bereits zugesicherten Funktionen.
 
 ## Erledigt in diesem Schritt
 
-- Bereichsauswahl → alle passenden Optionen im Kreis; abgerundete Flächen, Symbole, Hinweise und mehrere Ringe bei langen Listen.
+- Shift → Konvertieren, Strg → Bearbeiten, Alt → Tools; alle passenden Optionen im Kreis; abgerundete Flächen, Symbole, Hinweise und mehrere Ringe bei langen Listen.
 - Ein Bildeditor mit Ausschnitt, Drehung, Farbkorrektur, Originalvergleich und Ausgabegröße.
 - Gemeinsamer Stil für Bild-, Schwarzweiß-, Bitmap- und SVG-Dialoge.
 

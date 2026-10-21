@@ -11,7 +11,7 @@ from file_actions import FILE_ACTIONS, available_file_actions, DESCRIPTIONS, fil
 from shelf import Shelf
 from archives import create_zip, extract_archive
 from task_runtime import TaskControl, Cancelled, checkpoint
-from preferences import Preferences,KEY_CODES
+from preferences import Preferences,KEY_CODES,pressed_mode,shortcut_hint
 from app_ui import SettingsDialog,TasksWindow,STYLE
 from single_instance import SingleInstance
 from tools import tool_outputs
@@ -190,8 +190,7 @@ class Wheel(QWidget):
         self.automatic = False
 
     def open(self, automatic=False, mode='home'):
-        mode='home' if mode=='convert' else mode
-        self.node='direct' if mode=='files' else 'home'
+        self.node='home' if mode=='home' else 'direct'
         self.formats=[]
         self.preview=None
         self.link=None
@@ -208,8 +207,7 @@ class Wheel(QWidget):
         self.files = []
         self.kind = 'Dateiaktionen' if self.mode == 'files' else 'OrbitDrop'
         self.message = 'Dateien oder Ordner hineinziehen' if self.mode == 'files' else 'Datei in den Kreis ziehen'
-        self.all_actions=direct_actions([],None,[],files_only=True) if mode=='files' else home_actions([],None,[])
-        self.display_page()
+        self.display_mode()
         self.revision += 1
         self.checking = False
         cursor = QCursor.pos()
@@ -222,12 +220,11 @@ class Wheel(QWidget):
         self.update()
 
     def switch_mode(self,mode):
-        mode='home' if mode=='convert' else mode
         if mode == self.mode:
-            return
+            self.display_mode();return
         files=self.files[:]
         self.mode=mode
-        self.node='direct' if mode=='files' else 'home'
+        self.node='home' if mode=='home' else 'direct'
         self.latched=False
         self.revision+=1
         self.page_timer.stop()
@@ -239,12 +236,27 @@ class Wheel(QWidget):
         self.selected=-1
         self.kind='Dateiaktionen' if mode=='files' else 'OrbitDrop'
         self.message='Dateien oder Ordner hineinziehen' if mode=='files' else 'Datei hineinziehen'
-        if mode=='files':
-            self.all_actions=direct_actions([],None,[],files_only=True);self.display_page()
-        else:
-            self.all_actions=home_actions([],None,[]);self.display_page()
+        self.formats=[];self.preview=None;self.link=None
+        self.display_mode()
         if files:self.inspect(files)
         self.repaint()
+
+    def display_mode(self):
+        if self.mode=='home':
+            self.node='home';self.all_actions=home_actions(self.files,self.kind,self.formats)
+            self.message='Konvertieren · Bearbeiten · Tools'
+        else:
+            self.node='direct'
+            hidden=getattr(getattr(self.controller,'prefs',None),'values',{}).get('hidden_formats',[])
+            actions=direct_actions(self.files,self.kind,self.formats,hidden,files_only=self.mode=='files')
+            prefixes={'convert':('format:',),'edit':('edit:',),'files':('tool:','app:')}[self.mode]
+            self.all_actions=[action for action in actions if action.startswith(prefixes)]
+            back='format:' if self.mode=='convert' else 'edit:' if self.mode=='edit' else 'app:'
+            self.all_actions.append(back+'ZURÜCK')
+            title={'convert':'Konvertieren','edit':'Bearbeiten','files':'Tools'}[self.mode]
+            self.message=title+' · Datei hineinziehen' if not self.files else title+' · Aktion wählen'
+            if self.files and len(self.all_actions)==1:self.message=title+' · Keine passenden Aktionen verfügbar'
+        self.display_page()
 
     def segment(self, pos):
         if not self.labels or self.checking:
@@ -271,9 +283,7 @@ class Wheel(QWidget):
             self.checking = False
             self.kind = 'Dateiaktionen'
             self.message = f'{len(files)} Datei(en)/Ordner'
-            self.node='direct';self.all_actions=direct_actions(files,None,[],files_only=True)
-            self.page = 0
-            self.display_page()
+            self.formats=[];self.page=0;self.display_mode()
             return
         self.labels = []
         self.selected = -1
@@ -295,11 +305,8 @@ class Wheel(QWidget):
         self.formats = list(actions)
         self.kind, self.message = details
         self.preview=getattr(job,'preview',None)
-        self.node='home'
-        self.all_actions=home_actions(self.files,self.kind,self.formats)
-        self.message='Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools'
-        self.page = 0
-        self.display_page()
+        self.page=0
+        self.display_mode()
         self.repaint()
         self.selected = self.segment(self.mapFromGlobal(QCursor.pos()))
         self.update()
@@ -330,6 +337,14 @@ class Wheel(QWidget):
             elif category=='format' and action not in ('SVG SCHNELL','SVG ERWEITERT'):QTimer.singleShot(0,lambda:self.controller.convert_files(files,action))
             elif category=='tool':QTimer.singleShot(0,lambda:self.controller.file_action(files,action))
             else:QTimer.singleShot(0,lambda:self.controller.circle_action(files,action,kind))
+            return
+        category_modes={'KONVERTIEREN':('convert','formats'),'UMWANDELN':('convert','formats'),'BEARBEITEN':('edit','edit'),'TOOLS':('files','tools'),'DATEIEN':('files','tools')}
+        if target in category_modes:
+            mode,node=category_modes[target]
+            if self.files and self.kind=='Dateiaktionen' and mode!='files':
+                self.switch_mode(mode);self.automatic=False;self.latched=True
+            else:
+                self.mode=mode;self.navigate(node)
             return
         if target=='WEITER':self.next_page();return
         if target=='ZURÜCK':self.navigate('edit' if self.node=='rotate' else 'formats' if self.node=='svg' else 'tools' if self.node=='more' else 'home');return
@@ -476,10 +491,12 @@ class Controller:
         p.drawEllipse(20, 20, 24, 24)
         p.end()
         self.tray = QSystemTrayIcon(QIcon(icon), app)
-        self.tray.setToolTip(f"OrbitDrop · {self.prefs.values['convert_key']}: Aktionskreis · {self.prefs.values['files_key']}: Dateiaktionen")
+        self.tray.setToolTip('OrbitDrop · '+shortcut_hint(self.prefs.values))
         menu = QMenu()
         for label, callback in [('Aktionskreis', lambda: self.wheel.open()),
-                                ('Dateiaktionen (Strg)', lambda: self.wheel.open(mode='files')),
+                                ('Konvertieren', lambda: self.wheel.open(mode='convert')),
+                                ('Bearbeiten', lambda: self.wheel.open(mode='edit')),
+                                ('Tools / Dateiaktionen', lambda: self.wheel.open(mode='files')),
                                 ('Dateiablage öffnen', lambda: self.shelf.open()),
                                 ('Aufträge & Verlauf', self.show_tasks),
                                 ('Einstellungen', self.settings),
@@ -496,7 +513,7 @@ class Controller:
         self.timer = QTimer()
         self.timer.timeout.connect(self.poll)
         self.timer.start(25)
-        self.tray.showMessage('OrbitDrop bereit', 'Datei ziehen: Shift für den Aktionskreis, Strg für Dateiaktionen. Hilfe findest du unter Tools → Programm.')
+        self.tray.showMessage('OrbitDrop bereit','Datei ziehen: '+shortcut_hint(self.prefs.values))
         if '--preview' in sys.argv:self.wheel.open()
         if self.prefs.values['check_backends']:QTimer.singleShot(300,lambda:self.check_backends(False))
 
@@ -510,12 +527,11 @@ class Controller:
         key = ctypes.windll.user32.GetAsyncKeyState
         states={name:bool(key(code)&0x8000) for name,code in KEY_CODES.items()}
         left,escape=bool(key(0x01)&0x8000),bool(key(0x1B)&0x8000)
-        convert_key=self.prefs.values['convert_key'];files_key=self.prefs.values['files_key']
-        mode='files' if states[files_key] and not self.was_keys[files_key] else 'home' if states[convert_key] and not self.was_keys[convert_key] else None
+        mode=pressed_mode(self.prefs.values,states,self.was_keys)
         if mode and left:
             if self.wheel.isVisible():self.wheel.switch_mode(mode)
             else:self.wheel.open(automatic=True,mode=mode)
-        if mode=='home':
+        if mode=='convert':
             self.selection_pending=True
             if not left:self.request_selection()
         self.was_keys=states
@@ -610,7 +626,7 @@ class Controller:
 
     def settings(self):
         if SettingsDialog(self.prefs).exec():
-            self.tray.setToolTip(f"OrbitDrop · {self.prefs.values['convert_key']}: Aktionskreis · {self.prefs.values['files_key']}: Dateiaktionen")
+            self.tray.setToolTip('OrbitDrop · '+shortcut_hint(self.prefs.values))
     def quit(self):
         if self.tasks.has_running():
             self.tasks.cancel_all();self.show_tasks()
@@ -696,12 +712,12 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.11.0 · Prototyp',
+        QMessageBox.information(None, 'OrbitDrop 0.11.1 · Prototyp',
             '1. Datei im Explorer mit linker Maustaste ziehen.\n'
-            '2. Shift für den Aktionskreis oder Strg für Tools kurz antippen.\n'
-            '3. Alle Aktionen direkt im Kreis: Grün = Formate, Orange = Bearbeiten, Blau = Tools.\n'
+            '2. '+shortcut_hint(self.prefs.values)+'. Kurz antippen und wieder loslassen.\n'
+            '3. Der passende Bereich öffnet direkt. Während des Ziehens lässt sich der Bereich mit den Tasten wechseln.\n'
             '4. Direkt auf der gewünschten Aktion loslassen.\n'
-            'Einstellungen/Verlauf: Tools → Programm. Link markieren + Shift: Download auswählen.\n\n'
+            'Einstellungen/Verlauf: direkt im Tools-Kreis. Link markieren + Shift: Download auswählen.\n\n'
             'Falls kein Kreis erscheint: Kreis über das Infobereich-Symbol öffnen, '
             'danach das Bild auf ein Segment ziehen. Esc bricht ab.\n\n'
             'Konvertieren/Kopieren/Ablage erhalten Originale. VERSCHIEBEN versetzt sie ins gewählte Ziel.\n'
@@ -711,7 +727,7 @@ class Controller:
             'Animationen/mehrseitige Bilder werden abgelehnt.\n'
             'Audio/Video benötigen ffmpeg.exe und ffprobe.exe im Ordner bin oder PATH.\n'
             'Office/E-Books benötigen je nach Format LibreOffice und Pandoc.\n'
-            'Bei vielen Formaten auf WEITER kurz halten.\n'
+            'Viele Formate erscheinen in mehreren Ringen; ungenutzte Ziele in Einstellungen ausblenden.\n'
             'PDF: Bilder als ZIP, PPTX als Seitenbilder, DOCX als Text; keine OCR.\n'
             'Bitte ohne Administratorrechte starten, genauso wie den Explorer.')
 

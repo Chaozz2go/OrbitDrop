@@ -8,7 +8,7 @@ import sys
 import tempfile
 
 DEFAULTS={'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
-          'convert_key':'Shift','files_key':'Strg','autostart':False,'check_backends':True}
+          'convert_key':'Shift','edit_key':'Strg','files_key':'Alt','autostart':False,'check_backends':True}
 KEY_CODES={'Shift':0x10,'Strg':0x11,'Alt':0x12}
 
 class Preferences:
@@ -17,6 +17,9 @@ class Preferences:
         self.values=DEFAULTS.copy();self.history=[]
         try:
             data=json.loads((self.root/'settings.json').read_text(encoding='utf-8'))
+            if not isinstance(data,dict):raise ValueError('Ungültige Einstellungen.')
+            # Old two-key setups used Ctrl for Tools; migrate to the new three-key defaults.
+            if 'edit_key' not in data:data={**data,'convert_key':'Shift','edit_key':'Strg','files_key':'Alt'}
             self.values.update({key:data[key] for key in DEFAULTS if key in data})
             self.values=self.validate(self.values)
         except (OSError,ValueError,TypeError):self.values=DEFAULTS.copy()
@@ -32,8 +35,9 @@ class Preferences:
         finally:Path(temp).unlink(missing_ok=True)
     def validate(self,values):
         result={key:values.get(key,value) for key,value in DEFAULTS.items()}
-        if result['convert_key'] not in KEY_CODES or result['files_key'] not in KEY_CODES:raise ValueError('Ungültige Taste.')
-        if result['convert_key']==result['files_key']:raise ValueError('Bitte unterschiedliche Tasten wählen.')
+        keys=[result[name] for name in ('convert_key','edit_key','files_key')]
+        if any(key not in KEY_CODES for key in keys):raise ValueError('Ungültige Taste.')
+        if len(set(keys))!=3:raise ValueError('Konvertieren, Bearbeiten und Tools benötigen drei unterschiedliche Tasten.')
         hidden=result['hidden_formats']
         if not isinstance(hidden,list) or len(hidden)>100 or any(not isinstance(value,str) or len(value)>40 for value in hidden):raise ValueError('Ungültige Formatliste.')
         result['hidden_formats']=sorted(set(hidden))
@@ -78,3 +82,16 @@ def set_autostart(enabled):
         else:
             try:winreg.DeleteValue(key,'OrbitDrop')
             except FileNotFoundError:pass
+
+
+def pressed_mode(values,states,previous):
+    # A lone AltGr chord (Ctrl+Alt) must not open a palette while dragging.
+    if states.get('Strg') and states.get('Alt'):return None
+    for setting,mode in [('convert_key','convert'),('edit_key','edit'),('files_key','files')]:
+        key=values[setting]
+        if states.get(key) and not previous.get(key):return mode
+    return None
+
+
+def shortcut_hint(values):
+    return f"{values['convert_key']}: Konvertieren · {values['edit_key']}: Bearbeiten · {values['files_key']}: Tools"

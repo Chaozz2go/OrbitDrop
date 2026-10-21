@@ -27,7 +27,7 @@ class ProductivityTests(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup);self.root=Path(self.temp.name)
         self.prefs=Preferences(self.root/'state')
     def test_settings_and_history_persist(self):
-        values=dict(self.prefs.values,image_quality=55,convert_key='Alt',files_key='Strg',output_dir=str(self.root))
+        values=dict(self.prefs.values,image_quality=55,convert_key='Alt',edit_key='Shift',files_key='Strg',output_dir=str(self.root))
         self.prefs.update(values)
         self.assertEqual(Preferences(self.root/'state').values,values)
         with self.assertRaises(ValueError):self.prefs.update(dict(values,files_key='Alt'))

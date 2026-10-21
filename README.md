@@ -1,10 +1,28 @@
-# OrbitDrop 0.11.0 – Windows-Prototyp
+# OrbitDrop 0.11.1 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
 ![Bildeditor mit Vorschau und Reglern](docs/preview-image-editor.png)
 
-## Neu in Version 0.11.0
+## Neu in Version 0.11.1: Drei direkte Tastenzugänge
+
+Datei im Explorer ziehen und eine Taste kurz antippen, dann wieder loslassen:
+
+| Taste | Öffnet direkt | Beispiele |
+| --- | --- | --- |
+| **Shift** | **Konvertieren** | Passende Zielformate, SVG Schnell/Erweitert |
+| **Strg** | **Bearbeiten** | Video-/Audioschnitt, Bildeditor, Crop, Drehen, PDF-Werkzeuge |
+| **Alt** | **Tools** | Terminal, Dateiablage, Kopieren, Verschieben, ZIP, Entpacken, Explorer |
+
+Die vorgelagerte Bereichsauswahl entfällt bei diesen Tastenzugängen. Beim Ziehen kann man zwischen den drei Bereichen wechseln. **Zurück** führt bei Bedarf zur Bereichsauswahl. Über das Infobereich-Symbol bleibt diese allgemeine Auswahl erreichbar. Bearbeiten und Konvertieren prüfen zuerst den Dateiinhalt; Tools funktioniert auch mit Ordnern und unbekannten Dateien ohne Medienkonverter.
+
+Unter **Einstellungen** lassen sich alle drei Tasten zuordnen; sie müssen verschieden sein. Alte Einstellungen ohne separate Bearbeiten-Taste werden beim Laden auf Shift/Strg/Alt migriert. Ausgabeordner, ausgeblendete Formate und andere Einstellungen bleiben erhalten. Ein Strg+Alt-/AltGr-Akkord wird nicht als einzelner Tools-/Bearbeiten-Auslöser behandelt. Die normale Explorer-Wirkung der Modifikatortasten wird nicht global unterdrückt; die Taste vor dem Loslassen der Datei wieder freigeben.
+
+Link markieren und Shift antippen öffnet weiterhin die Download-Auswahl. Ohne Ziehen lösen Strg und Alt keinen Kreis aus.
+
+**Die nachfolgenden Versionsabschnitte enthalten die historischen Bedienabläufe; maßgeblich ist die obige Dreierbelegung.**
+
+## Änderungen in Version 0.11.0
 
 ### Neuer Kreis: ruhige Flächen, klare Aktionen
 
@@ -171,7 +189,7 @@ Einstellungen/Verlauf werden pro Benutzer im von Qt vorgesehenen AppLocalDataLoc
 - Leerer Ausgabeordner = neben der Quelldatei. Ein eingestellter Ordner muss existieren. ZIP-/Entpack-Ziele und Verschiebeziele werden weiterhin direkt gewählt.
 - Bildqualität gilt für JPG, WebP, HEIC und AVIF; verlustfreie PNGs verwenden diesen Qualitätsregler nicht.
 - Videoqualität und maximale Höhe gelten für MP4/MOV/MKV/WebM sowie MP4-Clips. Kleinere Videos werden durch das Höhenlimit nicht vergrößert. AVI/WMV/GIF behalten ihre bisherigen Vorgaben.
-- Tasten: Shift, Strg oder Alt; die beiden Kreise müssen unterschiedliche Tasten haben. Beim Ziehen antippen und wieder loslassen.
+- Tasten: Shift, Strg oder Alt; die drei Bereiche müssen unterschiedliche Tasten haben. Beim Ziehen antippen und wieder loslassen.
 - Bei Beenden mit laufenden Aufträgen werden Abbrüche angefordert; die App beendet sich nach Abschluss dieser Abbrüche. Lange Bibliotheks-/Netzwerkaufrufe können den Abbruch verzögern. Beim Verschieben können bereits abgeschlossene Bewegungen nicht automatisch zurückgenommen werden.
 
 ## Start unter Windows
@@ -184,7 +202,7 @@ Einstellungen/Verlauf werden pro Benutzer im von Qt vorgesehenen AppLocalDataLoc
 ## Bedienung
 
 1. Datei(en) im Explorer mit linker Maustaste ziehen.
-2. **Shift** für den Aktionskreis oder **Strg** für Dateiaktionen kurz antippen und wieder loslassen.
+2. **Shift** für Konvertieren, **Strg** für Bearbeiten oder **Alt** für Tools kurz antippen und wieder loslassen.
 3. Datei kurz in der Kreismitte halten. Die App prüft den Inhalt im Hintergrund und blendet passende Aktionen ein.
 4. Direkt auf das gewünschte Format, eine Bearbeitung oder ein Werkzeug im Kreis ziehen und loslassen. Während der Prüfung ist noch keine Aktion auswählbar.
 5. Für einen übersichtlicheren Kreis ungenutzte Zielformate unter **Einstellungen → Formate im Kreis** ausblenden. Alle verbleibenden Optionen sind ohne Seitennavigation sichtbar.
@@ -195,9 +213,9 @@ Mehrere Dateien: Nur gemeinsame Aktionen werden angeboten. Beispiel Video mit To
 
 Bei Konvertierungen bleiben Originale erhalten. Ausgaben liegen daneben als `Name_converted.ext`; vorhandene Namen erhalten eine zusätzliche Nummer und werden nicht überschrieben. Fehlerhafte Ausgaben werden entfernt.
 
-## Dateiaktionen (Strg)
+## Dateiaktionen (Alt)
 
-Datei oder Ordner ziehen → Strg kurz antippen → auf eine Aktion loslassen. Dieser Kreis benötigt keine Medienkonverter und funktioniert auch mit unbekannten Dateiformaten und gemischten Auswahlen. Während eines Drags lässt sich mit Shift/Strg zwischen den Kreisen wechseln.
+Datei oder Ordner ziehen → Alt kurz antippen → auf eine Aktion loslassen. Dieser Kreis benötigt keine Medienkonverter und funktioniert auch mit unbekannten Dateiformaten und gemischten Auswahlen. Während eines Drags lässt sich mit Shift/Strg/Alt zwischen den Bereichen wechseln.
 
 | Aktion | Verhalten |
 |---|---|
@@ -218,8 +236,8 @@ Beim Verschieben wird nach einem Fehler gestoppt. Bereits erfolgreich verschoben
 
 ## Zippen und Entpacken
 
-- Dateien/Ordner markieren und ziehen → **Strg** antippen → **ZIP** → Namen/Speicherort wählen. Mehrere Quellen werden gemeinsam verpackt; ein mit ausgewählter Elternordner deckt seine Kinder bereits ab. Leere Ordner werden mitgenommen.
-- ZIP ziehen → **Strg** → **ENTPACKEN** → Zielordner wählen. Mehrere Archive sind möglich; je Archiv entsteht ein eigener neuer Ordner. Die Aktion ist bei langen Menüs ggf. auf der nächsten Seite (kurz auf WEITER halten).
+- Dateien/Ordner markieren und ziehen → **Alt** antippen → **ZIP** → Namen/Speicherort wählen. Mehrere Quellen werden gemeinsam verpackt; ein mit ausgewählter Elternordner deckt seine Kinder bereits ab. Leere Ordner werden mitgenommen.
+- ZIP ziehen → **Alt** → **ENTPACKEN** → Zielordner wählen. Mehrere Archive sind möglich; je Archiv entsteht ein eigener neuer Ordner. Die Aktion ist bei langen Menüs ggf. auf der nächsten Seite (kurz auf WEITER halten).
 - Auch TAR, TAR.GZ und reines GZIP werden entpackt. RAR braucht zusätzlich das RAR-Python-Modul und einen externen Decoder (unrar/unar/bsdtar); dieser Weg ist weiterhin nicht mit echten RAR-Dateien getestet. 7z und Passwortarchive sind nicht implementiert.
 - Keine Zusatzinstallation zum Erstellen/Entpacken normaler ZIPs. Verknüpfungen/Junctions und problematische Archivpfade werden abgelehnt; beim Entpacken gelten 2 GiB und 10000 Einträge. Fehlgeschlagene neue Entpackordner werden entfernt. Beim Zippen maximal 10000 Einträge; größere ZIPs können das Entpacklimit überschreiten.
 - Archiv-Metadaten/NTFS-Rechte werden nicht vollständig übernommen. Vorhandene Dateien werden weder beim Zippen noch beim Entpacken ersetzt; bei einem Konflikt muss ein anderer ZIP-Name gewählt werden oder der Entpackordner erhält eine Nummer.
@@ -283,7 +301,7 @@ Maximal 2 GiB entpackte Daten und 10.000 Dateien. Keine Links/Geräte, keine Pfa
 
 Bilder werden mit Pillow geöffnet, Office/EPUB/ODS über ihre Paketstruktur erkannt, PDFs und Archive über Inhalt/Signaturen, Audio/Video über FFprobe geprüft. Reine Textformate haben keine eindeutige Signatur: Dort werden UTF-8, Struktur und ergänzend die Endung verwendet. Ein bloß zu .mp4 umbenanntes PNG wird als Bild erkannt. Nicht alle defekten/ungewöhnlichen Dateien sind schon bei der Vorprüfung erkennbar; der eigentliche Konverter kann sie anschließend noch ablehnen.
 
-Automatische Windows-Einblendung: Shift/Strg + linke Maustaste werden global abgefragt; ein echter Explorer-Drag lässt sich damit allein noch nicht sicher nachweisen. Der Kreis kann deshalb auch bei anderen Ziehbewegungen erscheinen. Konvertierungen akzeptieren lokale Dateien; Dateiaktionen zusätzlich Ordner. Der native Drop wird immer als Kopieraktion angenommen; eine explizit gewählte Verschiebeaktion führt anschließend den getrennten Vorgang aus.
+Automatische Windows-Einblendung: Shift/Strg/Alt + linke Maustaste werden global abgefragt; ein echter Explorer-Drag lässt sich damit allein noch nicht sicher nachweisen. Der Kreis kann deshalb auch bei anderen Ziehbewegungen erscheinen. Konvertierungen akzeptieren lokale Dateien; Dateiaktionen zusätzlich Ordner. Der native Drop wird immer als Kopieraktion angenommen; eine explizit gewählte Verschiebeaktion führt anschließend den getrennten Vorgang aus.
 
 **Unter Linux geprüft:** Bildkonvertierung inklusive HEIC/AVIF, echte Audio-/Videodateien, PDF-Exporte, Office-/Tabellen-/Präsentationskonvertierung, EPUB/Pandoc, Untertitel, Archive, Originalschutz, gemischte Aktionen, Qt-Menü mit Seitennavigation, Dateiaktions-Menü/Ordnerannahme, Ablage-Verweise und Verschiebe-Fallback inklusive Namenskonflikten/Kopierfehlern. Windows-spezifische Aufrufe sind nur teilweise über Mocks geprüft.
 

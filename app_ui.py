@@ -41,7 +41,8 @@ class SettingsDialog(QDialog):
         self.height=QComboBox()
         for label,value in [('Originalgröße',0),('Maximal 480p',480),('Maximal 720p',720),('Maximal 1080p',1080),('Maximal 1440p',1440),('Maximal 2160p',2160)]:self.height.addItem(label,value)
         self.height.setCurrentIndex(self.height.findData(v['video_height']));form.addRow('Videogröße (MP4/MOV/MKV/WebM)',self.height)
-        self.convert=QComboBox();self.convert.addItems(['Shift','Strg','Alt']);self.convert.setCurrentText(v['convert_key']);form.addRow('Aktionskreis (Startmenü)',self.convert)
+        self.convert=QComboBox();self.convert.addItems(['Shift','Strg','Alt']);self.convert.setCurrentText(v['convert_key']);form.addRow('Konvertieren direkt',self.convert)
+        self.edit=QComboBox();self.edit.addItems(['Shift','Strg','Alt']);self.edit.setCurrentText(v['edit_key']);form.addRow('Bearbeiten direkt',self.edit)
         self.files=QComboBox();self.files.addItems(['Shift','Strg','Alt']);self.files.setCurrentText(v['files_key']);form.addRow('Tools (direkter Zugang)',self.files)
         self.startup=QCheckBox('Beim Windows-Anmelden starten');self.startup.setChecked(v['autostart']);self.startup.setEnabled(sys.platform=='win32');self.startup.setToolTip('Gilt für diesen Installationspfad. Nach Verschieben des Programms erneut einstellen.');form.addRow(self.startup)
         self.backends=QCheckBox('Konverter beim Start prüfen');self.backends.setChecked(v['check_backends']);form.addRow(self.backends)
@@ -59,7 +60,7 @@ class SettingsDialog(QDialog):
         if path:self.output.setText(path)
     def save(self):
         try:
-            values=dict(self.prefs.values,hidden_formats=[self.format_list.item(i).text() for i in range(self.format_list.count()) if self.format_list.item(i).checkState()==Qt.CheckState.Unchecked],output_dir=self.output.text().strip(),image_quality=self.quality.value(),video_profile=self.profile.currentText(),video_height=self.height.currentData(),convert_key=self.convert.currentText(),files_key=self.files.currentText(),autostart=self.startup.isChecked(),check_backends=self.backends.isChecked())
+            values=dict(self.prefs.values,hidden_formats=[self.format_list.item(i).text() for i in range(self.format_list.count()) if self.format_list.item(i).checkState()==Qt.CheckState.Unchecked],output_dir=self.output.text().strip(),image_quality=self.quality.value(),video_profile=self.profile.currentText(),video_height=self.height.currentData(),convert_key=self.convert.currentText(),edit_key=self.edit.currentText(),files_key=self.files.currentText(),autostart=self.startup.isChecked(),check_backends=self.backends.isChecked())
             values=self.prefs.validate(values)
             if values['output_dir'] and not Path(values['output_dir']).is_dir():raise ValueError('Bitte einen vorhandenen Ausgabeordner wählen.')
             previous=self.prefs.values['autostart']
