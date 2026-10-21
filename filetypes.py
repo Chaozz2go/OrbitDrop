@@ -144,10 +144,10 @@ def inspect_file(filename):
     message = 'Für Audio/Video ffmpeg.exe und ffprobe.exe im Ordner bin ablegen.' if not (ffprobe and ffmpeg) else 'Kein unterstützter Dateiinhalt erkannt.'
     return FileInfo('Unbekannt', (), message)
 
-def common_actions(files):
+def common_actions(files,infos=None):
     if not files:
         return (), 'Datei ziehen', 'Warte auf Dateien'
-    infos = [inspect_file(file) for file in files]
+    infos = infos if infos is not None else [inspect_file(file) for file in files]
     actions = tuple(a for a in infos[0].actions if all(a in info.actions for info in infos))
     kind = infos[0].kind if all(i.kind == infos[0].kind for i in infos) else 'Gemischte Auswahl'
     if not actions:

@@ -1,8 +1,21 @@
-# OrbitDrop 0.8 – Windows-Prototyp
+# OrbitDrop 0.8.1 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
-## Neu in Version 0.8
+## Neu in Version 0.8.1
+
+**Installationsfix für Python 3.15 unter Windows:** Die benötigten yt-dlp-Zusatzpakete werden explizit installiert; das optionale Brotli-Paket entfällt. Damit wird der im Fehlerprotokoll beobachtete C++-Build von Brotli vermieden. yt-dlp und EJS sind auf die zusammengehörigen Versionen 2026.8.19 / 0.8.0 festgelegt. Keine Installation von Visual C++ Build Tools für diesen Fehler nötig. ZIP in einen neuen Ordner entpacken und Start.cmd ausführen. Ein bestehender Programmordner kann alternativ vollständig mit den neuen Quellen aktualisiert werden; Start.cmd bemerkt die geänderte requirements.txt und versucht die Installation erneut. Eigene Mediendateien unverändert lassen.
+
+
+**Tools → Programm → Debugging** sammelt automatisch Dateien ohne verfügbare Konvertierung: unbekannte/unsupported Formate, Erkennungsfehler sowie fehlende Konverter oder Encoder. Eine gemischte Auswahl ohne gemeinsame Ausgabe wird nicht als unbekannt protokolliert, solange jede Datei einzeln erkannt wird. Die Erkennung läuft im Hintergrund; zusätzliche Codecdiagnose maximal 5 Sekunden pro Problemdatei.
+
+Gespeichert werden Name (nur lokal), Endung, Größe, erkannter Typ/Containerhinweis, technische Codecwerte, Fehlergrund, System-/Bibliotheks-/Konverterversionen, Zeitpunkt und Anzahl gleicher Ereignisse. Keine Dateikopie, Rohbytes, Medien-Tags oder vollständigen Dateipfade. Maximal 100 Einträge; Wiederholungen werden zusammengefasst. Speicherung lokal im selben Benutzerordner wie Einstellungen (`diagnostics.json`), über Neustarts hinweg. Erfasst werden Dateien beim Prüfen im Shift-Kreis; der direkte Strg-Dateiaktionskreis prüft keine Formate.
+
+**Diagnose exportieren** erzeugt eine JSON-Datei zum Anhängen im Chat. Dateinamen werden standardmäßig durch `Datei_1.ext` usw. ersetzt; Originalnamen sind auf ausdrückliches Anhaken möglich. Vorhandene Exportdateien werden nicht überschrieben. **Liste leeren** löscht nur Diagnoseeinträge, keine Originaldateien. Exportdaten können Hinweise auf das technische System enthalten; sie werden nur lokal gespeichert und nicht automatisch versendet.
+
+Der Downloader verwendet bereits yt-dlp, ebenso wie die Android-App. Eine JavaScript-Laufzeit wie Deno/Node/QuickJS ist eine zusätzliche yt-dlp-Abhängigkeit für bestimmte Seiten, kein Ersatz für yt-dlp.
+
+## Funktionen aus Version 0.8
 
 ### Drei feste Bereiche im Kreis
 
@@ -33,7 +46,7 @@ Audio → Bearbeiten → Schneiden öffnet Vorschau und Abschnittsauswahl mit C,
 - Vor dem Download werden Titel und verfügbare Videoauflösungen geprüft. Audio wird MP3 (192 kbit/s), Video behält das verfügbare Format; getrennte Bild-/Tonspuren werden in MKV zusammengeführt. Nur ein einzelner Link, keine Playlists/Suche und kein zusätzlicher Schnitteditor.
 - Downloadordner wählen. Fortschritt, Geschwindigkeit, Abbrechen und Ergebnisse stehen unter Aufträge. Originale/vorhandene Downloads werden nicht überschrieben. Teil-Downloads liegen temporär und werden bei Fehler/Abbruch entfernt.
 - Nutzt wie die vorhandene Android-Downloader-App **yt-dlp + FFmpeg**; die Windows-Oberfläche ist neu implementiert, kein vollständiger Import der Android-App. yt-dlp und EJS werden mit den Python-Abhängigkeiten installiert. FFmpeg/FFprobe bitte über Tools → Programm → Konverter einrichten.
-- YouTube benötigt zusätzlich eine unterstützte JavaScript-Laufzeit (Deno ab 2.3 oder Node ab 22, alternativ QuickJS). Eine vorhandene Installation wird in PATH/bin erkannt. Downloadlinks: https://deno.com/ und https://nodejs.org/. Keine automatische Installation der Laufzeit und kein Download externer Challenge-Skripte; EJS kommt aus dem installierten Python-Paket. Websites können Login, Regionen oder Downloads einschränken; kein DRM-Umgehen. Bei Seitenänderungen Python-Abhängigkeiten aktualisieren: `.venv\Scripts\python.exe -m pip install --upgrade "yt-dlp[default]"`.
+- YouTube benötigt zusätzlich eine unterstützte JavaScript-Laufzeit (Deno ab 2.3 oder Node ab 22, alternativ QuickJS). Eine vorhandene Installation wird in PATH/bin erkannt. Downloadlinks: https://deno.com/ und https://nodejs.org/. Keine automatische Installation der Laufzeit und kein Download externer Challenge-Skripte; EJS kommt aus dem installierten Python-Paket. Websites können Login, Regionen oder Downloads einschränken; kein DRM-Umgehen. Bei Seitenänderungen Python-Abhängigkeiten aktualisieren: `.venv\Scripts\python.exe -m pip install --upgrade yt-dlp yt-dlp-ejs`.
 - Echte Downloads mit Audio-/Video-Fixtures über lokalen HTTP-Server getestet. Live-Downloads von YouTube und Windows-Linkerkennung sind noch nicht bestätigt.
 
 ## Funktionen aus Version 0.7

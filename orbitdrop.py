@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, QTimer, QObject, Signal, QRunnable, QThreadPool, 
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QFont, QCursor, QIcon, QPixmap, QAction
 from PySide6.QtWidgets import QApplication, QWidget, QSystemTrayIcon, QMenu, QMessageBox, QFileDialog
 from converter import convert
-from filetypes import common_actions
+from filetypes import common_actions,inspect_file,FileInfo
 from file_actions import FILE_ACTIONS, available_file_actions, DESCRIPTIONS, file_mime, copy_paths_text, validate_paths, plan_moves, execute_moves, open_terminals, show_in_explorer
 from shelf import Shelf
 from archives import create_zip, extract_archive
@@ -54,14 +54,32 @@ class Inspection(QRunnable):
     def __init__(self, files):
         super().__init__()
         self.files = files
+        self.reports=[]
         self.signals = Signals()
 
     def run(self):
         try:
-            actions, kind, message = common_actions(self.files)
+            infos=[]
+            for file in self.files:
+                try:info=inspect_file(file)
+                except Exception as error:info=FileInfo('Nicht lesbar',(),str(error))
+                infos.append(info)
+                if not info.actions and Path(file).is_file():
+                    self.reports.append((str(file),info))
+            actions, kind, message = common_actions(self.files,infos)
             self.signals.done.emit(actions, (kind, message))
         except Exception as error:
             self.signals.done.emit((), ('Nicht lesbar', str(error)))
+
+class DiagnosticJob(QRunnable):
+    def __init__(self,items):super().__init__();self.items=items;self.signals=Signals()
+    def run(self):
+        from diagnostics import recognition_report
+        reports=[]
+        for path,info in self.items:
+            try:reports.append(recognition_report(path,info))
+            except Exception:pass
+        self.signals.done.emit(reports,None)
 
 class MoveJob(ManagedJob):
     def __init__(self,plans):super().__init__();self.plans=plans
@@ -254,6 +272,7 @@ class Wheel(QWidget):
 
     def inspected(self, job, revision, actions, details):
         self.probes.discard(job)
+        if getattr(job,'reports',None) and hasattr(self.controller,'record_diagnostics'):self.controller.record_diagnostics(job.reports)
         if revision != self.revision:
             return
         self.checking = False
@@ -281,7 +300,7 @@ class Wheel(QWidget):
             self.all_actions=(list(available_file_actions(self.files)) if self.files else [])+['LINK LADEN','PROGRAMM','ZURÜCK']
             self.message='Dateiaktionen und Hilfsfunktionen'
         elif node=='rotate':self.all_actions=['90° LINKS','90° RECHTS','180°','ZURÜCK'];self.message='Drehung wählen'
-        elif node=='more':self.all_actions=['AUFTRÄGE','EINSTELLUNGEN','KONVERTER','HILFE','ZURÜCK'];self.message='OrbitDrop verwalten'
+        elif node=='more':self.all_actions=['AUFTRÄGE','EINSTELLUNGEN','KONVERTER','DEBUGGING','HILFE','ZURÜCK'];self.message='OrbitDrop verwalten'
         else:
             self.all_actions=['AUDIO LADEN','VIDEO LADEN','TOOLS'] if self.link else home_actions(self.files,self.kind,self.formats)
             self.message='Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools' if not self.link else 'Download wählen · Audio oder Video'
@@ -428,6 +447,9 @@ class Controller:
     def __init__(self, app, prefs=None):
         self.app = app
         self.prefs=prefs or Preferences(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation))
+        from diagnostics import DiagnosticStore
+        self.diagnostics=DiagnosticStore(self.prefs)
+        self.diagnostic_jobs=set()
         self.tasks=TasksWindow(self.prefs)
         self.was_keys={key:False for key in KEY_CODES}
         self.selection_job=None;self.selection_pending=False;self.selection_revision=0
@@ -537,6 +559,9 @@ class Controller:
             elif action=='KONVERTER':self.media_status()
             elif action=='WERKZEUGE':self.tools(files)
             elif action=='HILFE':self.help()
+            elif action=='DEBUGGING':
+                from diagnostics_ui import DiagnosticsDialog
+                DiagnosticsDialog(self.diagnostics).exec()
             elif action=='SCHNEIDEN':
                 if kind=='Audio':
                     from audio_editor import AudioEditor
@@ -554,6 +579,13 @@ class Controller:
             elif action=='PDF TEILEN':self.tools(files,'PDF aufteilen')
             elif action=='PDF VERBINDEN':self.tools(files,'PDFs zusammenfügen')
         except Exception as error:QMessageBox.warning(None,'OrbitDrop · Bearbeiten',str(error))
+    def record_diagnostics(self,items):
+        job=DiagnosticJob(items);self.diagnostic_jobs.add(job)
+        job.signals.done.connect(lambda reports,unused:self.diagnostics_ready(job,reports));self.pool.start(job)
+    def diagnostics_ready(self,job,reports):
+        self.diagnostic_jobs.discard(job)
+        try:self.diagnostics.add(reports)
+        except OSError as error:self.tray.showMessage('Debugging','Diagnose konnte nicht gespeichert werden: '+str(error))
     def submit_editor(self,action,files,parameters):
         self.submit(ToolJob(action,files,parameters,self.prefs.values),action+': '+Path(files[0]).name)
 
@@ -577,7 +609,8 @@ class Controller:
         self.tray.showMessage(status,f'{len(outputs)} Ergebnis(se). Details unter Aufträge & Verlauf.')
         if isinstance(job,MediaInstallJob) and not errors and not job.was_cancelled:
             from filetypes import encoders
-            encoders.cache_clear();self.check_backends(False)
+            from diagnostics import environment
+            environment.cache_clear();encoders.cache_clear();self.check_backends(False)
     def media_status(self):self.check_backends(True)
     def check_backends(self,show=False):
         if self.backend_check:
@@ -644,7 +677,7 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.8 · Prototyp',
+        QMessageBox.information(None, 'OrbitDrop 0.8.1 · Prototyp',
             '1. Datei im Explorer mit linker Maustaste ziehen.\n'
             '2. Shift für den Aktionskreis oder Strg für Tools kurz antippen.\n'
             '3. Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools.\n'

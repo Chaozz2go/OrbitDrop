@@ -10,4 +10,13 @@ rarfile>=4,<5
 olefile>=0.47,<1
 defusedxml>=0.7,<1
 av>=14,<18
-yt-dlp[default]>=2026.1
+# yt-dlp defaults are listed explicitly, excluding optional Brotli.
+# Brotli has no Windows CPython 3.15 wheel in the reported installation.
+yt-dlp==2026.8.19
+yt-dlp-ejs==0.8.0
+certifi
+mutagen>=1.47,<2
+pycryptodomex>=3.20,<4
+requests>=2.32.2,<3
+urllib3>=2,<3
+websockets>=13
