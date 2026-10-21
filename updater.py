@@ -89,6 +89,9 @@ def download_release(info,state_root,progress=None,stopped=None):
 def verify_installer(installer,state_root):
     version_tuple(installer['version']);path=Path(installer['path']).resolve();folder=(Path(state_root)/'updates'/installer['version']).resolve()
     if path.parent!=folder or path.name!=f"OrbitDrop-{installer['version']}-Windows-x64-Setup.exe" or path.is_symlink():raise ValueError('Unzulässiger Setup-Pfad.')
-    with path.open('rb') as handle:digest=hashlib.file_digest(handle,'sha256').hexdigest()
+    digest=hashlib.sha256()
+    with path.open('rb') as handle:
+        for block in iter(lambda:handle.read(1024*1024),b''):digest.update(block)
+    digest=digest.hexdigest()
     if digest!=installer['sha256']:raise ValueError('Setup wurde nach dem Download verändert. Erneut herunterladen.')
     return path
