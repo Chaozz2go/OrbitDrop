@@ -1,11 +1,11 @@
-"""All contextual actions in concentric rings; no category or paging clicks."""
+"""All options of the selected category in a large radial menu."""
 import math
 from pathlib import Path
 from PySide6.QtCore import Qt,QRectF,QPointF
 from PySide6.QtGui import QPainter,QPainterPath,QPen,QColor,QFont,QFontMetrics,QPixmap,QLinearGradient
 from circle_menu import direct_color
 
-NAMES={'ZUSCHNEIDEN':'Zuschneiden','SCHWARZWEISS':'Schwarz\nweiß','GRÖSSE':'Bildgröße','90° LINKS':'90° links','90° RECHTS':'90° rechts','BITMAP':'Bitmap','SVG SCHNELL':'SVG\nSchnell','SVG ERWEITERT':'SVG\nErweitert','PDF VERBINDEN':'PDFs\nverbinden','PDF TEILEN':'PDF\nteilen','LINK LADEN':'Link\neinfügen','EINSTELLUNGEN':'Einstellungen','STANDBILD':'Standbild','AUFTRÄGE':'Aufträge','DEBUGGING':'Debugging','HILFE':'Hilfe','KONVERTER':'Konverter','VERSCHIEBEN':'Verschieben','KOPIEREN':'Kopieren','TERMINAL':'Terminal','EXPLORER':'Explorer','ABLAGE':'Ablage','ENTPACKEN':'Entpacken','SCHNEIDEN':'Schneiden','PFAD':'Pfad','ZIP':'ZIP','AUDIO LADEN':'Audio\nladen','VIDEO LADEN':'Video\nladen'}
+NAMES={'ZURÜCK':'Zurück','ZUSCHNEIDEN':'Zuschneiden','SCHWARZWEISS':'Schwarz\nweiß','GRÖSSE':'Bildgröße','90° LINKS':'90° links','90° RECHTS':'90° rechts','BITMAP':'Bitmap','SVG SCHNELL':'SVG\nSchnell','SVG ERWEITERT':'SVG\nErweitert','PDF VERBINDEN':'PDFs\nverbinden','PDF TEILEN':'PDF\nteilen','LINK LADEN':'Link\neinfügen','EINSTELLUNGEN':'Einstellungen','STANDBILD':'Standbild','AUFTRÄGE':'Aufträge','DEBUGGING':'Debugging','HILFE':'Hilfe','KONVERTER':'Konverter','VERSCHIEBEN':'Verschieben','KOPIEREN':'Kopieren','TERMINAL':'Terminal','EXPLORER':'Explorer','ABLAGE':'Ablage','ENTPACKEN':'Entpacken','SCHNEIDEN':'Schneiden','PFAD':'Pfad','ZIP':'ZIP','AUDIO LADEN':'Audio\nladen','VIDEO LADEN':'Video\nladen'}
 
 def geometry(w):
     size=w.circle_size;center=size/2;outer=center-15;labels=w.labels
@@ -46,5 +46,5 @@ def paint_direct(w):
     p.setFont(QFont('Segoe UI',9))
     for index,(color,text) in enumerate([('#7ed9ba','Konvertieren'),('#ffbe83','Bearbeiten'),('#83baff','Tools')]):
         x=center-180+index*130;p.setPen(Qt.PenStyle.NoPen);p.setBrush(QColor(color));p.drawEllipse(QPointF(x,y+10),4,4);p.setPen(QColor('#c2d4e6'));p.drawText(QRectF(x+10,y,115,22),Qt.AlignmentFlag.AlignVCenter,text)
-    message='Esc: schließen · Formate ausblenden: Einstellungen' if w.selected<0 else w.labels[w.selected].split(':',1)[-1].replace('SVG ','SVG · ')
+    message=w.message+' · Esc: schließen' if w.selected<0 else w.labels[w.selected].split(':',1)[-1].replace('SVG ','SVG · ')
     p.drawText(QRectF(10,y+27,w.circle_size-20,23),Qt.AlignmentFlag.AlignCenter,message);p.end()

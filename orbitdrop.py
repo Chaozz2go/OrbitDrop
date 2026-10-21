@@ -191,7 +191,7 @@ class Wheel(QWidget):
 
     def open(self, automatic=False, mode='home'):
         mode='home' if mode=='convert' else mode
-        self.node='direct'
+        self.node='direct' if mode=='files' else 'home'
         self.formats=[]
         self.preview=None
         self.link=None
@@ -208,7 +208,7 @@ class Wheel(QWidget):
         self.files = []
         self.kind = 'Dateiaktionen' if self.mode == 'files' else 'OrbitDrop'
         self.message = 'Dateien oder Ordner hineinziehen' if self.mode == 'files' else 'Datei in den Kreis ziehen'
-        self.all_actions=direct_actions([],None,[])
+        self.all_actions=direct_actions([],None,[],files_only=True) if mode=='files' else home_actions([],None,[])
         self.display_page()
         self.revision += 1
         self.checking = False
@@ -227,7 +227,7 @@ class Wheel(QWidget):
             return
         files=self.files[:]
         self.mode=mode
-        self.node='direct'
+        self.node='direct' if mode=='files' else 'home'
         self.latched=False
         self.revision+=1
         self.page_timer.stop()
@@ -241,6 +241,8 @@ class Wheel(QWidget):
         self.message='Dateien oder Ordner hineinziehen' if mode=='files' else 'Datei hineinziehen'
         if mode=='files':
             self.all_actions=direct_actions([],None,[],files_only=True);self.display_page()
+        else:
+            self.all_actions=home_actions([],None,[]);self.display_page()
         if files:self.inspect(files)
         self.repaint()
 
@@ -293,10 +295,9 @@ class Wheel(QWidget):
         self.formats = list(actions)
         self.kind, self.message = details
         self.preview=getattr(job,'preview',None)
-        self.node='direct'
-        hidden=getattr(getattr(self.controller,'prefs',None),'values',{}).get('hidden_formats',[])
-        self.all_actions=direct_actions(self.files,self.kind,self.formats,hidden)
-        self.message='Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools' if actions else self.message
+        self.node='home'
+        self.all_actions=home_actions(self.files,self.kind,self.formats)
+        self.message='Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools'
         self.page = 0
         self.display_page()
         self.repaint()
@@ -304,28 +305,27 @@ class Wheel(QWidget):
         self.update()
 
     def navigate(self,node):
-        previous=self.node
-        self.page_timer.stop();self.automatic=False;self.latched=True;self.node=node;self.page=0
-        if node=='formats':
-            self.all_actions=self.formats+['ZURÜCK']
-            self.message='Zielformat wählen' if self.formats else ('Datei in den Kreis ziehen' if not self.files else 'Keine gemeinsame Konvertierung verfügbar. '+self.message)
-        elif node=='edit':
-            self.all_actions=edit_actions(self.files,self.kind)+['ZURÜCK']
-            self.message='Bearbeitung wählen' if len(self.all_actions)>1 else 'Für diese Auswahl ist keine Bearbeitung verfügbar.'
-        elif node in ('files','tools'):
-            self.all_actions=(list(available_file_actions(self.files)) if self.files else [])+['LINK LADEN','PROGRAMM','ZURÜCK']
-            self.message='Dateiaktionen und Hilfsfunktionen'
-        elif node=='svg':self.all_actions=['SVG SCHNELL','SVG ERWEITERT','ZURÜCK'];self.message='Schnell: automatisch · Erweitert: Vorschau und Regler'
-        elif node=='rotate':self.all_actions=['90° LINKS','90° RECHTS','180°','ZURÜCK'];self.message='Drehung wählen'
-        elif node=='more':self.all_actions=['AUFTRÄGE','EINSTELLUNGEN','KONVERTER','DEBUGGING','HILFE','ZURÜCK'];self.message='OrbitDrop verwalten'
+        self.page_timer.stop();self.automatic=False;self.latched=True;self.page=0
+        hidden=getattr(getattr(self.controller,'prefs',None),'values',{}).get('hidden_formats',[])
+        actions=direct_actions(self.files,self.kind,self.formats,hidden)
+        if node=='home':
+            self.node='home';self.all_actions=home_actions(self.files,self.kind,self.formats)
+            self.message='Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools'
         else:
-            self.all_actions=['AUDIO LADEN','VIDEO LADEN','TOOLS'] if self.link else home_actions(self.files,self.kind,self.formats)
-            self.message='Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools' if not self.link else 'Download wählen · Audio oder Video'
+            self.node='direct'
+            prefixes={'formats':('format:',),'edit':('edit:',),'rotate':('edit:90°','edit:180°'),'svg':('format:SVG ',),'more':('app:',)}.get(node,('tool:','app:'))
+            self.all_actions=[action for action in actions if action.startswith(prefixes)]
+            back='format:' if node in ('formats','svg') else 'edit:' if node in ('edit','rotate') else 'app:'
+            self.all_actions.append(back+'ZURÜCK')
+            self.message={'formats':'Konvertieren · Zielformat wählen','edit':'Bearbeiten · Aktion wählen'}.get(node,'Tools · Aktion wählen')
+            if len(self.all_actions)==1:self.message='Keine passenden Aktionen verfügbar · Zurück wählen'
         self.display_page();self.show();self.raise_()
 
     def select_action(self,target):
         if self.node=='direct':
-            category,action=target.split(':',1);files=self.files[:];kind=self.kind;url=self.link;self.hide()
+            category,action=target.split(':',1)
+            if action=='ZURÜCK':self.navigate('home');return
+            files=self.files[:];kind=self.kind;url=self.link;self.hide()
             if category=='download' or action=='LINK LADEN':QTimer.singleShot(0,lambda:self.controller.download_dialog(url,'video' if action=='VIDEO LADEN' else 'audio'))
             elif category=='format' and action not in ('SVG SCHNELL','SVG ERWEITERT'):QTimer.singleShot(0,lambda:self.controller.convert_files(files,action))
             elif category=='tool':QTimer.singleShot(0,lambda:self.controller.file_action(files,action))
@@ -696,7 +696,7 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.10.0 · Prototyp',
+        QMessageBox.information(None, 'OrbitDrop 0.10.1 · Prototyp',
             '1. Datei im Explorer mit linker Maustaste ziehen.\n'
             '2. Shift für den Aktionskreis oder Strg für Tools kurz antippen.\n'
             '3. Alle Aktionen direkt im Kreis: Grün = Formate, Orange = Bearbeiten, Blau = Tools.\n'

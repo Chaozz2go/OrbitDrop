@@ -61,8 +61,9 @@ class WheelTests(unittest.TestCase):
                 self.app.processEvents()
                 time.sleep(.01)
             self.assertFalse(self.wheel.checking)
+            self.assertEqual(self.wheel.labels,['KONVERTIEREN','BEARBEITEN','TOOLS'])
+            self.wheel.select_action('KONVERTIEREN')
             self.assertIn('format:PNG',self.wheel.labels)
-            self.assertIn('edit:ZUSCHNEIDEN',self.wheel.labels)
             from direct_wheel import geometry
             point=next(entry[2] for entry in geometry(self.wheel) if entry[0]=='format:PNG')
             drop = QDropEvent(point, Qt.DropAction.CopyAction, mime, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)

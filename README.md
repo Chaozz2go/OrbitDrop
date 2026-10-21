@@ -1,14 +1,14 @@
-# OrbitDrop 0.10.0 – Windows-Prototyp
+# OrbitDrop 0.10.1 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
-## Neu in Version 0.10.0
+## Neu in Version 0.10.1
 
-### Alle Aktionen direkt im großen Kreis
+### Zuerst Bereich wählen, dann alle passenden Optionen im Kreis
 
-Datei ziehen → Shift antippen → kurz im Kreis prüfen lassen → direkt auf die gewünschte Aktion loslassen. Keine Kategorien und keine rechte Menüfläche mehr. Außen liegen Dateiwerkzeuge und Programmfunktionen (blau), im mittleren Ring passende Konvertierungen (grün), innen Bearbeitungen (orange). Ohne passende Aktionen werden leere Ringe weggelassen. Alle angebotenen Aktionen stehen gleichzeitig im Kreis; keine WEITER-Seiten. Bei Videos/Audio richten sich die Ziele nach den tatsächlich verfügbaren Konvertern und Streams. Die Kreisgröße passt sich an die verfügbare Bildschirmfläche an. Auf kleinen Bildschirmen können viele Einträge eng stehen; dafür ungenutzte Formate ausblenden. Anzeige/Explorer-Drop bei Windows-DPI bitte weiterhin am Gerät testen.
+Datei ziehen → Shift antippen → im ersten Kreis **Konvertieren / Bearbeiten / Tools** wählen. Anschließend zeigt ein großer Kreis alle passenden Optionen des gewählten Bereichs gleichzeitig, ohne rechte Menüfläche und ohne WEITER-Seiten. Konvertieren zeigt die verfügbaren, eingeblendeten Zielformate einschließlich SVG Schnell/Erweitert. Bearbeiten zeigt Zuschneiden, Drehen und weitere passende Bild-/Audio-/Videofunktionen. Tools enthält Dateiwerkzeuge und Programmfunktionen. **Zurück** führt zur Bereichsauswahl; die Datei bleibt ausgewählt.
 
-Bildbearbeitung bietet Drehungen links/rechts/180° direkt. SVG Schnell und SVG Erweitert stehen als zwei grüne Aktionen direkt im Kreis. ZIP als Konvertierung und ZIP als Dateiwerkzeug können beide vorkommen; die Farbe unterscheidet sie. Einstellungen, Aufträge, Konverter und Debugging sind ebenfalls ohne Programm-Untermenü direkt erreichbar. Strg bleibt der direkte Dateiwerkzeug-Zugang ohne Formatprüfung. Ein Link bietet Audio/Video direkt im Kreis.
+Grün steht für Konvertieren, Orange für Bearbeiten, Blau für Tools. Die Kreisgröße passt sich an die verfügbare Bildschirmfläche an. Bei vielen Formaten helfen die Einstellungen zum Ausblenden. Strg bleibt der direkte Dateiwerkzeug-Zugang; Links bieten Audio/Video direkt. Windows-DPI und Explorer-Drag-and-drop bitte am Windows-Gerät prüfen.
 
 ### Unbenutzte Zielformate ausblenden
 

@@ -61,11 +61,13 @@ class EditingTests(unittest.TestCase):
         mime=QMimeData();mime.setUrls([QUrl.fromLocalFile(str(path))])
         event=QDragEnterEvent(QPointF(190,190).toPoint(),Qt.DropAction.CopyAction,mime,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier)
         wheel.dragEnterEvent(event);self.wait(lambda:not wheel.checking)
-        self.assertIn('format:PNG',wheel.labels);self.assertIn('edit:ZUSCHNEIDEN',wheel.labels)
+        self.assertEqual(wheel.labels,['KONVERTIEREN','BEARBEITEN','TOOLS'])
+        drop=QDropEvent(QPointF(252,82),Qt.DropAction.CopyAction,mime,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier)
+        wheel.dropEvent(drop);self.app.processEvents();self.assertTrue(drop.isAccepted());self.assertTrue(wheel.latched);self.assertFalse(wheel.automatic)
+        self.assertIn('format:PNG',wheel.labels)
         from direct_wheel import geometry
         point=next(entry[2] for entry in geometry(wheel) if entry[0]=='format:PNG')
-        drop=QDropEvent(point,Qt.DropAction.CopyAction,mime,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier)
-        wheel.dropEvent(drop);self.assertEqual(calls,[]);self.app.processEvents()
+        QTest.mouseClick(wheel,Qt.MouseButton.LeftButton,pos=point.toPoint());self.assertEqual(calls,[]);self.app.processEvents()
         self.assertEqual(calls,[([str(path)],'PNG')])
     @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'),'FFmpeg missing')
     def test_frame_steps_follow_variable_timestamps(self):

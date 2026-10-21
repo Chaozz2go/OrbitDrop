@@ -29,7 +29,12 @@ class DirectMenuTests(unittest.TestCase):
         self_root=self.root;target=Target();wheel=Wheel(target);self.addCleanup(wheel.close);wheel.open();wheel.inspect([str(self.image)])
         deadline=time.monotonic()+5
         while wheel.checking and time.monotonic()<deadline:self.app.processEvents();time.sleep(.01)
-        self.assertEqual(wheel.node,'direct');self.assertIn('format:PNG',wheel.labels);self.assertIn('edit:BITMAP',wheel.labels);self.assertIn('tool:TERMINAL',wheel.labels);self.assertIn('app:EINSTELLUNGEN',wheel.labels)
+        self.assertEqual(wheel.node,'home');self.assertEqual(wheel.labels,['KONVERTIEREN','BEARBEITEN','TOOLS'])
+        wheel.select_action('BEARBEITEN');self.assertIn('edit:BITMAP',wheel.labels);self.assertFalse(any(key.startswith('format:') for key in wheel.labels))
+        wheel.select_action('edit:ZURÜCK');self.assertEqual(wheel.node,'home');self.assertEqual(wheel.files,[str(self.image)])
+        wheel.select_action('TOOLS');self.assertIn('tool:TERMINAL',wheel.labels);self.assertIn('app:EINSTELLUNGEN',wheel.labels)
+        wheel.select_action('app:ZURÜCK');wheel.select_action('KONVERTIEREN')
+        self.assertEqual(wheel.node,'direct');self.assertIn('format:PNG',wheel.labels);self.assertTrue(all(key.startswith('format:') for key in wheel.labels))
         self.assertNotIn('format:JPG',wheel.labels);self.assertNotIn('format:SVG SCHNELL',wheel.labels);self.assertNotIn('WEITER',wheel.labels)
         for key,path,point,index in geometry(wheel):self.assertEqual(wheel.segment(point),index,key)
         key,path,point,index=next(entry for entry in geometry(wheel) if entry[0]=='format:PNG');QTest.mouseClick(wheel,Qt.MouseButton.LeftButton,pos=point.toPoint());self.app.processEvents();self.assertEqual(calls,[([str(self.image)],'PNG')])

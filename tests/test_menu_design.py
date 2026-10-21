@@ -15,7 +15,7 @@ class MenuDesignTests(unittest.TestCase):
         calls=[]
         class Target:
             def circle_action(self,files,action,kind):calls.append(action)
-        wheel=Wheel(Target());self.addCleanup(wheel.close);wheel.open();wheel.all_actions=['format:SVG SCHNELL','format:SVG ERWEITERT','app:EINSTELLUNGEN'];wheel.display_page();self.app.processEvents()
+        wheel=Wheel(Target());self.addCleanup(wheel.close);wheel.open();wheel.node='direct';wheel.all_actions=['format:SVG SCHNELL','format:SVG ERWEITERT','app:EINSTELLUNGEN'];wheel.display_page();self.app.processEvents()
         point=next(entry[2] for entry in geometry(wheel) if entry[0]=='format:SVG SCHNELL')
         QTest.mouseClick(wheel,Qt.MouseButton.LeftButton,pos=point.toPoint());self.app.processEvents();self.assertEqual(calls,['SVG SCHNELL'])
 
