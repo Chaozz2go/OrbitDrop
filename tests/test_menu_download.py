@@ -30,7 +30,7 @@ class MenuDownloadTests(unittest.TestCase):
         self.assertIn('format:PNG',labels);self.assertIn('format:SVG ERWEITERT',labels);self.assertIn('edit:ZUSCHNEIDEN',labels);self.assertIn('tool:TERMINAL',labels);self.assertIn('app:EINSTELLUNGEN',labels)
         self.assertEqual(len({direct_color(label) for label in labels}),3)
         self.assertNotIn('DREHEN',labels);self.assertIn('edit:90° LINKS',labels)
-        self.assertEqual(edit_actions(['sound.mp3'],'Audio'),['SCHNEIDEN'])
+        self.assertIn('SCHNEIDEN',edit_actions(['sound.mp3'],'Audio'))
     def test_link_validation_and_drag(self):
         for bad in ['file:///tmp/a','javascript:alert(1)','https://user:secret@host/a','https://x/a\nhttps://y','not a link','https://x:bad/a']:self.assertIsNone(media_link(bad))
         self.assertEqual(media_link(' https://example.org/watch?v=1 '),'https://example.org/watch?v=1')

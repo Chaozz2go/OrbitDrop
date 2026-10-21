@@ -1,10 +1,42 @@
-# OrbitDrop 0.11.1 – Windows-Prototyp
+# OrbitDrop 0.12.0 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
 ![Bildeditor mit Vorschau und Reglern](docs/preview-image-editor.png)
 
-## Neu in Version 0.11.1: Drei direkte Tastenzugänge
+## Neu in Version 0.12.0: Komprimieren, Markieren und Schnellaktionen
+
+**Shift = Konvertieren · Strg = Bearbeiten · Alt = Tools** bleibt unverändert.
+
+### Komprimieren mit überprüfter Zielgröße
+
+Datei(en) ziehen → **Strg → Komprimieren**. Für Bilder gibt es eine Vorher-/Nachher-Vorschau der ersten Datei, Qualität, längste Kante und WebP/JPG/PNG als Ausgabe. Die Größenanzeige stammt aus einer vollständigen Probekodierung, nicht aus einer Schätzung anhand des Vorschaubilds. Bei einer Auswahl wird jede Datei mit denselben Einstellungen einzeln verarbeitet; das Größenlimit gilt pro Datei.
+
+- **Video:** neue MP4 mit H.264/AAC, optional reduzierter Höhe. Ein gesetztes Limit aktiviert zwei Videodurchläufe mit berechnetem Bitratenbudget. Videos ohne Ton sind möglich.
+- **Audio:** neue MP3, einstellbare Bitrate. Mit Größenlimit wird eine passende niedrigere Bitrate gesucht.
+- **PDF:** verlustfreie strukturelle Optimierung, keine Rasterisierung. Das Layout und auswählbarer Text bleiben erhalten; bei bereits optimierten PDFs kann die Ersparnis gering sein.
+- **MB** bezeichnet 1.000.000 Byte. Übersteigt das fertige Ergebnis das Limit oder ist dieses unerreichbar, wird die neu angelegte Ausgabedatei entfernt und ein Fehler gemeldet. Ohne Limit ist eine Größenreduktion nicht garantiert. Das Limit eines großen Batches ist keine Grenze für dessen Gesamtgröße.
+- **Transparenz:** WebP/PNG erhalten Alpha, JPG erhält einen weißen Hintergrund. Bilder werden vor der Verarbeitung anhand ihrer EXIF-Ausrichtung gedreht.
+
+Originale werden nicht überschrieben. Ergebnisse landen neben der jeweiligen Quelldatei oder im eingestellten Ausgabeordner. Aufträge erscheinen im vorhandenen Verlauf und können abgebrochen werden. Bei Fehlern/Abbruch eines Komprimierungsstapels werden seine bereits erzeugten Ergebnisse ebenfalls entfernt. Video/Audio benötigen einen geeigneten FFmpeg-/FFprobe-Build mit den verwendeten Encodern.
+
+### Schwärzen und Beschriften
+
+Ein Bild ziehen → **Strg → Schwärzen & Beschriften**. Mit der Maus deckende schwarze Rechtecke, Pfeile oder Rahmen zeichnen; für Text eine Beschriftung eingeben und auf das Bild klicken. Farbe, Textgröße und Linienstärke gelten für neue Markierungen. **Verschieben** wählen und eine Markierung im Bild ziehen. Über die Liste lassen sich einzelne Markierungen entfernen. **Rückgängig/Wiederholen** bzw. Strg+Z/Strg+Y unterstützen die letzten 30 Schritte. Bis zu 200 Markierungen pro Bild.
+
+Der Export schreibt alle Markierungen in die Pixel einer neuen PNG-Kopie. Schwarze Flächen sind vollständig deckend, auch bei transparenten Vorlagen. Der Export enthält keine Bearbeitungsebenen, eingebettete Originalansicht oder Original-EXIF. Schwärzungen werden manuell gewählt; automatische Gesichts-/Texterkennung und Video-Schwärzung sind noch nicht enthalten. Empfindliche Stellen im Ergebnis kontrollieren.
+
+![Schwärzen und Beschriften mit fiktivem Beispielscreenshot](docs/preview-markieren.png)
+
+### Eigene Schnellaktionen
+
+Im Komprimieren-Dialog einen Namen eingeben und **Einstellungen merken** wählen. Die passende Schnellaktion erscheint beim nächsten Öffnen direkt im **Bearbeiten-Kreis**; ein Klick startet einen Auftrag mit den gespeicherten Einstellungen. Derzeit sind das Komprimierungsrezepte, keine frei programmierbaren Makros. Bild-/Video-/Audio-/PDF-Rezepte werden nur beim passenden Dateityp angezeigt. Es werden keine Quelldateien oder Ausgabepfade im Rezept gespeichert; der aktuelle Ausgabeordner gilt weiterhin.
+
+**Alt → Schnellaktionen** bietet die Verwaltung und **Startvorlagen hinzufügen**: Bilder fürs Web (WebP, max. 1600 px), Video 720p unter 20 MB und Audio klein (MP3, 96 kbit/s). Vorlagen werden nicht automatisch ungefragt in den Kreis gelegt. Schnellaktionen lassen sich entfernen; Namen müssen eindeutig sein. Bis zu 40 Rezepte werden dauerhaft in den Benutzereinstellungen gespeichert.
+
+Dieser Ausbau ergänzt die drei zuerst gewählten Funktionsgruppen. Metadateneditor, Audio-Normalisierung, weitere Video-Werkzeuge und PDF-Seitenübersicht bleiben nächste Ausbauschritte; siehe [ROADMAP.md](ROADMAP.md).
+
+## Änderungen in Version 0.11.1: Drei direkte Tastenzugänge
 
 Datei im Explorer ziehen und eine Taste kurz antippen, dann wieder loslassen:
 

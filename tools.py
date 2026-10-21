@@ -37,6 +37,17 @@ def tool_outputs(action,files,parameters,options):
     checkpoint(0,'Werkzeug wird vorbereitet …')
     created=[]
     try:
+        if action=='Komprimieren':
+            from compression import compress_files
+            return compress_files(sources,parameters,options)
+        if action=='Bild markieren':
+            from annotations import render_marks
+            if len(sources)!=1:raise ValueError('Bitte genau ein Bild auswählen.')
+            with Image.open(sources[0]) as original:
+                if getattr(original,'n_frames',1)>1 or original.width*original.height>80_000_000:raise ValueError('Bitte ein Einzelbild bis 80 Megapixel wählen.')
+                image=render_marks(ImageOps.exif_transpose(original),parameters.get('marks',[]))
+                output=reserve(sources[0].with_name(sources[0].stem+'_markiert.png'),'.png',folder);created.append(output);image.save(output,format='PNG')
+            checkpoint(100,'Markiertes Bild gespeichert');return [str(output)]
         if action=='Bild aufbereiten':
             from image_processing import process_image
             target=parameters.get('target','PNG')

@@ -1,6 +1,6 @@
 # OrbitDrop: Ausbau für Windows
 
-Stand 0.11.1. Eigenständige Oberfläche und Implementierung, inspiriert vom schnellen Drag-and-drop-Konzept. Die folgende Liste beschreibt geplante Arbeit, keine bereits zugesicherten Funktionen.
+Stand 0.12.0. Eigenständige Oberfläche und Implementierung, inspiriert vom schnellen Drag-and-drop-Konzept. Die folgende Liste beschreibt geplante Arbeit, keine bereits zugesicherten Funktionen.
 
 ## Erledigt in diesem Schritt
 
@@ -10,17 +10,17 @@ Stand 0.11.1. Eigenständige Oberfläche und Implementierung, inspiriert vom sch
 
 ## Als Nächstes: Bildwerkzeuge
 
-- Beschriftungen: Text, Pfeile, Formen, Markierungen und Rückgängig.
-- Manuelles Schwärzen/Unschärfe mit verschiebbaren Bereichen; automatische Gesichts-/Texterkennung separat prüfen.
+- Erledigt: manuelle Schwärzungen, Text, Pfeile, Rahmen, Verschieben und Rückgängig/Wiederholen. Noch offen: automatische Gesichts-/Texterkennung und weitere Formen.
+- Noch offen: Unschärfe-/Mosaikbereiche; sichere deckende Schwärzungen sind vorhanden.
 - Neue Leinwand mit Hintergrund, Rand, Schatten und abgerundeten Bildecken; anschließend Collagen und Mehrbild-PDF.
-- Komprimieren mit Qualitätsvorschau und optionalem Zielvolumen. Zielgrößen sind format- und inhaltsabhängig, daher nicht pauschal garantieren.
+- Erledigt: Bild-/Video-/Audio-/PDF-Komprimierung mit überprüftem Größenlimit; unerreichbare Ziele werden gemeldet. Bildvorschau und benannte Komprimierungsrezepte sind vorhanden.
 - Metadaten ansehen/bearbeiten/entfernen mit ExifTool; beschreibbare Felder je Dateityp prüfen.
 
 ## Danach: Video und Audio
 
 - Vorhandenen Schnitteditor weiterverwenden; keine zweite Schnittimplementierung für Downloads.
 - Video-Ausschnitt, Tempo mit Tonhöhenkorrektur, Stummschalten, gezielte PNG-Standbilder und Zusammenfügen.
-- Schwärzungsbereiche mit Zeitspannen und tatsächlicher Exportvorschau.
+- Video-Schwärzungsbereiche mit Zeitspannen und tatsächlicher Exportvorschau.
 - Audiowellenform, Lautheitsnormalisierung, Mono/Stereo, Pieptonbereiche und Visualisierung als Video.
 
 ## Danach: PDF und Windows-Integration

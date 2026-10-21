@@ -165,7 +165,7 @@ class Wheel(QWidget):
         self.setMouseTracking(True)
         self.resize(380, 410)
         self.circle_size=700
-        self.preview=None;self.ring_paths=[]
+        self.preview=None;self.ring_paths=[];self.action_titles={}
         self.selected = -1
         self.labels = []
         self.all_actions = []
@@ -247,8 +247,7 @@ class Wheel(QWidget):
             self.message='Konvertieren · Bearbeiten · Tools'
         else:
             self.node='direct'
-            hidden=getattr(getattr(self.controller,'prefs',None),'values',{}).get('hidden_formats',[])
-            actions=direct_actions(self.files,self.kind,self.formats,hidden,files_only=self.mode=='files')
+            actions=self.context_actions(files_only=self.mode=='files')
             prefixes={'convert':('format:',),'edit':('edit:',),'files':('tool:','app:')}[self.mode]
             self.all_actions=[action for action in actions if action.startswith(prefixes)]
             back='format:' if self.mode=='convert' else 'edit:' if self.mode=='edit' else 'app:'
@@ -257,6 +256,12 @@ class Wheel(QWidget):
             self.message=title+' · Datei hineinziehen' if not self.files else title+' · Aktion wählen'
             if self.files and len(self.all_actions)==1:self.message=title+' · Keine passenden Aktionen verfügbar'
         self.display_page()
+
+    def context_actions(self,files_only=False):
+        values=getattr(getattr(self.controller,'prefs',None),'values',{})
+        presets=values.get('quick_actions',[])
+        self.action_titles={'edit:quick:'+p['id']:p['name'] for p in presets}
+        return direct_actions(self.files,self.kind,self.formats,values.get('hidden_formats',[]),files_only=files_only,presets=presets)
 
     def segment(self, pos):
         if not self.labels or self.checking:
@@ -313,8 +318,7 @@ class Wheel(QWidget):
 
     def navigate(self,node):
         self.page_timer.stop();self.automatic=False;self.latched=True;self.page=0
-        hidden=getattr(getattr(self.controller,'prefs',None),'values',{}).get('hidden_formats',[])
-        actions=direct_actions(self.files,self.kind,self.formats,hidden)
+        actions=self.context_actions()
         if node=='home':
             self.node='home';self.all_actions=home_actions(self.files,self.kind,self.formats)
             self.message='Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools'
@@ -582,7 +586,22 @@ class Controller:
             else:self.submit(ToolJob(action,files,parameters,self.prefs.values),action)
     def circle_action(self,files,action,kind):
         try:
-            if action=='AUFTRÄGE':self.show_tasks()
+            if action=='KOMPRIMIEREN':
+                from compression_ui import CompressionDialog
+                CompressionDialog(files,kind,self.submit_editor,self.prefs).exec()
+            elif action=='MARKIEREN':
+                from annotation_ui import AnnotationDialog
+                if len(files)!=1:raise ValueError('Bitte ein Bild zum Markieren wählen.')
+                AnnotationDialog(files[0],self.submit_editor).exec()
+            elif action=='SCHNELLAKTIONEN':
+                from compression_ui import QuickActionsDialog
+                QuickActionsDialog(self.prefs).exec()
+            elif action.startswith('quick:'):
+                identifier=action.split(':',1)[1]
+                preset=next((p for p in self.prefs.values.get('quick_actions',[]) if p['id']==identifier),None)
+                if preset is None or preset['kind']!=kind:raise ValueError('Schnellaktion ist für diese Auswahl nicht verfügbar. Kreis erneut öffnen.')
+                self.submit(ToolJob('Komprimieren',files,preset['parameters'],self.prefs.values),preset['name'])
+            elif action=='AUFTRÄGE':self.show_tasks()
             elif action=='EINSTELLUNGEN':self.settings()
             elif action=='KONVERTER':self.media_status()
             elif action=='WERKZEUGE':self.tools(files)
@@ -712,7 +731,7 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.11.1 · Prototyp',
+        QMessageBox.information(None, 'OrbitDrop 0.12.0 · Prototyp',
             '1. Datei im Explorer mit linker Maustaste ziehen.\n'
             '2. '+shortcut_hint(self.prefs.values)+'. Kurz antippen und wieder loslassen.\n'
             '3. Der passende Bereich öffnet direkt. Während des Ziehens lässt sich der Bereich mit den Tasten wechseln.\n'

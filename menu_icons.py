@@ -7,7 +7,13 @@ def draw_icon(p,label,x,y,size=24):
     p.save();p.translate(x-size/2,y-size/2);p.scale(size/24,size/24);p.setBrush(Qt.BrushStyle.NoBrush)
     def line(x1,y1,x2,y2):p.drawLine(QPointF(x1,y1),QPointF(x2,y2))
     def rect(x,y,w,h,r=2):p.drawRoundedRect(QRectF(x,y,w,h),r,r)
-    if label=='ZURÜCK':
+    if label=='KOMPRIMIEREN':
+        line(2,2,9,9);line(9,9,3,9);line(9,9,9,3);line(22,22,15,15);line(15,15,15,21);line(15,15,21,15)
+    elif label=='MARKIEREN':
+        rect(2,12,12,9);line(10,15,19,3);line(19,3,22,6);line(22,6,13,18)
+    elif label.startswith('quick:') or label=='SCHNELLAKTIONEN':
+        path=QPainterPath(QPointF(14,2));path.lineTo(5,13);path.lineTo(11,13);path.lineTo(9,22);path.lineTo(20,10);path.lineTo(13,10);path.closeSubpath();p.drawPath(path)
+    elif label=='ZURÜCK':
         line(20,12,4,12);line(4,12,10,6);line(4,12,10,18)
     elif label in ('BILD EDITOR','EINSTELLUNGEN'):
         for yy,xx in [(5,8),(12,16),(19,7)]:line(3,yy,21,yy);p.drawEllipse(QPointF(xx,yy),2.5,2.5)
