@@ -83,6 +83,8 @@ class ActivationGuardTests(unittest.TestCase):
         self.assertFalse(c.selection_pending)
         self.poll(c, {KEY_CODES['Shift'], 1})
         c.wheel.open.assert_not_called(); c.request_selection.assert_not_called()
+        c.wheel.hide.reset_mock(); self.poll(c, {0x1B})
+        c.wheel.hide.assert_called_once()
 
     def test_late_link_result_is_discarded_after_window_change_or_pause(self):
         c = self.controller(ActivationContext((1, 2), False, True)); c.selection_revision = 7; c.selection_origin = (1, 2)

@@ -515,7 +515,7 @@ class Controller:
         p.drawEllipse(20, 20, 24, 24)
         p.end()
         self.tray = QSystemTrayIcon(QIcon(icon), app)
-        self.tray.setToolTip('OrbitDrop · '+shortcut_hint(self.prefs.values))
+        self.tray.setToolTip('OrbitDrop · Tastenzugänge pausiert' if self.shortcuts_paused else 'OrbitDrop · '+shortcut_hint(self.prefs.values))
         menu = QMenu()
         for label, callback in [('Aktionskreis', lambda: self.wheel.open()),
                                 ('Konvertieren', lambda: self.wheel.open(mode='convert')),
@@ -559,7 +559,10 @@ class Controller:
         key = ctypes.windll.user32.GetAsyncKeyState
         states={name:bool(key(code)&0x8000) for name,code in polling_keys(self.prefs.values).items()}
         left,escape=bool(key(0x01)&0x8000),bool(key(0x1B)&0x8000)
-        if self.shortcuts_paused or QApplication.activeModalWidget() is not None:
+        if self.shortcuts_paused:
+            if escape:self.wheel.hide()
+            self.was_keys=states;self.selection_pending=False;return
+        if QApplication.activeModalWidget() is not None:
             self.was_keys=states;self.selection_pending=False;return
         mode=pressed_mode(self.prefs.values,states,self.was_keys)
         context=self.activation_guard.context()
@@ -725,7 +728,7 @@ class Controller:
 
     def settings(self):
         if SettingsDialog(self.prefs).exec():
-            self.tray.setToolTip('OrbitDrop · '+shortcut_hint(self.prefs.values))
+            self.tray.setToolTip('OrbitDrop · Tastenzugänge pausiert' if self.shortcuts_paused else 'OrbitDrop · '+shortcut_hint(self.prefs.values))
     def quit(self):
         if self.tasks.has_running():
             self.tasks.cancel_all();self.show_tasks()
