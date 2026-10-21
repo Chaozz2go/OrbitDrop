@@ -50,17 +50,18 @@ jobs:
           if (-not (Get-Content $report | ConvertFrom-Json).ok) { throw 'Installed smoke checks failed' }
           Copy-Item $report dist/release/installed-smoke.json
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         if: always()
         with:
           name: OrbitDrop-Windows-x64
           path: dist/release/*
           if-no-files-found: warn
           retention-days: 30
-      - name: Publish private release
-        if: success() && env.PUBLISH_RELEASE == 'true'
+      - name: Save tested package as unpublished release draft
+        if: success()
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
           $version = python -c "from app_version import VERSION; print(VERSION)"
-          gh release create "v$version" dist/release/* --target "$env:GITHUB_SHA" --title "OrbitDrop $version" --notes-file release-notes.md
+          gh release create "v$version" dist/release/* --draft --target "$env:GITHUB_SHA" --title "OrbitDrop $version" --notes-file release-notes.md

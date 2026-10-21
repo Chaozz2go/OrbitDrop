@@ -10,7 +10,7 @@ Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienko
 
 Der Windows-Build erzeugt ein **Setup für Windows x64** und ein **portables ZIP**. Python, Qt, FFmpeg/FFprobe sowie deutsche und englische OCR-Sprachdaten werden mitgeliefert. Das Setup installiert im Benutzerprofil ohne Administratorrechte, legt eine Startmenü-Verknüpfung an und bietet eine Deinstallation. Beim portablen Paket den gesamten Ordner behalten. Windows 10 ab Build 17763 oder Windows 11; ARM64 ist kein getestetes Ziel. Die Programme sind bisher nicht digital signiert.
 
-Die GitHub-Automation führt zuerst die Tests aus, baut dann das Paket, prüft die gebündelte EXE mit echten Bild-, PDF-, Audio- und Videooperationen und installiert das Setup anschließend unbeaufsichtigt für einen weiteren Funktionstest. Ein grüner Build ersetzt keine manuelle Prüfung auf deinem Rechner.
+Die GitHub-Automation führt zuerst die Tests aus, baut dann das Paket, prüft die gebündelte EXE mit echten Bild-, PDF-, Audio- und Videooperationen und installiert das Setup anschließend unbeaufsichtigt für einen weiteren Funktionstest. Ein grüner Build ersetzt keine manuelle Prüfung auf deinem Rechner. Getestete Pakete werden als unveröffentlichter Release-Entwurf hinterlegt; das erzeugt keine öffentliche Freigabe.
 
 ### Updates
 
