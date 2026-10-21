@@ -6,7 +6,7 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QDialog,QVBoxLayout,QHBoxLayout,QFormLayout,QLabel,QComboBox,QSpinBox,QDoubleSpinBox,QPushButton,QLineEdit,QMessageBox,QListWidget,QSizePolicy
 from editor_chrome import EDITOR_STYLE,heading
 from slider_field import SliderField
-from compression import compression_settings,image_bytes
+from orbit_compression import compression_settings,image_bytes
 from image_editor import pil_qimage
 from quick_actions import save_preset
 

@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtTest import QTest
 from annotations import render_marks
 from annotation_ui import AnnotationDialog
-from compression import image_bytes,compress_files,compression_settings
+from orbit_compression import image_bytes,compress_files,compression_settings
 from compression_ui import CompressionDialog,QuickActionsDialog
 from quick_actions import save_preset,validate_presets
 from preferences import Preferences

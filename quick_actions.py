@@ -1,6 +1,6 @@
 """Named compression recipes, not executable shell commands."""
 import uuid
-from compression import compression_settings
+from orbit_compression import compression_settings
 
 
 def validate_presets(items):

@@ -1,10 +1,16 @@
-# OrbitDrop 0.12.0 – Windows-Prototyp
+# OrbitDrop 0.12.1 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
 ![Bildeditor mit Vorschau und Reglern](docs/preview-image-editor.png)
 
-## Neu in Version 0.12.0: Komprimieren, Markieren und Schnellaktionen
+## Neu in Version 0.12.1: Start unter Python 3.15 korrigiert
+
+Das Projektmodul `compression.py` wurde in `orbit_compression.py` umbenannt. Der alte Name verdeckte unter Python 3.15 das gleichnamige Standardbibliothekspaket, das `gzip` intern verwendet, und verhinderte dadurch den Programmstart.
+
+**Update:** Dieses ZIP in einen neuen Ordner entpacken und dort `Start.cmd` starten. Beim manuellen Übertragen in einen bestehenden Ordner muss die alte Datei `compression.py` entfernt werden; nur Überschreiben reicht bei einer Umbenennung nicht. Einstellungen und Verlauf liegen im Benutzerprofil und bleiben erhalten.
+
+## Änderungen in Version 0.12.0: Komprimieren, Markieren und Schnellaktionen
 
 **Shift = Konvertieren · Strg = Bearbeiten · Alt = Tools** bleibt unverändert.
 

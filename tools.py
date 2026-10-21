@@ -38,7 +38,7 @@ def tool_outputs(action,files,parameters,options):
     created=[]
     try:
         if action=='Komprimieren':
-            from compression import compress_files
+            from orbit_compression import compress_files
             return compress_files(sources,parameters,options)
         if action=='Bild markieren':
             from annotations import render_marks
