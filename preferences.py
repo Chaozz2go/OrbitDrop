@@ -7,7 +7,7 @@ import subprocess
 import sys
 import tempfile
 
-DEFAULTS={'favorite_actions':[],'workflows':[],'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
+DEFAULTS={'check_updates':False,'favorite_actions':[],'workflows':[],'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
           'convert_key':'Shift','edit_key':'Strg','files_key':'Alt','autostart':False,'check_backends':True}
 KEY_CODES={'Shift':0x10,'Strg':0x11,'Alt':0x12}
 
@@ -56,7 +56,7 @@ class Preferences:
         result['video_height']=int(result['video_height'])
         if not isinstance(result['download_dir'],str):raise ValueError('Ungültiger Downloadordner.')
         if not isinstance(result['output_dir'],str):raise ValueError('Ungültiger Ausgabeordner.')
-        for key in ('autostart','check_backends'):result[key]=bool(result[key])
+        for key in ('autostart','check_backends','check_updates'):result[key]=bool(result[key])
         return result
     def update(self,values):
         values=self.validate(values)

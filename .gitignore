@@ -8,3 +8,5 @@ dist/
 *.log
 bin/*.exe
 bin/*.dll
+.build-venv/
+tessdata/

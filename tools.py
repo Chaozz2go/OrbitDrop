@@ -37,6 +37,12 @@ def tool_outputs(action,files,parameters,options):
     checkpoint(0,'Werkzeug wird vorbereitet …')
     created=[]
     try:
+        if action=='Audio verbessern':
+            from audio_tools import improve_audio
+            return improve_audio(sources,parameters,options)
+        if action=='OCR PDF':
+            from local_ocr import ocr_pdf
+            return ocr_pdf(sources,parameters,options)
         if action=='Bildablauf':
             from workflows import run_workflow
             return run_workflow(sources,parameters['steps'],options)

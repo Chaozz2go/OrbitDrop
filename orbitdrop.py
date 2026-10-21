@@ -509,6 +509,7 @@ class Controller:
                                 ('Dateiablage öffnen', lambda: self.shelf.open()),
                                 ('Aufträge & Verlauf', self.show_tasks),
                                 ('Einstellungen', self.settings),
+                                ('Updates', self.updates),
                                 ('Werkzeuge: Bilder / PDF / Video', self.tools),
                                 ('Konverter prüfen / einrichten', self.media_status),
                                 ('Anleitung', self.help), ('Beenden', self.quit)]:
@@ -525,6 +526,15 @@ class Controller:
         self.tray.showMessage('OrbitDrop bereit','Datei ziehen: '+shortcut_hint(self.prefs.values))
         if '--preview' in sys.argv:self.wheel.open()
         if self.prefs.values['check_backends']:QTimer.singleShot(300,lambda:self.check_backends(False))
+        if self.prefs.values.get('check_updates'):
+            import time
+            marker=self.prefs.root/'update-check.time'
+            try:last=float(marker.read_text())
+            except (OSError,ValueError):last=0
+            if time.time()-last>86400:
+                try:marker.write_text(str(time.time()))
+                except OSError:pass
+                QTimer.singleShot(1500,self.auto_update_check)
 
     def activated(self, reason):
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
@@ -593,7 +603,15 @@ class Controller:
             else:self.submit(ToolJob(action,files,parameters,self.prefs.values),action)
     def circle_action(self,files,action,kind):
         try:
-            if action=='AKTIONSSUCHE':self.search_actions(files,kind)
+            if action=='TEXT ERKENNEN':
+                from ocr_ui import OcrDialog
+                if len(files)!=1:raise ValueError('Bitte ein Bild oder PDF wählen.')
+                OcrDialog(files[0],self.prefs,self.submit_editor).exec()
+            elif action=='AUDIO VERBESSERN':
+                from audio_tools_ui import AudioToolsDialog
+                AudioToolsDialog(files,self.submit_editor).exec()
+            elif action=='UPDATES':self.updates()
+            elif action=='AKTIONSSUCHE':self.search_actions(files,kind)
             elif action=='BILDABLÄUFE':
                 from workflow_ui import WorkflowDialog
                 WorkflowDialog(self.prefs).exec()
@@ -652,6 +670,22 @@ class Controller:
             elif action=='PDF TEILEN':self.tools(files,'PDF aufteilen')
             elif action=='PDF VERBINDEN':self.tools(files,'PDFs zusammenfügen')
         except Exception as error:QMessageBox.warning(None,'OrbitDrop · Bearbeiten',str(error))
+    def updates(self):
+        from update_ui import UpdateDialog
+        UpdateDialog(self.prefs,self.install_update).exec()
+    def install_update(self,installer):
+        import subprocess
+        from updater import verify_installer
+        if sys.platform!='win32':raise OSError('Setup kann nur unter Windows gestartet werden.')
+        if self.jobs or self.tasks.has_running() or self.pool.activeThreadCount():raise ValueError('Noch Hintergrundaufträge aktiv. Bitte kurz warten oder laufende Aufträge beenden.')
+        path=verify_installer(installer,self.prefs.root);subprocess.Popen([str(path)]);QTimer.singleShot(100,self.app.quit)
+    def auto_update_check(self):
+        from update_ui import UpdateJob
+        from updater import latest_release
+        self.update_job=UpdateJob(lambda progress:latest_release());self.update_job.signals.done.connect(self.update_checked);self.pool.start(self.update_job)
+    def update_checked(self,info,error):
+        self.update_job=None
+        if info and info['newer']:self.tray.showMessage('OrbitDrop-Update',info['version']+' verfügbar. Im Kreis: Alt → Updates.')
     def search_actions(self,files=None,kind=None):
         from action_search import ActionSearchDialog
         files=list(files or []);actions=self.wheel.context_actions()
@@ -760,7 +794,7 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.16.0 · Prototyp',
+        QMessageBox.information(None, 'OrbitDrop 0.17.0 · Prototyp',
             '1. Datei im Explorer mit linker Maustaste ziehen.\n'
             '2. '+shortcut_hint(self.prefs.values)+'. Kurz antippen und wieder loslassen.\n'
             '3. Der passende Bereich öffnet direkt. Während des Ziehens lässt sich der Bereich mit den Tasten wechseln.\n'
@@ -776,7 +810,7 @@ class Controller:
             'Audio/Video benötigen ffmpeg.exe und ffprobe.exe im Ordner bin oder PATH.\n'
             'Office/E-Books benötigen je nach Format LibreOffice und Pandoc.\n'
             'Viele Formate erscheinen in mehreren Ringen; ungenutzte Ziele in Einstellungen ausblenden.\n'
-            'PDF: Bilder als ZIP, PPTX als Seitenbilder, DOCX als Text; keine OCR.\n'
+            'PDF: Bilder als ZIP, PPTX als Seitenbilder, DOCX als Text; OCR über Strg → Text erkennen.\n'
             'Bitte ohne Administratorrechte starten, genauso wie den Explorer.')
 
 if __name__ == '__main__':

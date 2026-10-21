@@ -1,6 +1,26 @@
 """One Windows build path for local builds and CI, with a frozen-app smoke test."""
 import argparse,hashlib,json,platform,re,shutil,subprocess,sys,zipfile
+import importlib.metadata
 from pathlib import Path
+
+
+def collect_notices(root):
+    target=root/'build'/'third-party';target.mkdir(parents=True,exist_ok=True)
+    packages=[]
+    for dist in importlib.metadata.distributions():
+        name=dist.metadata.get('Name','unknown');version=dist.version
+        packages.append(name+'=='+version)
+        for file in dist.files or []:
+            parts=Path(str(file)).parts
+            if not any(part.endswith(('.dist-info','.egg-info')) for part in parts):continue
+            if not any(token in file.name.lower() for token in ('license','copying','notice','copyright')):continue
+            source=Path(dist.locate_file(file))
+            if source.is_file():
+                destination=target/re.sub(r'[^A-Za-z0-9_.-]','_',name)/Path(*parts[1:])
+                destination.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source,destination)
+    (target/'packages.txt').write_text('\n'.join(sorted(packages))+'\n',encoding='utf-8')
+    shutil.copyfile(root/'THIRD-PARTY-NOTICES.md',target/'THIRD-PARTY-NOTICES.md')
+    return target
 
 
 def build(onefile=False):
@@ -9,7 +29,8 @@ def build(onefile=False):
     version=re.search(r"StringStruct\('ProductVersion','([^']+)'",(root/'version_info.txt').read_text()).group(1)
     args=[sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onefile' if onefile else '--onedir','--windowed','--name','OrbitDrop','--version-file','version_info.txt']
     for package in ('pillow_heif','pymupdf','av','vtracer','yt_dlp','yt_dlp_ejs'):args+=['--collect-all',package]
-    args+=['--add-data','README.md;.']
+    notices=collect_notices(root)
+    args+=['--add-data','README.md;.','--add-data',str(notices)+';third-party']
     for file in (root/'bin').glob('*'):
         if file.is_file():args+=['--add-binary' if file.suffix.lower() in ('.exe','.dll') else '--add-data',str(file)+';bin']
     if (root/'tessdata').is_dir():args+=['--add-data','tessdata;tessdata']

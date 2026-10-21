@@ -1,8 +1,32 @@
-# OrbitDrop 0.16.0 – Windows-Prototyp
+# OrbitDrop 0.17.0 – Windows
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
 ![Bildeditor mit Vorschau und Reglern](docs/preview-photo-studio.png)
+
+## Neu in Version 0.17.0: Windows-Paket, Updates, OCR und Audio
+
+### Installation ohne Python
+
+Der Windows-Build erzeugt ein **Setup für Windows x64** und ein **portables ZIP**. Python, Qt, FFmpeg/FFprobe sowie deutsche und englische OCR-Sprachdaten werden mitgeliefert. Das Setup installiert im Benutzerprofil ohne Administratorrechte, legt eine Startmenü-Verknüpfung an und bietet eine Deinstallation. Beim portablen Paket den gesamten Ordner behalten. Windows 10 ab Build 17763 oder Windows 11; ARM64 ist kein getestetes Ziel. Die Programme sind bisher nicht digital signiert.
+
+Die GitHub-Automation führt zuerst die Tests aus, baut dann das Paket, prüft die gebündelte EXE mit echten Bild-, PDF-, Audio- und Videooperationen und installiert das Setup anschließend unbeaufsichtigt für einen weiteren Funktionstest. Ein grüner Build ersetzt keine manuelle Prüfung auf deinem Rechner.
+
+### Updates
+
+**Alt → Updates** zeigt neue stabile GitHub-Releases. Die tägliche Prüfung beim Start lässt sich dort einschalten und ist zunächst aus. Downloads werden anhand der veröffentlichten SHA-256-Prüfsumme geprüft; direkt vor dem Start des Setups wird erneut geprüft. **Installieren** ist eine bewusste Aktion und wartet, bis Hintergrundaufträge beendet sind. Die Prüfsumme ersetzt keine digitale Signatur. Die automatische Prüfung benötigt ein öffentliches Repository und ein veröffentlichtes Release; solange das Repository privat ist, bleibt der Browser-Link zu Releases verfügbar.
+
+### Lokale Texterkennung
+
+Ein Bild oder PDF wählen → **Strg → Text erkennen**. Sprache Deutsch, Englisch oder beide und die Auflösung wählen. Erkannten Text korrigieren, kopieren oder als neue TXT-Datei speichern. **Scan-PDF erstellen** erzeugt ein neues durchsuchbares PDF. Dabei werden Seiten neu gerendert: Vektoren, Formulare und interaktive Elemente bleiben in dieser Ausgabe nicht erhalten. Originale bleiben erhalten. Maximal 500 PDF-Seiten und 50 Megapixel pro gerenderter Seite/Bild; keine verschlüsselten PDFs. Falls Sprachdaten fehlen, lädt **Deutsch/Englisch einrichten** nur die geprüften Sprachdateien herunter. Dokumente werden für OCR nicht hochgeladen. Die normale PDF→DOCX-Konvertierung startet OCR nicht automatisch.
+
+### Audio verbessern
+
+Audio wählen → **Strg → Audio verbessern**. Lautheit in zwei Durchgängen normalisieren (z. B. −16 oder −23 LUFS), Stille ausschließlich an Anfang/Ende entfernen und Ein-/Ausblenden einstellen. Innere Pausen bleiben erhalten. Die Schwelle für Randstille lässt sich mit einem Regler anpassen; sehr leise Randstellen können dabei ebenfalls entfallen. Export als FLAC, WAV oder MP3 erzeugt neue Dateien. Unmögliche Fade-Längen und vollständig stille Eingaben beim Trimmen werden abgewiesen.
+
+### Selbst bauen
+
+Für den Windows-Build **Python 3.12 x64** und **Inno Setup 6** installieren, dann `Build-EXE.cmd` starten. Das Skript richtet eine eigene Build-Umgebung ein, lädt FFmpeg und OCR-Sprachdaten und verwendet denselben Buildpfad wie die Automation. Ergebnisse liegen unter `dist/release`. Für einen Quellstart bleibt `Start.cmd` verfügbar.
 
 ## Neu in Version 0.16.0: Suchen, Favoriten, PDF-Seiten und Bildabläufe
 
@@ -12,7 +36,7 @@ Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienko
 
 ### Visuelle PDF-Seitenverwaltung
 
-Ein PDF wählen → **Strg → PDF-Seiten** oder Aktionssuche. Vorschaubilder zeigen die Seiten. Mit Strg/Shift mehrfach auswählen, per Drag-and-drop oder mit den Pfeilbuttons verschieben, um 90° drehen, duplizieren und entfernen. **Entf** entfernt die Auswahl; **Strg+Z** beziehungsweise **Rückgängig** nimmt Seitenänderungen zurück. Export erzeugt eine neue PDF in der angezeigten Reihenfolge. Unterschiedliche Drehungen duplizierter Seiten bleiben unabhängig. Das Original wird nicht verändert. Nach externer Änderung der Quelldatei muss die Übersicht neu geöffnet werden. Grenzen: 1000 Quellseiten, 2000 Ausgabeseiten; keine verschlüsselten PDFs. OCR bleibt ein späterer Ausbau.
+Ein PDF wählen → **Strg → PDF-Seiten** oder Aktionssuche. Vorschaubilder zeigen die Seiten. Mit Strg/Shift mehrfach auswählen, per Drag-and-drop oder mit den Pfeilbuttons verschieben, um 90° drehen, duplizieren und entfernen. **Entf** entfernt die Auswahl; **Strg+Z** beziehungsweise **Rückgängig** nimmt Seitenänderungen zurück. Export erzeugt eine neue PDF in der angezeigten Reihenfolge. Unterschiedliche Drehungen duplizierter Seiten bleiben unabhängig. Das Original wird nicht verändert. Nach externer Änderung der Quelldatei muss die Übersicht neu geöffnet werden. Grenzen: 1000 Quellseiten, 2000 Ausgabeseiten; keine verschlüsselten PDFs. Lokale OCR ist seit 0.17.0 separat über Text erkennen verfügbar.
 
 ### Stapel-Umbenennen mit Vorschau
 

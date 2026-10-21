@@ -1,6 +1,6 @@
 # OrbitDrop: Ausbau für Windows
 
-Stand 0.16.0. Eigenständige Oberfläche und Implementierung, inspiriert vom schnellen Drag-and-drop-Konzept. Die folgende Liste beschreibt geplante Arbeit, keine bereits zugesicherten Funktionen.
+Stand 0.17.0. Eigenständige Oberfläche und Implementierung, inspiriert vom schnellen Drag-and-drop-Konzept. Die folgende Liste beschreibt geplante Arbeit, keine bereits zugesicherten Funktionen.
 
 ## Erledigt in diesem Schritt
 
@@ -30,7 +30,7 @@ Stand 0.16.0. Eigenständige Oberfläche und Implementierung, inspiriert vom sch
 ## Danach: PDF und Windows-Integration
 
 - Erledigt: visuelle Seitenverwaltung mit Verschieben, Drehen, Duplizieren, Entfernen und neuer PDF-Ausgabe.
-- Lokale OCR für gescannte PDFs; Office-Exportqualität und Einschränkungen klar anzeigen.
+- Erledigt: lokale OCR für Bilder und gescannte PDFs. Weiter offen: Office-Exportqualität verbessern.
 - Windows-Teilen statt AirDrop; nicht als identisches Apple-Protokoll darstellen.
 - Explorer-Drag-and-drop, Mehrfachauswahl, mehrere Monitore und unterschiedliche DPI auf Windows testen.
 - Tastatursteuerung für den Kreis ergänzen; globale Tasten dürfen normale Explorer-Bedienung nicht stören.

@@ -6,6 +6,10 @@ def home_actions(files,kind,formats):return list(HOME)
 
 def edit_actions(files,kind):
     actions=[]
+    if kind in ('Bild','PDF') and len(files)==1:actions.append('TEXT ERKENNEN')
+    if kind=='Audio':
+        from filetypes import backend
+        if backend('ffmpeg') and backend('ffprobe'):actions.append('AUDIO VERBESSERN')
     if kind=='Bild':
         if len(files)==1:actions+=['BILD EDITOR','ZUSCHNEIDEN','MARKIEREN']
         actions+=['DREHEN','GRÖSSE','SCHWARZWEISS','BITMAP']
@@ -43,7 +47,7 @@ def direct_actions(files,kind,formats,hidden=(),files_only=False,presets=(),work
         actions+=['edit:quick:'+item['id'] for item in presets if item['kind']==kind]
     if not files_only and kind=='Bild':actions+=['edit:flow:'+item['id'] for item in workflows]
     if files:actions+=['tool:'+action for action in available_file_actions(files)]
-    actions+=['app:AKTIONSSUCHE','app:BILDABLÄUFE','app:SCHNELLAKTIONEN','app:LINK LADEN','app:AUFTRÄGE','app:EINSTELLUNGEN','app:KONVERTER','app:DEBUGGING','app:HILFE']
+    actions+=['app:AKTIONSSUCHE','app:UPDATES','app:BILDABLÄUFE','app:SCHNELLAKTIONEN','app:LINK LADEN','app:AUFTRÄGE','app:EINSTELLUNGEN','app:KONVERTER','app:DEBUGGING','app:HILFE']
     return actions
 
 

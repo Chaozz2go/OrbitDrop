@@ -1,26 +1,22 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-if not exist ".venv\Scripts\python.exe" (
- py -3 -m venv .venv
+if not exist ".build-venv\Scripts\python.exe" (
+ py -3.12 -m venv .build-venv
  if errorlevel 1 goto failed
 )
-".venv\Scripts\python.exe" -m pip install -r requirements.txt "pyinstaller>=6,<7"
+".build-venv\Scripts\python.exe" -m pip install --only-binary=:all: -r requirements-dev.txt "pyinstaller>=6,<7"
 if errorlevel 1 goto failed
-set "ORBIT_PACKAGE_MODE=--onedir"
-if /i "%~1"=="--onefile" set "ORBIT_PACKAGE_MODE=--onefile"
-set "ORBIT_MEDIA_FLAGS="
-if exist "bin\ffmpeg.exe" if exist "bin\ffprobe.exe" set ORBIT_MEDIA_FLAGS=--add-binary "bin\ffmpeg.exe;bin" --add-binary "bin\ffprobe.exe;bin"
-".venv\Scripts\python.exe" -m PyInstaller --noconfirm --clean %ORBIT_PACKAGE_MODE% --windowed --name OrbitDrop --version-file version_info.txt --collect-all pillow_heif --collect-all pymupdf --collect-all av --collect-all vtracer --collect-all yt_dlp --collect-all yt_dlp_ejs --add-data "README.md;." %ORBIT_MEDIA_FLAGS% orbitdrop.py
+".build-venv\Scripts\python.exe" -c "from media_setup import install_media; install_media()"
 if errorlevel 1 goto failed
-echo.
-echo Fertig. Ausgabe im Ordner dist.
-echo Bei Ordner-Paket: den GESAMTEN Ordner dist\OrbitDrop weitergeben.
-echo Python ist fuer den Empfaenger nicht erforderlich.
+".build-venv\Scripts\python.exe" -c "from ocr_data import install_languages; install_languages('tessdata')"
+if errorlevel 1 goto failed
+".build-venv\Scripts\python.exe" windows_build.py %1
+if errorlevel 1 goto failed
+echo Fertig. Ausgabe unter dist\release. Python ist beim Empfaenger nicht erforderlich.
 pause
 exit /b 0
 :failed
-echo.
-echo Build fehlgeschlagen. Fehlermeldung oberhalb pruefen.
+echo Build fehlgeschlagen. Python 3.12 x64, Inno Setup 6 und Meldung oberhalb pruefen.
 pause
 exit /b 1
