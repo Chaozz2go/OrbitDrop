@@ -1,8 +1,33 @@
-# OrbitDrop 0.8.3 – Windows-Prototyp
+# OrbitDrop 0.9.0 – Windows-Prototyp
 
 Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
 
-## Neu in Version 0.8.3
+## Neu in Version 0.9.0
+
+### Neues Menü nach dem freigegebenen Mockup
+
+Der native Qt-Kreis verwendet große Symbole, feste Farbverläufe (Grün/Orange/Blau) und vollständig lesbare Außenbeschriftungen. Auch die Beschriftungen sind klick-/dropfähig. Die Mitte zeigt bei einem Einzelbild bis 40 Megapixel eine Dateivorschau, sonst Dateiname/Typ. Untermenüs öffnen sich als Auswahlkarten rechts neben dem Kreis; SVG bietet zwei große Karten für Schnell/Erweitert. Klick auf einen anderen Farbbereich wechselt den Bereich. Esc schließt weiterhin. Die Seitennavigation über WEITER bleibt erhalten; besonders lange Formatlisten werden aufgeteilt. Die Umsetzung verwendet native Zeichenoperationen, keine generierten UI-Bilder. Die Bildschirmposition wird beim Öffnen/Größenwechsel auf den verfügbaren Monitorbereich begrenzt; Windows-DPI und native Explorer-Drags bitte weiterhin am Gerät prüfen.
+
+### Downloads: Ordner merken und Fenster hervorholen
+
+Der zuletzt für einen gestarteten Download gewählte Zielordner wird separat als `download_dir` in den Einstellungen gespeichert, auch nach Neustart. Dadurch bleibt der Konvertierungs-Ausgabeordner unverändert. Falls das letzte Ziel nicht mehr existiert, fällt der Dialog auf Downloads zurück. Der neue Downloaddialog gehört zur Auftragsansicht und bleibt darüber; minimierte Aufträge werden wiederhergestellt. Nach Start eines Downloads wird dessen neuer Eintrag ausgewählt und die Auftragsansicht aktiviert. Die Aktivierung wird über Qt angefordert; das genaue Windows-Fokusverhalten muss am Gerät geprüft werden.
+
+
+### Graustufen, Schwarzweiß und Bitmap
+
+Bild → **Bearbeiten → Schwarzweiß** öffnet einen Dialog mit Original-/Ergebnisvorschau. Standard ist Graustufen (8 Bit), alternativ echtes Schwarzweiß mit zwei Farben (1 Bit). Helligkeit, Kontrast, automatische/manuelle Schwelle, Glättung, Invertieren und Floyd–Steinberg-Rasterung sind einstellbar. Ausgabe als neue PNG-Datei. **Bearbeiten → Bitmap** öffnet denselben Ablauf mit 1-Bit-Ausgabe als BMP. Das bisherige **Konvertieren → BMP** bleibt ein normaler Rasterformat-Export; eine BMP-Datei allein bedeutet noch nicht Schwarzweiß. Mehrere Bilder können mit den Standardwerten im Stapel verarbeitet werden. Transparenz wird bei der Vorbereitung auf Weiß gelegt, EXIF-Orientierung beachtet. Originale bleiben erhalten.
+
+### SVG vektorisieren: Schnell oder Erweitert
+
+Bild → **Konvertieren → SVG** → **SVG Schnell** oder **SVG Erweitert**.
+
+- Schnell erledigt die Zwischenstufen automatisch: Transparenz auf Weiß, Graustufen, automatische Schwarzweiß-Schwelle, kleine Flecken entfernen, weiche Vektorkonturen.
+- Erweitert zeigt für ein Bild Original und echte Ergebnisvorschau. Bildmodus Schwarzweiß/Graustufen/Farbe, Schwellwert, Kontrast, Helligkeit, Glättung, Invertieren, Rasterung, Arbeitsauflösung, Fleckenfilter, Farbzahl, Konturvereinfachung und Kurvenform sind einstellbar. Bei Schwarzweiß gilt die Schwelle; bei Farbe/Graustufen die Farbzahl. Der Fleckenfilter und die Vereinfachung beeinflussen nur SVG. Rasterung erzeugt viele kleine Punkte; für Logos meist ausgeschaltet lassen.
+- Ausgabe enthält echte SVG-Pfade, keine eingebettete Rasterdatei. Weißer Hintergrund optional, bei Schwarzweiß sonst transparent. Ursprüngliche Abmessungen bleiben über viewBox/Skalierung erhalten. Arbeitsauflösung standardmäßig längste Kante 1600 Pixel, maximal 2400; große Bilder werden für die Vektorisierung verkleinert. Rasterexport bleibt in Originalauflösung, maximal 80 Megapixel.
+- Besonders geeignet für Logos, Silhouetten und Strichzeichnungen. Fotos werden vereinfacht; Detailverlust und andere Konturen sind möglich. Weißes/leeres Bild kann ein leeres SVG ergeben. Die Vorschau basiert auf den gleichen Verarbeitungsparametern wie der Export. Konvertierung erfolgt im Hintergrund; Abbrechen kann während eines laufenden nativen Trace-Aufrufs erst danach greifen.
+- VTracer ist auf **1.0.0a4** festgelegt (Vorabversion mit Windows-ABI3-Wheel für Python 3.15); Start.cmd installiert die neue Abhängigkeit, keine manuelle Compilerinstallation. PyInstaller sammelt das Modul ein. Eingabe-SVG wird weiterhin über Qt gerastert; keine SVG-zu-SVG-Bearbeitung.
+
+## Änderungen in Version 0.8.3
 
 Download-Fix für Windows: Wird die Fortschrittsdatei beim Umbenennen vorübergehend gesperrt (WinError 5), läuft der Download weiter. Die letzte lesbare Fortschrittsanzeige bleibt bestehen und spätere Aktualisierungen versuchen es erneut. Fortschrittsmeldungen sind auf fünf pro Sekunde begrenzt und innerhalb des Workers synchronisiert. Schreibfehler der Fortschrittsanzeige werden abgefangen; tatsächliche Download-/Exportfehler werden weiterhin gemeldet. Keine Administratorrechte oder Änderungen am Virenschutz erforderlich.
 
@@ -192,7 +217,7 @@ Ein Neustart von OrbitDrop nach Installation der Backends ist empfohlen.
 | Kategorie | Eingabe / Ausgabe | Umsetzung und Grenzen |
 |---|---|---|
 | Bilder | JPG, PNG, WebP, HEIC, TIFF, AVIF, BMP → dieselben Formate plus PDF | Pillow + HEIF-Plugin. Nur ein Einzelbild; mehrseitige TIFF/HEIF und APNG nicht unterstützt. JPG/BMP/PDF erhalten bei Transparenz weißen Hintergrund. HDR/Farbraum/Metadaten werden nicht originalgetreu garantiert. |
-| SVG | SVG → Bildformate/PDF | Nur Eingabe; Rasterung über Qt. Keine Skripte, eingebetteten Bilder oder externen Referenzen. Keine SVG-Ausgabe. |
+| SVG | SVG → Bildformate/PDF | SVG-Eingabe: Rasterung über Qt. Keine Skripte, eingebetteten Bilder oder externen Referenzen. Rasterbilder können als SVG vektorisiert werden; Eingabe-SVG wird nur gerastert. |
 | Audio | MP3, M4A, WAV, FLAC, OGG, Opus, AIFF, WMA | FFprobe prüft echte Audiostreams; verfügbare FFmpeg-Encoder bestimmen die Ausgabeaktionen. Neuencodierung kann Qualität reduzieren. |
 | Video | MP4, MOV, MKV, WebM, AVI, WMV, GIF | FFmpeg. Audioexport nur bei vorhandenem Audiostream. Erstes Standbild als eigene Aktion. GIF-Ausgabe: 12 FPS, 480 Pixel Breite; kein Ton. Video nimmt den ersten echten Videostream und optional die erste Audiospur. |
 | PDF | PDF → DOCX, PPTX, XLSX, JPG, PNG, EPUB, TXT, MD | Keine OCR und keine vollständige Rekonstruktion des ursprünglichen Office-Dokuments. Details unten. **Keine Pages-Ausgabe.** |

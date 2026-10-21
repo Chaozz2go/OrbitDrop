@@ -91,7 +91,7 @@ class FileActionTests(unittest.TestCase):
         wheel.dragEnterEvent(enter)
         self.assertTrue(enter.isAccepted());self.assertFalse(wheel.checking)
         # First segment: ZIP. Action is deferred until OLE returns.
-        drop=QDropEvent(QPointF(252,82),Qt.DropAction.CopyAction,mime,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier)
+        drop=QDropEvent(QPointF(490,132),Qt.DropAction.CopyAction,mime,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier)
         wheel.dropEvent(drop);self.assertEqual(calls,[])
         self.app.processEvents()
         self.assertEqual(calls,[([str(self.folder),str(unknown)],'ZIP')])

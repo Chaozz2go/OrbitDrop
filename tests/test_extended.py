@@ -23,7 +23,7 @@ class ExtendedTests(unittest.TestCase):
             with self.subTest(action=action):
                 out=convert(source,action)
                 self.assertGreater(out.stat().st_size,0)
-                self.assertEqual(inspect_file(out).kind, 'PDF' if action=='PDF' else 'Bild')
+                self.assertEqual(inspect_file(out).kind, 'PDF' if action=='PDF' else 'SVG' if action=='SVG' else 'Bild')
         svg=self.root/'vector.svg'; svg.write_text('<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><circle cx="16" cy="16" r="12" fill="red"/></svg>')
         self.assertEqual(inspect_file(svg).kind,'SVG')
         with Image.open(convert(svg,'PNG')) as image: self.assertEqual(image.size,(32,32))

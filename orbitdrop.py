@@ -18,6 +18,7 @@ from tools import tool_outputs
 from tools_ui import ToolsDialog
 from circle_menu import home_actions,edit_actions,MENU_LABELS,action_color
 from link_selection import media_link
+from window_focus import present
 
 class Signals(QObject):
     done = Signal(object, object)
@@ -55,6 +56,7 @@ class Inspection(QRunnable):
         super().__init__()
         self.files = files
         self.reports=[]
+        self.preview=None
         self.signals = Signals()
 
     def run(self):
@@ -67,6 +69,14 @@ class Inspection(QRunnable):
                 if not info.actions and Path(file).is_file():
                     self.reports.append((str(file),info))
             actions, kind, message = common_actions(self.files,infos)
+            if len(self.files)==1 and kind=='Bild':
+                try:
+                    from PIL import Image,ImageOps
+                    from image_editor import pil_qimage
+                    with Image.open(self.files[0]) as source:
+                        if source.width*source.height<=40_000_000:
+                            thumb=ImageOps.exif_transpose(source);thumb.thumbnail((160,160));self.preview=pil_qimage(thumb)
+                except Exception:pass
             self.signals.done.emit(actions, (kind, message))
         except Exception as error:
             self.signals.done.emit((), ('Nicht lesbar', str(error)))
@@ -154,6 +164,7 @@ class Wheel(QWidget):
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
         self.resize(380, 410)
+        self.preview=None;self.ring_paths=[]
         self.selected = -1
         self.labels = []
         self.all_actions = []
@@ -181,6 +192,7 @@ class Wheel(QWidget):
         mode='home' if mode=='convert' else mode
         self.node='files' if mode=='files' else 'home'
         self.formats=[]
+        self.preview=None
         self.link=None
         self.latched=False
 
@@ -202,8 +214,8 @@ class Wheel(QWidget):
         cursor = QCursor.pos()
         screen = QApplication.screenAt(cursor) or QApplication.primaryScreen()
         area = screen.availableGeometry()
-        self.move(max(area.left(), min(cursor.x()-190, area.right()-379)),
-                  max(area.top(), min(cursor.y()-190, area.bottom()-409)))
+        self.move(max(area.left(), min(cursor.x()-190, area.right()-self.width()+1)),
+                  max(area.top(), min(cursor.y()-190, area.bottom()-self.height()+1)))
         self.show()
         self.raise_()
         self.update()
@@ -248,6 +260,7 @@ class Wheel(QWidget):
         if self.files == files:
             return
         self.files = files
+        self.preview=None
         self.link=None
         self.revision += 1
         revision = self.revision
@@ -278,6 +291,7 @@ class Wheel(QWidget):
         self.checking = False
         self.formats = list(actions)
         self.kind, self.message = details
+        self.preview=getattr(job,'preview',None)
         self.node='home'
         self.all_actions=home_actions(self.files,self.kind,self.formats)
         self.message='Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools' if actions else self.message
@@ -299,6 +313,7 @@ class Wheel(QWidget):
         elif node in ('files','tools'):
             self.all_actions=(list(available_file_actions(self.files)) if self.files else [])+['LINK LADEN','PROGRAMM','ZURÜCK']
             self.message='Dateiaktionen und Hilfsfunktionen'
+        elif node=='svg':self.all_actions=['SVG SCHNELL','SVG ERWEITERT','ZURÜCK'];self.message='Schnell: automatisch · Erweitert: Vorschau und Regler'
         elif node=='rotate':self.all_actions=['90° LINKS','90° RECHTS','180°','ZURÜCK'];self.message='Drehung wählen'
         elif node=='more':self.all_actions=['AUFTRÄGE','EINSTELLUNGEN','KONVERTER','DEBUGGING','HILFE','ZURÜCK'];self.message='OrbitDrop verwalten'
         else:
@@ -308,8 +323,9 @@ class Wheel(QWidget):
 
     def select_action(self,target):
         if target=='WEITER':self.next_page();return
-        if target=='ZURÜCK':self.navigate('edit' if self.node=='rotate' else 'tools' if self.node=='more' else 'home');return
+        if target=='ZURÜCK':self.navigate('edit' if self.node=='rotate' else 'formats' if self.node=='svg' else 'tools' if self.node=='more' else 'home');return
         branches={'KONVERTIEREN':'formats','UMWANDELN':'formats','BEARBEITEN':'edit','TOOLS':'tools','DATEIEN':'tools','PROGRAMM':'more','MEHR':'more','DREHEN':'rotate'}
+        if target=='SVG' and self.node=='formats':self.navigate('svg');return
         if target in branches:self.navigate(branches[target]);return
         files=self.files[:];kind=self.kind;node=self.node;url=self.link
         self.hide()
@@ -325,6 +341,10 @@ class Wheel(QWidget):
         else:
             self.labels = self.all_actions[self.page*5:(self.page+1)*5] + ['WEITER']
         self.selected = -1
+        self.resize(470,450) if self.node=='home' else self.resize(880,510)
+        screen=QApplication.screenAt(self.pos()) or QApplication.primaryScreen()
+        area=screen.availableGeometry()
+        self.move(max(area.left(),min(self.x(),area.right()-self.width()+1)),max(area.top(),min(self.y(),area.bottom()-self.height()+1)))
         self.repaint()
 
     def next_page(self):
@@ -335,51 +355,9 @@ class Wheel(QWidget):
         self.display_page()
         self.update()
 
-    def paintEvent(self, event):
-        p = QPainter(self)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        p.setPen(Qt.PenStyle.NoPen)
-        p.setBrush(QColor(0, 0, 0, 45))
-        p.drawEllipse(QRectF(18, 22, 344, 344))
-        self.paths = []
-        outer, inner = QRectF(24, 24, 332, 332), QRectF(107, 107, 166, 166)
-        labels = self.labels or ['PRÜFE …' if self.checking else 'KONVERTER FEHLT' if 'konverter fehlt' in self.message.lower() else 'KEINE AKTION' if self.files else 'DATEI ZIEHEN']
-        step = 360 / len(labels)
-        for i, label in enumerate(labels):
-            start = 88-i*step
-            path = QPainterPath()
-            path.arcMoveTo(outer, start)
-            path.arcTo(outer, start, -(step-4))
-            end = math.radians(start-(step-4))
-            path.lineTo(190+83*math.cos(end), 190-83*math.sin(end))
-            path.arcTo(inner, start-(step-4), step-4)
-            path.closeSubpath()
-            self.paths.append(path)
-            accent=QColor(action_color(self.node,label))
-            color=QColor(accent)
-            if self.selected != i:color=QColor(round(accent.red()*.22),round(accent.green()*.22),round(accent.blue()*.22))
-            p.setBrush(color)
-            p.setPen(QPen(accent, 1))
-            p.drawPath(path)
-            angle = math.radians(-90+step/2+i*step)
-            x, y = 190+125*math.cos(angle), 190+125*math.sin(angle)
-            p.setPen(QColor('#14221e' if self.selected == i else '#f1f3fa'))
-            p.setFont(QFont('Segoe UI', 10 if len(label) > 7 else 14, QFont.Weight.Bold))
-            p.drawText(QRectF(x-48, y-22, 96, 44), Qt.AlignmentFlag.AlignCenter, MENU_LABELS.get(label,label))
-        p.setPen(Qt.PenStyle.NoPen)
-        p.setBrush(QColor('#151925'))
-        p.drawEllipse(inner.adjusted(6, 6, -6, -6))
-        p.setPen(QColor('#f2f3fa'))
-        p.setFont(QFont('Segoe UI', 11, QFont.Weight.Bold))
-        p.drawText(QRectF(113, 155, 154, 30), Qt.AlignmentFlag.AlignCenter, {'formats':'Konvertieren','edit':'Bearbeiten','tools':'Tools','files':'Tools','more':'Programm','rotate':'Drehen','home':'Link laden' if self.link else 'OrbitDrop'}.get(self.node,self.kind))
-        p.setFont(QFont('Segoe UI', 9))
-        p.setPen(QColor('#aab4c9'))
-        text = ('Kurz halten' if self.labels[self.selected] == 'WEITER' else 'Anklicken' if self.latched else 'Loslassen') if self.selected >= 0 else ('Bitte kurz halten' if self.checking else (('Anklicken' if self.latched else 'Aktion wählen') if self.labels else 'Konverter fehlt' if 'konverter fehlt' in self.message.lower() else 'Keine Aktion' if self.files else 'Datei hineinziehen'))
-        p.drawText(QRectF(113, 188, 154, 45), Qt.AlignmentFlag.AlignCenter, text)
-        p.setFont(QFont('Segoe UI', 8))
-        p.setPen(QColor('#d5dbea'))
-        p.drawText(QRectF(18, 358, 344, 48), Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap, (f'Seite {self.page+1}/{math.ceil(len(self.all_actions)/5)} · Auf WEITER kurz halten\n' if len(self.all_actions)>6 else '') + (DESCRIPTIONS.get(self.labels[self.selected], self.message) if self.node == 'files' and self.selected >= 0 else self.message))
-        p.end()
+    def paintEvent(self,event):
+        from wheel_render import paint_wheel
+        paint_wheel(self)
 
     def dropped_link(self,mime):
         if mime.hasUrls() and len(mime.urls())==1 and not mime.urls()[0].isLocalFile():return media_link(mime.urls()[0].toString())
@@ -440,6 +418,9 @@ class Wheel(QWidget):
     def mousePressEvent(self,event):
         index=self.segment(event.position())
         if index>=0:self.select_action(self.labels[index])
+        elif self.node!='home' and any(path.contains(event.position()) for path in self.ring_paths):
+            index=next(i for i,path in enumerate(self.ring_paths) if path.contains(event.position()))
+            self.navigate(('formats','edit','tools')[index])
         elif self.node!='home' and 83>((event.position().x()-190)**2+(event.position().y()-190)**2)**.5:self.navigate('home')
         else:self.hide()
 
@@ -539,11 +520,18 @@ class Controller:
         if url:self.wheel.open_link(url)
     def download_dialog(self,url=None,mode='audio'):
         from download_ui import DownloadDialog
-        DownloadDialog(url,mode,self.prefs.values.get('output_dir',''),self.submit_download).exec()
+        if self.tasks.isMinimized():present(self.tasks)
+        folder=self.prefs.values.get('download_dir') or self.prefs.values.get('output_dir','')
+        if folder and not Path(folder).is_dir():folder=''
+        dialog=DownloadDialog(url,mode,folder,self.submit_download,parent=self.tasks)
+        QTimer.singleShot(0,lambda:present(dialog))
+        dialog.exec()
+        if dialog.result():QTimer.singleShot(0,self.show_tasks)
     def submit_download(self,url,mode,folder,height):
+        self.prefs.update(dict(self.prefs.values,download_dir=str(Path(folder).resolve())))
         self.submit(DownloadJob(url,mode,folder,height),'Download · '+('Audio' if mode=='audio' else 'Video'))
 
-    def show_tasks(self):self.tasks.show();self.tasks.raise_();self.tasks.activateWindow()
+    def show_tasks(self):present(self.tasks)
     def tools(self,files=None,action=None):
         dialog=ToolsDialog()
         if action:dialog.action.setCurrentText(action)
@@ -569,6 +557,13 @@ class Controller:
                 else:
                     from video_editor import VideoEditor
                     VideoEditor(files[0],self.submit_editor).exec()
+            elif action in ('SCHWARZWEISS','BITMAP','SVG ERWEITERT'):
+                from image_processing_ui import ImageProcessingDialog
+                target={'SCHWARZWEISS':'PNG','BITMAP':'BITMAP','SVG ERWEITERT':'SVG'}[action]
+                if action=='SVG ERWEITERT' and len(files)!=1:raise ValueError('Für die erweiterte SVG-Vorschau bitte genau ein Bild wählen.')
+                if len(files)==1:ImageProcessingDialog(files[0],target,self.submit_editor,initial='gray' if action=='SCHWARZWEISS' else None).exec()
+                else:self.submit(ToolJob('Bild aufbereiten',files,{'target':target,'processing':{'mode':'gray' if action=='SCHWARZWEISS' else 'binary'}},self.prefs.values),'Bilder aufbereiten')
+            elif action=='SVG SCHNELL':self.submit(Conversion(files,'SVG',self.prefs.values),'Bilder → SVG')
             elif action=='ZUSCHNEIDEN':
                 from image_editor import ImageEditor
                 ImageEditor(files[0],self.submit_editor).exec()
@@ -677,7 +672,7 @@ class Controller:
         self.submit(Conversion(files,target,self.prefs.values),title)
 
     def help(self):
-        QMessageBox.information(None, 'OrbitDrop 0.8.3 · Prototyp',
+        QMessageBox.information(None, 'OrbitDrop 0.9.0 · Prototyp',
             '1. Datei im Explorer mit linker Maustaste ziehen.\n'
             '2. Shift für den Aktionskreis oder Strg für Tools kurz antippen.\n'
             '3. Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools.\n'

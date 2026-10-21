@@ -37,6 +37,14 @@ def tool_outputs(action,files,parameters,options):
     checkpoint(0,'Werkzeug wird vorbereitet …')
     created=[]
     try:
+        if action=='Bild aufbereiten':
+            from image_processing import process_image
+            target=parameters.get('target','PNG')
+            if target not in ('PNG','BITMAP','SVG'):raise ValueError('Ungültiges Bildziel.')
+            for source in sources:
+                output=reserve(source,{'PNG':'.png','BITMAP':'.bmp','SVG':'.svg'}[target],folder);created.append(output)
+                process_image(source,target,parameters.get('processing',{}),output)
+            return [str(p) for p in created]
         if action=='Audio bearbeiten':
             from audio_export import export_audio
             if len(sources)!=1:raise ValueError('Bitte genau eine Audiodatei wählen.')

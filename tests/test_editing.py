@@ -65,7 +65,7 @@ class EditingTests(unittest.TestCase):
         drop=QDropEvent(QPointF(252,82),Qt.DropAction.CopyAction,mime,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier)
         wheel.dropEvent(drop);self.assertEqual(wheel.node,'formats');self.assertTrue(wheel.latched);self.assertFalse(wheel.automatic);self.assertEqual(calls,[])
         # PNG is the first sector on the format page.
-        QTest.mouseClick(wheel,Qt.MouseButton.LeftButton,pos=QPointF(252,82).toPoint());self.app.processEvents()
+        QTest.mouseClick(wheel,Qt.MouseButton.LeftButton,pos=QPointF(490,132).toPoint());self.app.processEvents()
         self.assertEqual(calls,[([str(path)],'PNG')])
     @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'),'FFmpeg missing')
     def test_frame_steps_follow_variable_timestamps(self):

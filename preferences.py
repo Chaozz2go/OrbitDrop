@@ -7,7 +7,7 @@ import subprocess
 import sys
 import tempfile
 
-DEFAULTS={'output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
+DEFAULTS={'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
           'convert_key':'Shift','files_key':'Strg','autostart':False,'check_backends':True}
 KEY_CODES={'Shift':0x10,'Strg':0x11,'Alt':0x12}
 
@@ -40,6 +40,7 @@ class Preferences:
         if result['video_profile'] not in ('Hohe Qualität','Ausgewogen','Kleine Datei'):raise ValueError('Ungültige Videoqualität.')
         if int(result['video_height']) not in (0,480,720,1080,1440,2160):raise ValueError('Ungültige Videogröße.')
         result['video_height']=int(result['video_height'])
+        if not isinstance(result['download_dir'],str):raise ValueError('Ungültiger Downloadordner.')
         if not isinstance(result['output_dir'],str):raise ValueError('Ungültiger Ausgabeordner.')
         for key in ('autostart','check_backends'):result[key]=bool(result[key])
         return result

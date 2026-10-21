@@ -22,7 +22,7 @@ def environment():
                 result=run([executable,'-version' if name.startswith('ff') else '--version'],timeout=5)
                 converters[name]['version']=(result.stdout.splitlines() or ['Nicht abrufbar'])[0][:200]
             except Exception:converters[name]['version']='Start fehlgeschlagen'
-    return {'app_version':'0.8.3','system':platform.system(),'system_release':platform.release(),'architecture':platform.machine(),'python':platform.python_version(),'packages':packages,'converters':converters}
+    return {'app_version':'0.9.0','system':platform.system(),'system_release':platform.release(),'architecture':platform.machine(),'python':platform.python_version(),'packages':packages,'converters':converters}
 
 def recognition_report(path,info):
     path=Path(path)

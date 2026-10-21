@@ -64,7 +64,7 @@ class WheelTests(unittest.TestCase):
             self.assertEqual(self.wheel.labels[0], 'KONVERTIEREN')
             self.assertEqual(self.wheel.labels,['KONVERTIEREN','BEARBEITEN','TOOLS'])
             self.wheel.navigate('formats')
-            drop = QDropEvent(QPointF(252,82), Qt.DropAction.CopyAction, mime, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+            drop = QDropEvent(QPointF(490,132), Qt.DropAction.CopyAction, mime, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
             self.wheel.dropEvent(drop)
             self.app.processEvents()
             self.assertTrue(drop.isAccepted())

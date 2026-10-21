@@ -1,5 +1,5 @@
 from pathlib import Path
-from PySide6.QtCore import QObject,Signal,QRunnable,QThreadPool,QStandardPaths
+from PySide6.QtCore import QObject,Signal,QRunnable,QThreadPool,QStandardPaths,Qt
 from PySide6.QtWidgets import QDialog,QVBoxLayout,QHBoxLayout,QLabel,QLineEdit,QPushButton,QComboBox,QFileDialog,QMessageBox
 from app_ui import STYLE
 from link_selection import media_link
@@ -13,8 +13,8 @@ class LinkInspect(QRunnable):
         except Exception as error:self.signals.done.emit(None,str(error))
 
 class DownloadDialog(QDialog):
-    def __init__(self,url,mode,folder,submit):
-        super().__init__();self.submit=submit;self.inspection=None;self.inspected_url=None;self.info=None;self.setWindowTitle('OrbitDrop · Link herunterladen');self.resize(650,380);self.setStyleSheet(STYLE)
+    def __init__(self,url,mode,folder,submit,parent=None):
+        super().__init__(parent);self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint,True);self.submit=submit;self.inspection=None;self.inspected_url=None;self.info=None;self.setWindowTitle('OrbitDrop · Link herunterladen');self.resize(650,380);self.setStyleSheet(STYLE)
         layout=QVBoxLayout(self);layout.addWidget(QLabel('LINK HERUNTERLADEN'))
         self.url=QLineEdit(url or '');self.url.setPlaceholderText('https://…');layout.addWidget(self.url)
         self.inspect_button=QPushButton('Link prüfen');self.inspect_button.clicked.connect(self.inspect);layout.addWidget(self.inspect_button)
@@ -51,4 +51,6 @@ class DownloadDialog(QDialog):
     def download(self):
         if self.inspected_url!=media_link(self.url.text()):return
         if not Path(self.folder.text()).is_dir():QMessageBox.information(self,'Download','Bitte einen existierenden Zielordner wählen.');return
-        self.submit(self.inspected_url,self.mode.currentData(),self.folder.text(),self.quality.currentData());self.accept()
+        try:self.submit(self.inspected_url,self.mode.currentData(),self.folder.text(),self.quality.currentData())
+        except Exception as error:QMessageBox.warning(self,'Download',str(error));return
+        self.accept()

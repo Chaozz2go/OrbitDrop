@@ -11,7 +11,7 @@ set "ORBIT_PACKAGE_MODE=--onedir"
 if /i "%~1"=="--onefile" set "ORBIT_PACKAGE_MODE=--onefile"
 set "ORBIT_MEDIA_FLAGS="
 if exist "bin\ffmpeg.exe" if exist "bin\ffprobe.exe" set ORBIT_MEDIA_FLAGS=--add-binary "bin\ffmpeg.exe;bin" --add-binary "bin\ffprobe.exe;bin"
-".venv\Scripts\python.exe" -m PyInstaller --noconfirm --clean %ORBIT_PACKAGE_MODE% --windowed --name OrbitDrop --version-file version_info.txt --collect-all pillow_heif --collect-all pymupdf --collect-all av --collect-all yt_dlp --collect-all yt_dlp_ejs --add-data "README.md;." %ORBIT_MEDIA_FLAGS% orbitdrop.py
+".venv\Scripts\python.exe" -m PyInstaller --noconfirm --clean %ORBIT_PACKAGE_MODE% --windowed --name OrbitDrop --version-file version_info.txt --collect-all pillow_heif --collect-all pymupdf --collect-all av --collect-all vtracer --collect-all yt_dlp --collect-all yt_dlp_ejs --add-data "README.md;." %ORBIT_MEDIA_FLAGS% orbitdrop.py
 if errorlevel 1 goto failed
 echo.
 echo Fertig. Ausgabe im Ordner dist.

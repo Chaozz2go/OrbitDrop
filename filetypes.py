@@ -115,7 +115,7 @@ def inspect_file(filename):
                     raise ValueError('Animated GIF: use media backend')
                 return FileInfo('Bild', (), 'Animationen und mehrseitige Bilder noch nicht unterstützt.')
             image.verify()
-        return FileInfo('Bild', supported_images)
+        return FileInfo('Bild', supported_images+('SVG',))
     except Exception:
         pass
     with path.open('rb') as handle:

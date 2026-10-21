@@ -5,7 +5,7 @@ from PIL import Image
 from filetypes import inspect_file, backend, run
 from extended import IMAGE_TYPES, convert_picture, pdf_convert, office_convert, subtitle_convert, archive_convert
 
-EXTENSIONS = {**IMAGE_TYPES, 'MP4': '.mp4', 'MOV': '.mov', 'MKV': '.mkv', 'WEBM': '.webm', 'AVI': '.avi', 'WMV': '.wmv', 'GIF': '.gif',
+EXTENSIONS = {'SVG':'.svg',**IMAGE_TYPES, 'MP4': '.mp4', 'MOV': '.mov', 'MKV': '.mkv', 'WEBM': '.webm', 'AVI': '.avi', 'WMV': '.wmv', 'GIF': '.gif',
               'MP3': '.mp3', 'M4A': '.m4a', 'WAV': '.wav', 'FLAC': '.flac', 'OGG': '.ogg', 'OPUS': '.opus', 'AIFF': '.aiff', 'WMA': '.wma',
               'STANDBILD': '.png', 'TXT': '.txt', 'DOCX': '.docx', 'PPTX': '.pptx', 'XLSX': '.xlsx', 'ODS': '.ods', 'CSV': '.csv', 'TSV': '.tsv',
               'MD': '.md', 'EPUB': '.epub', 'HTML': '.html', 'SRT': '.srt', 'VTT': '.vtt', 'ZIP': '.zip', 'TAR': '.tar', 'GZIP': '.tar.gz'}
@@ -36,7 +36,10 @@ def convert(source, target, options=None):
         extension = '.' + target.lower() + '.zip'
     output = reserve(source, extension, options.get("output_dir"))
     try:
-        if info.kind in ('Bild','SVG'):
+        if target=='SVG' and info.kind=='Bild':
+            from image_processing import process_image
+            process_image(source,'SVG',options.get('processing',{}),output)
+        elif info.kind in ('Bild','SVG'):
             convert_picture(source,target,output,svg=info.kind=='SVG',quality=int(options.get('image_quality',92)))
         elif info.kind == 'PDF':
             pdf_convert(source,target,output)

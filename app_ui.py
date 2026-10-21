@@ -7,6 +7,7 @@ from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (QWidget,QVBoxLayout,QHBoxLayout,QLabel,QPushButton,QTreeWidget,QTreeWidgetItem,QProgressBar,
  QDialog,QFormLayout,QLineEdit,QSpinBox,QComboBox,QCheckBox,QDialogButtonBox,QFileDialog,QMessageBox,QInputDialog,QTextEdit)
 from preferences import set_autostart
+from window_focus import present
 
 STYLE='''QWidget{background:#181d2a;color:#edf0f8;font-family:Segoe UI;font-size:10pt;}
 QTreeWidget,QTextEdit,QLineEdit,QSpinBox,QComboBox{background:#252c3e;color:#edf0f8;border:1px solid #465068;border-radius:5px;padding:5px;}
@@ -70,7 +71,7 @@ class TasksWindow(QWidget):
         key=uuid.uuid4().hex;item=QTreeWidgetItem([title,'Wird gestartet …','']);item.setData(0,Qt.ItemDataRole.UserRole,key);self.tree.insertTopLevelItem(0,item)
         bar=QProgressBar();bar.setRange(0,0);self.tree.setItemWidget(item,2,bar)
         self.rows[key]={'item':item,'job':job,'bar':bar,'record':{'title':title,'outputs':[],'errors':[],'status':'Läuft'}}
-        self.tree.setCurrentItem(item);self.show();self.raise_()
+        self.tree.setCurrentItem(item);present(self)
         return key
     def progress(self,key,percent,message):
         data=self.rows.get(key)
