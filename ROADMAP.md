@@ -10,6 +10,9 @@ Stand 0.17.0. Eigenständige Oberfläche und Implementierung, inspiriert vom sch
 - Stapel-Umbenennen mit Vorschau, Konfliktprüfung und Rücknahme im offenen Fenster.
 - Gespeicherte Bildabläufe mit geordneten Schritten und neuer Ausgabe. Audio-/Videoabläufe bleiben offen.
 - Komprimieren mit aktueller Größe, Zielgrößenregler, technischer Audio-/Video-Prüfung und verlustfreier PDF-Probe.
+- Windows-x64-Setup und portables Paket mit gebündelter Laufzeit, FFmpeg/FFprobe und OCR-Sprachdaten; native Windows-Tests für EXE und Installation.
+- Optionale tägliche Updateprüfung und geprüfte Setup-Downloads; öffentliche Releases stehen bis zur Projektlizenz noch aus.
+- Lokale OCR für Bilder/PDFs und Audio-Werkzeuge für Lautheit, Randstille und Fades.
 - Gemeinsamer Schnittstudio-Stil für alle Programmfenster, inklusive Bild-/Video-/Audiobearbeitung, Hilfsfenster und Dateiablage.
 
 ## Als Nächstes: Bildwerkzeuge
@@ -25,7 +28,7 @@ Stand 0.17.0. Eigenständige Oberfläche und Implementierung, inspiriert vom sch
 - Vorhandenen Schnitteditor weiterverwenden; keine zweite Schnittimplementierung für Downloads.
 - Video-Ausschnitt, Tempo mit Tonhöhenkorrektur, Stummschalten, gezielte PNG-Standbilder und Zusammenfügen.
 - Video-Schwärzungsbereiche mit Zeitspannen und tatsächlicher Exportvorschau.
-- Erledigt: echte Wellenformen in Video- und Audioschnitt, gemeinsame Abschnittsauswahl, Entf zum Entfernen und Wiederherstellen. Erledigt: Timeline-Zoom, gemeinsames Scrollen und Schnitt-Rückgängig/Wiederholen. Noch offen: mehrere Tonspuren, Lautheitsnormalisierung, Kanalbearbeitung, Pieptonbereiche und Visualisierung als Video.
+- Erledigt: echte Wellenformen in Video- und Audioschnitt, gemeinsame Abschnittsauswahl, Entf zum Entfernen und Wiederherstellen. Erledigt: Timeline-Zoom, gemeinsames Scrollen und Schnitt-Rückgängig/Wiederholen. Erledigt: Lautheitsnormalisierung im Dialog Audio verbessern. Noch offen: mehrere Tonspuren, Kanalbearbeitung, Pieptonbereiche und Visualisierung als Video.
 
 ## Danach: PDF und Windows-Integration
 
@@ -34,7 +37,7 @@ Stand 0.17.0. Eigenständige Oberfläche und Implementierung, inspiriert vom sch
 - Windows-Teilen statt AirDrop; nicht als identisches Apple-Protokoll darstellen.
 - Explorer-Drag-and-drop, Mehrfachauswahl, mehrere Monitore und unterschiedliche DPI auf Windows testen.
 - Tastatursteuerung für den Kreis ergänzen; globale Tasten dürfen normale Explorer-Bedienung nicht stören.
-- EXE/Installer mit gebündelter Laufzeit und geprüft verfügbaren Konvertern. Noch kein Windows-Build aus der Linux-Testumgebung.
+- Erledigt: EXE/Installer mit gebündelter Laufzeit, FFmpeg und OCR; Windows-Baufolge prüft das portable Programm und eine echte Installation. Weitere manuelle Explorer-/DPI-/Monitor-Tests bleiben offen.
 
 ## Plattformgrenzen
 
