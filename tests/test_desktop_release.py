@@ -4,7 +4,7 @@ import hashlib,json,shutil,subprocess,tempfile,unittest,wave
 from pathlib import Path
 from unittest.mock import patch
 from updater import release_info,checksum_for,download_release,verify_installer,REPOSITORY
-from audio_tools import improve_audio,edge_silence,audio_settings
+from audio_tools import improve_audio,edge_silence,audio_settings,loudness_stats
 from local_ocr import recognize_text,ocr_pdf
 from ocr_data import find_tessdata,install_languages
 
@@ -70,6 +70,8 @@ class DesktopReleaseTests(unittest.TestCase):
         import av
         with av.open(output) as audio:duration=float(audio.duration/av.time_base)
         self.assertAlmostEqual(duration,2.7,delta=.08);self.assertEqual(source.read_bytes(),before)
+        measured=subprocess.run([shutil.which('ffmpeg'),'-hide_banner','-nostdin','-i',str(output),'-af','loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json','-f','null',os.devnull],capture_output=True,text=True,timeout=30,check=True)
+        self.assertAlmostEqual(loudness_stats(measured.stderr)['input_i'],-16,delta=.8)
         before_files=set(self.root.iterdir())
         with self.assertRaises(ValueError):improve_audio([source],{'fade_in':20,'normalize':False},{})
         self.assertEqual(set(self.root.iterdir()),before_files)
