@@ -1,0 +1,62 @@
+name: Windows package
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: windows-package
+  cancel-in-progress: false
+env:
+  QT_QPA_PLATFORM: offscreen
+  PUBLISH_RELEASE: 'false'
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          architecture: x64
+          cache: pip
+      - name: Install wheel dependencies
+        run: python -m pip install --only-binary=:all: -r requirements-dev.txt "pyinstaller>=6,<7"
+      - name: Bundle FFmpeg
+        run: python -c "from media_setup import install_media; install_media()"
+      - name: Bundle OCR languages
+        if: hashFiles('ocr_data.py') != ''
+        run: python -c "from ocr_data import install_languages; install_languages('tessdata')"
+      - name: Windows regression tests
+        run: python -m unittest discover -s tests -v
+      - name: Build and test frozen executable
+        run: python windows_build.py
+      - name: Test per-user installer
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem dist/release/*-Setup.exe | Select-Object -First 1
+          $target = Join-Path $env:RUNNER_TEMP 'OrbitDropInstall'
+          $install = Start-Process $setup.FullName -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/DIR=$target") -Wait -PassThru
+          if ($install.ExitCode -ne 0) { throw 'Installer failed' }
+          $report = Join-Path $env:RUNNER_TEMP 'installed-smoke.json'
+          $test = Start-Process (Join-Path $target 'OrbitDrop.exe') -ArgumentList @('--self-test',"`"$report`"") -Wait -PassThru
+          if ($test.ExitCode -ne 0 -or -not (Test-Path $report)) { throw 'Installed app failed' }
+          if (-not (Get-Content $report | ConvertFrom-Json).ok) { throw 'Installed smoke checks failed' }
+          Copy-Item $report dist/release/installed-smoke.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: OrbitDrop-Windows-x64
+          path: dist/release/*
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Publish private release
+        if: success() && env.PUBLISH_RELEASE == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $version = python -c "from app_version import VERSION; print(VERSION)"
+          gh release create "v$version" dist/release/* --target "$env:GITHUB_SHA" --title "OrbitDrop $version" --notes-file release-notes.md

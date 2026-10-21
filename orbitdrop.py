@@ -796,6 +796,9 @@ if __name__ == '__main__':
     install_theme(app)
     app.setApplicationName('OrbitDrop')
     app.setQuitOnLastWindowClosed(False)
+    if '--self-test' in sys.argv:
+        from desktop_smoke import self_test
+        sys.exit(self_test(sys.argv[sys.argv.index('--self-test')+1]))
     state_root=QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation)
     single=SingleInstance(state_root)
     if not single.acquire():sys.exit(0)
