@@ -70,7 +70,7 @@ class WheelTests(unittest.TestCase):
             self.wheel.dropEvent(drop)
             self.app.processEvents()
             self.assertTrue(drop.isAccepted())
-            self.assertEqual(self.results, [([str(file)], 'PNG')])
+            self.assertEqual([([Path(p) for p in paths],action) for paths,action in self.results], [([file], 'PNG')])
 
 if __name__ == '__main__':
     unittest.main()

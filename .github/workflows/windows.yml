@@ -27,6 +27,9 @@ jobs:
           python -m pip install --only-binary=:all: -r requirements-dev.txt "pyinstaller>=6,<7"
       - name: Bundle FFmpeg
         run: python -c "from media_setup import install_media; install_media()"
+      - name: Add media tools to test PATH
+        shell: pwsh
+        run: Add-Content $env:GITHUB_PATH "$env:GITHUB_WORKSPACE\bin"
       - name: Bundle OCR languages
         if: hashFiles('ocr_data.py') != ''
         run: python -c "from ocr_data import install_languages; install_languages('tessdata')"

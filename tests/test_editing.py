@@ -68,7 +68,7 @@ class EditingTests(unittest.TestCase):
         from direct_wheel import geometry
         point=next(entry[2] for entry in geometry(wheel) if entry[0]=='format:PNG')
         QTest.mouseClick(wheel,Qt.MouseButton.LeftButton,pos=point.toPoint());self.assertEqual(calls,[]);self.app.processEvents()
-        self.assertEqual(calls,[([str(path)],'PNG')])
+        self.assertEqual([([Path(p) for p in paths],action) for paths,action in calls],[([path],'PNG')])
     @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'),'FFmpeg missing')
     def test_frame_steps_follow_variable_timestamps(self):
         paths=[]

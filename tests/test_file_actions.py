@@ -25,7 +25,7 @@ class FileActionTests(unittest.TestCase):
 
     def test_file_clipboard_and_path_text(self):
         mime=file_mime([self.file,self.folder])
-        self.assertEqual([url.toLocalFile() for url in mime.urls()],[str(self.file),str(self.folder)])
+        self.assertEqual([Path(url.toLocalFile()) for url in mime.urls()],[self.file,self.folder])
         self.assertEqual(bytes(mime.data('application/x-qt-windows-mime;value="Preferred DropEffect"')),struct.pack('<I',1))
         self.assertEqual(copy_paths_text([self.file,self.folder]),str(self.file)+'\n'+str(self.folder))
         self.assertEqual(containing_folders([self.file,self.file,self.folder]),[self.source,self.folder])
@@ -95,6 +95,6 @@ class FileActionTests(unittest.TestCase):
         drop=QDropEvent(point,Qt.DropAction.CopyAction,mime,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier)
         wheel.dropEvent(drop);self.assertEqual(calls,[])
         self.app.processEvents()
-        self.assertEqual(calls,[([str(self.folder),str(unknown)],'ZIP')])
+        self.assertEqual([([Path(p) for p in paths],action) for paths,action in calls],[([self.folder,unknown],'ZIP')])
 
 if __name__=='__main__':unittest.main()
