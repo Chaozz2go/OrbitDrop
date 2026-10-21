@@ -1,6 +1,6 @@
 # OrbitDrop 0.19.0 – Windows
 
-Lokaler Dateikonverter mit radialem Drag-and-drop-Menü, inspiriert vom Bedienkonzept von Tangerine. Eigenständiges Projekt ohne Verbindung zu Tangerine.
+OrbitDrop ist ein Windows-Dateiwerkzeug mit radialem Drag-and-drop-Menü für Konvertierung, Medienbearbeitung, Downloads und Dateiaktionen.
 
 ## Quick Install · Schnellstart
 
@@ -251,7 +251,7 @@ Der Export speichert eine neue PNG-Datei neben dem Original bzw. im eingestellte
 
 Schwarzweiß, 1-Bit-Bitmap und SVG nutzen dieselben Überschriften, Seitenflächen und primären Speicherbuttons. Original und Ergebnis stehen nebeneinander, die Regler rechts in einem scrollbaren Bereich. Schwellwertregler und SVG-Einstellungen bleiben erhalten.
 
-Diese Version setzt den ersten Ausbau nach der Tangerine-Recherche um: Kreisgestaltung und Bildeditor. Beschriftungen, Collagen, Metadateneditor, Komprimierungsdialoge, zusätzliche Audio-/Videowerkzeuge, OCR und visuelle PDF-Seitenverwaltung sind noch nicht Teil dieses Schritts. Details stehen in [ROADMAP.md](ROADMAP.md).
+Diese Version erweitert die Kreisgestaltung und den Bildeditor. Beschriftungen, Collagen, Metadateneditor, Komprimierungsdialoge, zusätzliche Audio-/Videowerkzeuge, OCR und visuelle PDF-Seitenverwaltung sind noch nicht Teil dieses Schritts. Details stehen in [ROADMAP.md](ROADMAP.md).
 
 ## Änderungen in Version 0.10.1
 
