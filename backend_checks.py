@@ -15,12 +15,13 @@ def probe_command(name,executable,platform=None):
     """The Windows GUI launcher can open its own console for --version."""
     platform=platform or sys.platform
     if name=='LibreOffice':
-        path=Path(executable)
         if platform=='win32':
+            path=Path(executable)
             console=path.with_suffix('.com')
             if console.is_file():path=console
             elif path.suffix.lower()!='.com':return None
-        return [str(path),'--headless','--version']
+            executable=str(path)
+        return [executable,'--headless','--version']
     return [executable,'-version' if name.startswith('ff') else '--version']
 
 
