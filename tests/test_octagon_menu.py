@@ -51,6 +51,8 @@ class OctagonMenuTests(unittest.TestCase):
     def test_drag_hover_expands_once_and_drop_on_more_keeps_open(self):
         file=Path(self.w.files[0]);file.write_bytes(b'test')
         mime=QMimeData();mime.setUrls([QUrl.fromLocalFile(str(file))])
+        # A real dragEnter stores Qt's local path spelling (forward slashes on Windows).
+        self.w.files=[mime.urls()[0].toLocalFile()]
         point=next(point for key,_,point,_ in geometry(self.w) if key==MORE)
         move=QDragMoveEvent(point.toPoint(),Qt.DropAction.CopyAction,mime,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier)
         self.w.dragMoveEvent(move);self.assertTrue(move.isAccepted());self.assertTrue(self.w.page_timer.isActive())
