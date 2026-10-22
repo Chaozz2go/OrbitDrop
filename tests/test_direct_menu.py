@@ -30,13 +30,10 @@ class DirectMenuTests(unittest.TestCase):
         deadline=time.monotonic()+5
         while wheel.checking and time.monotonic()<deadline:self.app.processEvents();time.sleep(.01)
         self.assertEqual(wheel.node,'home');self.assertEqual(wheel.labels,['KONVERTIEREN','BEARBEITEN','TOOLS'])
-        wheel.select_action('BEARBEITEN');wheel.select_action('nav:MEHR')
-        for _ in range(wheel.secondary_pages):
-            if 'edit:BITMAP' in wheel.labels:break
-            wheel.select_action('nav:NÄCHSTE')
+        wheel.select_action('BEARBEITEN')
         self.assertIn('edit:BITMAP',wheel.labels);self.assertFalse(any(key.startswith('format:') for key in wheel.labels))
         wheel.select_action('edit:ZURÜCK');self.assertEqual(wheel.node,'home');self.assertEqual(wheel.files,[str(self.image)])
-        wheel.select_action('TOOLS');self.assertIn('tool:TERMINAL',wheel.labels);self.assertIn('app:EINSTELLUNGEN',wheel.all_actions)
+        wheel.select_action('TOOLS');self.assertIn('tool:TERMINAL',wheel.labels);self.assertFalse(any(key.startswith('app:') and not key.endswith(':ZURÜCK') for key in wheel.all_actions))
         wheel.select_action('app:ZURÜCK');wheel.select_action('KONVERTIEREN')
         self.assertEqual(wheel.node,'direct');self.assertIn('format:PNG',wheel.labels);self.assertTrue(all(key.startswith(('format:','nav:')) for key in wheel.labels))
         self.assertNotIn('format:JPG',wheel.labels);self.assertNotIn('format:SVG SCHNELL',wheel.labels);self.assertNotIn('WEITER',wheel.labels)

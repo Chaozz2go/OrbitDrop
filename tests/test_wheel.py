@@ -30,14 +30,11 @@ class WheelTests(unittest.TestCase):
     def test_variable_segments(self):
         for labels in [('TXT',), ('PNG', 'JPG'), ('PNG', 'JPG', 'WEBP'), ('MP4', 'WEBM', 'STANDBILD', 'MP3', 'WAV', 'FLAC')]:
             self.wheel.labels = list(labels)
-            from octagon_menu import geometry
-            self.wheel.paths=[entry[1] for entry in geometry(self.wheel)]
             self.wheel.repaint()
-            from octagon_menu import geometry
-            for key,path,point,index in geometry(self.wheel):
-                self.assertEqual(self.wheel.segment(point),index,key)
-            center=self.wheel.circle_size/2
-            self.assertEqual(self.wheel.segment(QPointF(center,center)), -1)
+            for i in range(len(labels)):
+                angle=math.radians(-90+180/len(labels)+i*360/len(labels))
+                self.assertEqual(self.wheel.segment(QPointF(190+125*math.cos(angle),190+125*math.sin(angle))),i)
+            self.assertEqual(self.wheel.segment(QPointF(190,190)),-1)
 
     def test_page_navigation(self):
         self.wheel.all_actions = ['MP4','WEBM','MOV','MKV','AVI','WMV','GIF','STANDBILD','MP3','WAV','FLAC']

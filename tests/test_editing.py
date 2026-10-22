@@ -62,8 +62,7 @@ class EditingTests(unittest.TestCase):
         event=QDragEnterEvent(QPointF(190,190).toPoint(),Qt.DropAction.CopyAction,mime,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier)
         wheel.dragEnterEvent(event);self.wait(lambda:not wheel.checking)
         self.assertEqual(wheel.labels,['KONVERTIEREN','BEARBEITEN','TOOLS'])
-        from octagon_menu import geometry
-        category_point=next(point for key,_,point,_ in geometry(wheel) if key=='KONVERTIEREN')
+        category_point=QPointF(298,127)
         drop=QDropEvent(category_point,Qt.DropAction.CopyAction,mime,Qt.MouseButton.LeftButton,Qt.KeyboardModifier.NoModifier)
         wheel.dropEvent(drop);self.app.processEvents();self.assertTrue(drop.isAccepted());self.assertTrue(wheel.latched);self.assertFalse(wheel.automatic)
         self.assertIn('format:PNG',wheel.labels)

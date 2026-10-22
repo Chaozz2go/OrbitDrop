@@ -31,7 +31,6 @@ class SettingsDialog(QDialog):
         self.files,row=shortcut_row(v['files_key']);form.addRow('Tools direkt',row)
         key_hint=QLabel('Tasten eintippen oder im rechten Feld aufnehmen. Einzelne Tasten und Kombinationen, z. B. F8 oder Strg+E. Esc, Win-Kombinationen und Strg+Alt (AltGr) sind nicht belegbar. Windows-/Explorer-Funktionen dieser Tasten bleiben aktiv.');key_hint.setWordWrap(True);form.addRow(key_hint)
         key_reset=QPushButton('Standardtasten wiederherstellen');key_reset.clicked.connect(lambda:(self.convert.setCurrentText('Shift'),self.edit.setCurrentText('Strg'),self.files.setCurrentText('Alt')));form.addRow(key_reset)
-        self.expanded=QCheckBox('Mit erweitertem Oktagon-Menü starten');self.expanded.setChecked(v['menu_expanded']);self.expanded.setToolTip('Häufige Aktionen bleiben innen, weitere erscheinen außen. Auf kleinen Arbeitsflächen öffnet Weitere die Aktionssuche.');form.addRow(self.expanded)
         self.startup=QCheckBox('Beim Windows-Anmelden starten');self.startup.setChecked(v['autostart']);self.startup.setEnabled(sys.platform=='win32');self.startup.setToolTip('Gilt für diesen Installationspfad. Nach Verschieben des Programms erneut einstellen.');form.addRow(self.startup)
         self.backends=QCheckBox('Konverter beim Start prüfen');self.backends.setChecked(v['check_backends']);form.addRow(self.backends)
         self.updates=QCheckBox('Bei jedem Programmstart auf GitHub nach Updates suchen');self.updates.setChecked(v['check_updates']);form.addRow(self.updates)
@@ -64,7 +63,7 @@ class SettingsDialog(QDialog):
             hidden=[key for key,item in self.menu_items.items() if item.checkState(0)==Qt.CheckState.Unchecked]
             from converter import EXTENSIONS
             hidden_formats=[target for target in EXTENSIONS if (all('format:'+key in hidden for key in ('SVG SCHNELL','SVG ERWEITERT')) if target=='SVG' else 'format:'+target in hidden)]
-            values=dict(self.prefs.values,hidden_actions=hidden,hidden_formats=hidden_formats,output_dir=self.output.text().strip(),image_quality=self.quality.value(),video_profile=self.profile.currentText(),video_height=self.height.currentData(),convert_key=self.convert.currentText(),edit_key=self.edit.currentText(),files_key=self.files.currentText(),autostart=self.startup.isChecked(),check_backends=self.backends.isChecked(),check_updates=self.updates.isChecked(),menu_expanded=self.expanded.isChecked())
+            values=dict(self.prefs.values,hidden_actions=hidden,hidden_formats=hidden_formats,output_dir=self.output.text().strip(),image_quality=self.quality.value(),video_profile=self.profile.currentText(),video_height=self.height.currentData(),convert_key=self.convert.currentText(),edit_key=self.edit.currentText(),files_key=self.files.currentText(),autostart=self.startup.isChecked(),check_backends=self.backends.isChecked(),check_updates=self.updates.isChecked())
             values=self.prefs.validate(values)
             if values['output_dir'] and not Path(values['output_dir']).is_dir():raise ValueError('Bitte einen vorhandenen Ausgabeordner wählen.')
             previous=self.prefs.values['autostart']

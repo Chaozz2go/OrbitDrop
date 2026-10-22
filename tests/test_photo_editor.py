@@ -43,16 +43,11 @@ class PhotoEditorTests(unittest.TestCase):
         editor.save();self.assertEqual(calls[0][2]['adjustments']['brightness'],1)
     def test_dense_menu_exposes_all_targets_without_overlap(self):
         wheel=Wheel(object());self.addCleanup(wheel.close);wheel.open();wheel.node='direct';wheel.all_actions=['format:F'+str(i) for i in range(28)]+['format:ZURÜCK'];wheel.display_page();self.app.processEvents()
-        wheel.select_action('nav:MEHR');seen=set()
-        for page in range(wheel.secondary_pages):
-            layout=geometry(wheel)
-            for key,path,point,index in layout:
-                seen.add(key)
-                self.assertEqual(wheel.segment(point),index,key)
-                self.assertEqual(sum(other.contains(point) for _,other,_,_ in layout),1,key)
-                for other_key,other,_,_ in layout:
-                    if other_key!=key:self.assertFalse(path.intersects(other),(key,other_key))
-            wheel.select_action('nav:NÄCHSTE')
-        self.assertTrue(set(wheel.all_actions)<=seen)
+        layout=geometry(wheel);self.assertEqual(len(layout),29)
+        for key,path,point,index in layout:
+            self.assertEqual(wheel.segment(point),index,key)
+            self.assertEqual(sum(other.contains(point) for _,other,_,_ in layout),1,key)
+            for other_key,other,_,_ in layout:
+                if other_key!=key:self.assertFalse(path.intersects(other),(key,other_key))
 
 if __name__=='__main__':unittest.main()

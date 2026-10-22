@@ -126,7 +126,7 @@ class ActivationGuardTests(unittest.TestCase):
                         calls = [call for call in schedule.call_args_list if call.args[0] == 1500]
                         self.assertEqual(len(calls), int(enabled))
                     finally:
-                        c.shortcut_events.close(); c.timer.stop(); c.tray.hide(); c.wheel.close(); c.shelf.close(); c.tasks.close()
+                        c.timer.stop(); c.tray.hide(); c.wheel.close(); c.shelf.close(); c.tasks.close()
 
     @unittest.skipUnless(sys.platform == 'win32', 'Win32 ABI smoke test')
     def test_native_api_queries_current_process_and_foreground_safely(self):

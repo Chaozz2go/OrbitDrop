@@ -1,6 +1,6 @@
 # OrbitDrop: Ausbau für Windows
 
-Stand 0.22.3. Eigenständige Oberfläche und Implementierung, inspiriert vom schnellen Drag-and-drop-Konzept. Die folgende Liste beschreibt geplante Arbeit, keine bereits zugesicherten Funktionen.
+Stand 0.23.0. Eigenständige Oberfläche und Implementierung, inspiriert vom schnellen Drag-and-drop-Konzept. Die folgende Liste beschreibt geplante Arbeit, keine bereits zugesicherten Funktionen.
 
 ## Erledigt in diesem Schritt
 

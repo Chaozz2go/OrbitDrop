@@ -1,14 +1,16 @@
-OrbitDrop 0.22.3
+OrbitDrop 0.23.0
 
-## 0.22.3 – 22.10.2026
+## 0.23.0 – 22.10.2026
 
-### Behoben
-- Bereichstasten während des Ziehens werden zusätzlich über Windows-Eingabeereignisse in einem eigenen Hintergrundthread erkannt. Kurze Tastendrücke bleiben auch nach dem Loslassen bis zur nächsten Menüabfrage erhalten.
-- Bereits gehaltene Bereichstasten öffnen beim Beginn einer neuen Mausgeste ebenfalls das Menü. Die Reihenfolge von Taste und Maustaste führt dadurch nicht mehr zu einem verlorenen Aufruf.
-- Desktop-Unterfenster des Explorers werden berücksichtigt. Fehlgeschlagene Fensterabfragen sperren die Erkennung nicht mehr für ein Viertel einer Sekunde.
-- Ein kurzes Ausbleiben des Vordergrundfensters lässt einen passenden Aufruf erneut prüfen und schließt einen sichtbaren Kreis nicht sofort. Bei einem erkannten fremden Fenster oder Spiel gilt die Sperre weiterhin sofort.
+### Menü
+- Klassisches Radialmenü mit abgerundeten Kreissegmenten auf Grundlage des Quellstands vom 21.10. wiederhergestellt. Passende Aktionen stehen direkt in einem oder mehreren Ringen.
+- Kein Oktagon-Ausklappen und kein unterer Informationsbalken mehr.
+- Beim Ziehen einer Datei zeigt Tools nur Dateiaktionen: z. B. ZIP, Ablage, Kopieren, Verschieben, Pfad kopieren, Terminal und Umbenennen. „Explorer“ und allgemeine Programmfunktionen entfallen im Datei-Menü.
+- Ein Link zeigt nur Audio- und Video-Download. Der Downloader ist außerdem im Tray ausdrücklich als „Audio/Video herunterladen“ erreichbar.
+- Einstellungen, Hilfe, Updates, Konverterprüfung, Aufträge, Bildabläufe, Schnellaktionen, Aktionssuche und Debugging bleiben über das Tray erreichbar.
 
-### Technisches
-- Windows Raw Input wird ohne Tastatursperre oder Hooks verwendet. Nur die belegten Tasten und abgeleitete Bereichsereignisse bleiben kurz im Speicher; keine Texteingaben, Dateien oder Tastaturprotokolle werden gespeichert.
-- Veraltete Ereignisse, gewechselte Fenster, losgelassene Maustaste, Pause und modale Dialoge dürfen keinen verspäteten Kreis öffnen.
-- Die bisherige Abfrage bleibt als Rückfall erhalten. Windows-Pakete testen die Registrierung und das Beenden des Eingabefensters auch in EXE und installierter App.
+### Bedienung
+- Die Eingabe-Erweiterung mit zusätzlichem Windows-Eingabefenster ist wieder entfernt. Die frühere regelmäßige Tastenerkennung arbeitet jetzt mit einem kurzen 10-ms-Intervall; der Spielschutz und frei belegbare Tasten bleiben erhalten.
+- Die bisherige Wartezeit für das Abschließen eines Drop-Ereignisses bleibt erhalten.
+- Konverter, Editoren, Downloads, Playlists, Updateprüfung, Verlauf und Einstellungen bleiben erhalten. Frühere Oktagon-Anzeigeoptionen werden nicht mehr verwendet.
+- Die globale Aktionssuche übernimmt keine alte Datei- oder Linkauswahl vom zuletzt geöffneten Kreis.

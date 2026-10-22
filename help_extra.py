@@ -24,7 +24,7 @@ def extra_sections(values):
 <ol><li>Dateien gemeinsam ziehen → <b>{tools} → Umbenennen</b>.</li><li><code>Urlaub_{{n}}</code>, Startnummer und Ziffernzahl einstellen.</li>
 <li>Vorher-/Nachher-Liste prüfen und ausführen. Hier ändern sich die Originalnamen.</li><li>Falls nötig vor dem Schließen des Fensters <b>Letzte Umbenennung zurücknehmen</b> wählen.</li></ol>
 <h2>Nur bestimmte Songs einer Playlist laden</h2>
-<ol><li>Playlist-Link über <b>{tools} → Link einfügen</b> öffnen und Audio wählen.</li><li>Link prüfen, <b>Keine auswählen</b> wählen und nur gewünschte Titel anhaken.</li>
+<ol><li>Playlist-Link über <b>Tray → Audio/Video herunterladen</b> öffnen und Audio wählen.</li><li>Link prüfen, <b>Keine auswählen</b> wählen und nur gewünschte Titel anhaken.</li>
 <li>Speicherordner prüfen und starten. Die Suche blendet Titel nur aus; markierte ausgeblendete Titel werden ebenfalls geladen.</li></ol>'''),
         ('Alle Formate & Grenzen', '''<h2>Welche Dateien kann ich umwandeln?</h2>
 <p>Der Kreis zeigt die für die konkrete Auswahl und die installierten Konverter passenden Ziele. Die folgende Übersicht ist keine Zusage, dass jede Kombination möglich ist.</p>
@@ -43,5 +43,5 @@ def extra_sections(values):
 </table>
 <h2>Was passiert mit meinen Originalen?</h2><p>Normale Konvertierungen und Bearbeitungen erzeugen neue Dateien. Vorhandene Namen bekommen Nummernzusätze. <b>Verschieben und Umbenennen ändern dagegen die Originale.</b> Die Ablage enthält nur Verweise. Abbruch räumt je nach Werkzeug unfertige Ausgaben auf; fertige Konvertierungen können erhalten bleiben. Bei einer Fehlermeldung die Auftragsdetails prüfen.</p>
 <h2>Die Ausgabe sieht anders aus</h2><p>JPG unterstützt keine Transparenz. Audio-/Video-Neuencodierung kann Qualität kosten. PDF→DOCX rekonstruiert kein identisches Layout. Eine Scan-PDF rendert Seiten neu und übernimmt keine Formulare oder interaktiven Elemente. HDR, Farbräume, besondere Metadaten und Archiv-/NTFS-Rechte werden nicht originalgetreu garantiert.</p>
-<h2>Datei erkannt, aber Aktion fehlt</h2><p>Konverter unter Tools prüfen. Mehrere ausgewählte Dateien brauchen ein gemeinsames Ziel. Ausgeblendete Menüpunkte erscheinen auch in der Aktionssuche nicht. Experimenteller Pages-Import hängt von LibreOffice und Dateiversion ab; kein Pages-Export. RTFD und Text Clippings werden nicht unterstützt.</p>'''),
+<h2>Datei erkannt, aber Aktion fehlt</h2><p>Konverter über das OrbitDrop-Symbol neben der Uhr prüfen. Mehrere ausgewählte Dateien brauchen ein gemeinsames Ziel. Ausgeblendete Menüpunkte erscheinen auch in der Aktionssuche nicht. Experimenteller Pages-Import hängt von LibreOffice und Dateiversion ab; kein Pages-Export. RTFD und Text Clippings werden nicht unterstützt.</p>'''),
     ]

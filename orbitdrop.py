@@ -1,7 +1,6 @@
 import ctypes
 import math
 import sys
-import time
 from pathlib import Path
 from PySide6.QtCore import Qt, QTimer, QObject, Signal, QRunnable, QThreadPool, QRectF, QPointF, QStandardPaths
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QFont, QCursor, QIcon, QPixmap, QAction
@@ -177,8 +176,7 @@ class Wheel(QWidget):
         self.setMouseTracking(True)
         self.resize(380, 410)
         self.circle_size=700
-        self.tile_size=112;self.menu_area=None;self.menu_expanded=False;self.outer_page=0;self.outer_supported=True
-        self.secondary_actions=[];self.secondary_pages=1;self._octagon_slots=[];self.hover_nav=None;self.hover_fired=False
+        self.menu_area=None
         self.preview=None;self.ring_paths=[];self.action_titles={}
         self.selected = -1
         self.labels = []
@@ -186,7 +184,7 @@ class Wheel(QWidget):
         self.page = 0
         self.page_timer = QTimer(self)
         self.page_timer.setSingleShot(True)
-        self.page_timer.timeout.connect(self.hover_navigation)
+        self.page_timer.timeout.connect(self.next_page)
         self.mode = 'home'
         self.node = 'home'
         self.navigation_parent=None
@@ -213,9 +211,7 @@ class Wheel(QWidget):
         self.latched=False
 
         self.mode = mode
-        values=getattr(getattr(self.controller,'prefs',None),'values',{})
-        self.menu_expanded=values.get('menu_expanded',False);self.outer_page=0;self.hover_nav=None;self.hover_fired=False
-        cursor=QCursor.pos();self.menu_anchor=QPointF(cursor);screen=QApplication.screenAt(cursor) or QApplication.primaryScreen();self.menu_area=screen.availableGeometry()
+        cursor=QCursor.pos();screen=QApplication.screenAt(cursor) or QApplication.primaryScreen();self.menu_area=screen.availableGeometry()
         self.automatic = automatic
         self.page_timer.stop()
         self.all_actions = []
@@ -229,15 +225,15 @@ class Wheel(QWidget):
         self.display_mode()
         self.revision += 1
         self.checking = False
-        self.show()
-        self.raise_()
-        # A layered Windows window needs painted hit-test pixels immediately.
-        self.repaint()
+        center=self.circle_size//2 if self.node=='direct' else 190
+        area=self.menu_area
+        self.move(max(area.left(),min(cursor.x()-center,area.right()-self.width()+1)),
+                  max(area.top(),min(cursor.y()-center,area.bottom()-self.height()+1)))
+        self.show();self.raise_();self.repaint()
 
     def switch_mode(self,mode):
         if mode == self.mode:return
         files=self.files[:]
-        self.outer_page=0;self.hover_nav=None;self.hover_fired=False
         self.mode=mode
         self.node='home' if mode=='home' else 'direct'
         self.navigation_parent=None
@@ -275,6 +271,7 @@ class Wheel(QWidget):
 
     def context_actions(self,files_only=False):
         values=getattr(getattr(self.controller,'prefs',None),'values',{})
+        if not self.files:return []
         presets=values.get('quick_actions',[])
         self.action_titles={'edit:quick:'+p['id']:p['name'] for p in presets};workflows=values.get('workflows',[])
         self.action_titles.update({'edit:flow:'+p['id']:p['name'] for p in workflows})
@@ -295,13 +292,13 @@ class Wheel(QWidget):
     def open_link(self,url):
         if not media_link(url):return
         self.open();self.link=url;self.kind='Link';self.message='Download wählen · Audio oder Video';self.automatic=False;self.latched=True
-        self.node='direct';self.all_actions=['download:AUDIO LADEN','download:VIDEO LADEN']+direct_actions([],None,[]);self.display_page()
+        self.node='direct';self.all_actions=['download:AUDIO LADEN','download:VIDEO LADEN'];self.display_page()
 
     def inspect(self, files):
         if self.files == files:
             return
         self.files = files
-        self.outer_page=0;self.hover_nav=None;self.hover_fired=False;self.page_timer.stop()
+        self.page_timer.stop()
         self.preview=None
         self.link=None
         self.revision += 1
@@ -339,7 +336,7 @@ class Wheel(QWidget):
         self.update()
 
     def navigate(self,node):
-        self.page_timer.stop();self.automatic=False;self.latched=True;self.page=0;self.outer_page=0;self.hover_nav=None;self.hover_fired=False
+        self.page_timer.stop();self.automatic=False;self.latched=True;self.page=0
         actions=self.context_actions()
         if node=='home':
             self.node='home';self.mode='home';self.navigation_parent=None;self.all_actions=home_actions(self.files,self.kind,self.formats)
@@ -357,9 +354,6 @@ class Wheel(QWidget):
         self.display_page();self.show();self.raise_()
 
     def select_action(self,target):
-        from octagon_menu import NAVIGATION
-        if target in NAVIGATION:
-            self.automatic=False;self.latched=True;self.run_navigation(target);return
         if self.node=='direct':
             category,action=target.split(':',1)
             if action=='ZURÜCK':
@@ -396,35 +390,21 @@ class Wheel(QWidget):
         from menu_visibility import visible_actions
         values=getattr(getattr(self.controller,'prefs',None),'values',{})
         self.all_actions=visible_actions(self.all_actions,values)
-        if not self.all_actions:self.message='Keine sichtbaren Aktionen · Anderen Bereich wählen oder Einstellungen öffnen'
-        if self.node=='home' and len(self.all_actions)>6:
-            self.labels=self.all_actions[self.page*5:(self.page+1)*5]+['WEITER']
-            original=self.all_actions;self.all_actions=self.labels
-            from octagon_menu import configure
-            area=self.menu_area or QApplication.primaryScreen().availableGeometry()
-            configure(self,area);self.all_actions=original
+        area=self.menu_area or QApplication.primaryScreen().availableGeometry()
+        if self.node=='direct':
+            self.labels=self.all_actions[:]
+            self.circle_size=max(320,min(720,area.width()-20,area.height()-20))
+            self.resize(self.circle_size,self.circle_size)
+            from direct_wheel import geometry
+            self.paths=[entry[1] for entry in geometry(self)]
         else:
-            from octagon_menu import configure
-            area=self.menu_area or QApplication.primaryScreen().availableGeometry()
-            configure(self,area)
-        self.selected=-1;self.repaint()
-
-    def run_navigation(self,target,hover=False):
-        from octagon_menu import MORE,PREVIOUS,NEXT
-        self.page_timer.stop()
-        if target=='WEITER':self.next_page();return
-        if target==MORE:
-            if not self.outer_supported:
-                if hover:return
-                self.hide();QTimer.singleShot(0,lambda:self.controller.circle_action(self.files[:],'AKTIONSSUCHE',self.kind));return
-            self.menu_expanded=not self.menu_expanded
-        elif target==NEXT:self.outer_page=(self.outer_page+1)%self.secondary_pages
-        elif target==PREVIOUS:self.outer_page=(self.outer_page-1)%self.secondary_pages
-        self.display_page()
-
-    def hover_navigation(self):
-        if self.hover_nav and self.isVisible():
-            self.hover_fired=True;self.run_navigation(self.hover_nav,hover=True)
+            self.labels=self.all_actions[:] if len(self.all_actions)<=6 else self.all_actions[self.page*5:(self.page+1)*5]+['WEITER']
+            self.resize(420,380)
+            from wheel_render import home_paths
+            self.paths=home_paths(self.labels)
+        self.selected=-1;self.ring_paths=[]
+        self.move(max(area.left(),min(self.x(),area.right()-self.width()+1)),max(area.top(),min(self.y(),area.bottom()-self.height()+1)))
+        self.repaint()
 
     def next_page(self):
         if not self.isVisible() or len(self.all_actions) <= 6:
@@ -460,7 +440,7 @@ class Wheel(QWidget):
         if self.receiving:
             url=self.dropped_link(event.mimeData())
             if url:
-                if self.link!=url:self.revision+=1;self.link=url;self.checking=False;self.files=[];self.kind='Link';self.node='direct';self.all_actions=['download:AUDIO LADEN','download:VIDEO LADEN']+direct_actions([],None,[]);self.message='Download wählen · Audio oder Video';self.display_page()
+                if self.link!=url:self.revision+=1;self.link=url;self.checking=False;self.files=[];self.kind='Link';self.node='direct';self.all_actions=['download:AUDIO LADEN','download:VIDEO LADEN'];self.message='Download wählen · Audio oder Video';self.display_page()
             else:self.inspect([u.toLocalFile() for u in event.mimeData().urls()])
         self.selected = self.segment(event.position()) if self.receiving else -1
         self.update()
@@ -470,14 +450,11 @@ class Wheel(QWidget):
             url=self.dropped_link(event.mimeData())
             if not url:self.inspect([u.toLocalFile() for u in event.mimeData().urls()])
             self.selected = self.segment(event.position())
-            from octagon_menu import NAVIGATION
-            target=self.labels[self.selected] if self.selected>=0 else None
-            if target in NAVIGATION or target=='WEITER':
-                if self.hover_nav!=target:
-                    self.hover_nav=target;self.hover_fired=False;self.page_timer.start(550)
-                event.accept()
+            if self.selected>=0 and self.labels[self.selected]=='WEITER':
+                if not self.page_timer.isActive():self.page_timer.start(400)
+                event.ignore()
             else:
-                self.page_timer.stop();self.hover_nav=None;self.hover_fired=False
+                self.page_timer.stop()
                 if self.selected<0:event.ignore()
         self.update()
 
@@ -485,7 +462,6 @@ class Wheel(QWidget):
         self.page_timer.stop()
         self.receiving = False
         self.selected = -1
-        self.hover_nav=None;self.hover_fired=False
         self.update()
 
     def dropEvent(self, event):
@@ -497,15 +473,10 @@ class Wheel(QWidget):
         files = [u.toLocalFile() for u in event.mimeData().urls()]
         if files != self.files and not self.dropped_link(event.mimeData()):
             event.ignore();return
-        from octagon_menu import NAVIGATION
-        target=self.labels[index]
-        if target in NAVIGATION and self.hover_fired and target==self.hover_nav:
-            self.automatic=False;self.latched=True
-        else:self.select_action(target)
-        self.hover_nav=None;self.hover_fired=False
+        self.select_action(self.labels[index])
 
     def hideEvent(self,event):
-        self.page_timer.stop();self.hover_nav=None;self.hover_fired=False
+        self.page_timer.stop()
         super().hideEvent(event)
 
     def mouseMoveEvent(self,event):
@@ -538,10 +509,6 @@ class Controller:
         self.selection_job=None;self.selection_pending=False;self.selection_revision=0;self.selection_origin=None
         from activation_guard import ActivationGuard
         self.activation_guard=ActivationGuard();self.shortcuts_paused=False;self.update_job=None
-        from shortcut_events import ShortcutEvents
-        self.shortcut_events=ShortcutEvents(self.prefs.values).start()
-        self.app.aboutToQuit.connect(self.shortcut_events.close)
-        self.was_left=False
         self.backend_check=None
         self.backend_status=[]
         self.backend_missing=[]
@@ -567,6 +534,11 @@ class Controller:
                                 ('Bearbeiten', lambda: self.wheel.open(mode='edit')),
                                 ('Tools / Dateiaktionen', lambda: self.wheel.open(mode='files')),
                                 ('Dateiablage öffnen', lambda: self.shelf.open()),
+                                ('Audio/Video herunterladen', lambda:self.download_dialog()),
+                                ('Aktion suchen', lambda:self.circle_action([],'AKTIONSSUCHE','OrbitDrop')),
+                                ('Bildabläufe', lambda:self.circle_action([],'BILDABLÄUFE','OrbitDrop')),
+                                ('Schnellaktionen', lambda:self.circle_action([],'SCHNELLAKTIONEN','OrbitDrop')),
+                                ('Debugging', lambda:self.circle_action([],'DEBUGGING','OrbitDrop')),
                                 ('Aufträge & Verlauf', self.show_tasks),
                                 ('Einstellungen', self.settings),
                                 ('Updates', self.updates),
@@ -583,7 +555,7 @@ class Controller:
         self.released = 0
         self.timer = QTimer()
         self.timer.timeout.connect(self.poll)
-        self.timer.start(25)
+        self.timer.start(10)
         self.tray.showMessage('OrbitDrop bereit','Datei ziehen: '+shortcut_hint(self.prefs.values))
         if '--preview' in sys.argv:self.wheel.open()
         if self.prefs.values['check_backends']:QTimer.singleShot(300,lambda:self.check_backends(False))
@@ -609,9 +581,6 @@ class Controller:
 
     def pause_shortcuts(self,paused):
         self.shortcuts_paused=paused;self.selection_pending=False;self.selection_revision+=1
-        self.pending_shortcuts=[]
-        listener=getattr(self,'shortcut_events',None)
-        if listener is not None:listener.configure(self.prefs.values,enabled=not paused)
         if paused and self.wheel.automatic:self.wheel.hide()
         self.tray.setToolTip('OrbitDrop · Tastenzugänge pausiert' if paused else 'OrbitDrop · '+shortcut_hint(self.prefs.values))
 
@@ -619,54 +588,29 @@ class Controller:
         if sys.platform != 'win32':
             return
         key = ctypes.windll.user32.GetAsyncKeyState
-        raw={name:key(code) for name,code in polling_keys(self.prefs.values).items()}
-        states={name:bool(value&0x8000) for name,value in raw.items()}
+        states={name:bool(key(code)&0x8000) for name,code in polling_keys(self.prefs.values).items()}
         left,escape=bool(key(0x01)&0x8000),bool(key(0x1B)&0x8000)
-        modal=QApplication.activeModalWidget() is not None
-        listener=getattr(self,'shortcut_events',None)
-        events=[]
-        if listener is not None:
-            listener.configure(self.prefs.values,enabled=not self.shortcuts_paused and not modal)
-            events=listener.drain()
-        left_started=left and not getattr(self,'was_left',False);self.was_left=left
         if self.shortcuts_paused:
-            self.pending_shortcuts=[]
             if escape:self.wheel.hide()
             self.was_keys=states;self.selection_pending=False;return
-        if modal:
-            self.pending_shortcuts=[]
+        if QApplication.activeModalWidget() is not None:
             self.was_keys=states;self.selection_pending=False;return
         mode=pressed_mode(self.prefs.values,states,self.was_keys)
         context=self.activation_guard.context()
-        now=time.monotonic()
-        events=[event for event in [*getattr(self,'pending_shortcuts',[]),*events] if 0<=now-event.at<=.5]
-        self.pending_shortcuts=events[-16:] if left and getattr(context,'token',(0,0))==(0,0) and not modal and not self.shortcuts_paused else []
-        if mode is None and left and context.drag:
-            bindings=dict(zip(('convert','edit','files'),(self.prefs.values[key] for key in ('convert_key','edit_key','files_key'))))
-            mode=next((event.mode for event in reversed(events) if event.token==context.token and 0<=now-event.at<=.5 and all(not states.get(mod) or mod in bindings[event.mode].split('+') for mod in ('Shift','Strg','Alt'))),None)
-            if mode is None and left_started:mode=pressed_mode(self.prefs.values,states,{})
-        if mode is None and left and context.drag:
-            from shortcuts import tapped_mode
-            mode=tapped_mode(self.prefs.values,raw,self.was_keys)
         if mode and left and context.drag:
             if self.wheel.isVisible():self.wheel.switch_mode(mode)
             else:self.wheel.open(automatic=True,mode=mode)
         if mode=='convert' and not left and context.selection:self.request_selection()
         self.was_keys=states
         self.selection_pending=False
-        missing_focus=getattr(context,'token',(0,0))==(0,0)
-        if missing_focus:
-            if getattr(self,'missing_focus_since',None) is None:self.missing_focus_since=now
-        else:self.missing_focus_since=None
-        if not context.drag and (not missing_focus or now-self.missing_focus_since>.15) and self.wheel.isVisible() and self.wheel.automatic:
+        if not context.drag and self.wheel.isVisible() and self.wheel.automatic:
             self.wheel.hide();self.released=0
         if escape:
-            self.pending_shortcuts=[]
             self.selection_pending=False;self.selection_revision+=1;self.wheel.hide()
         if self.wheel.isVisible() and self.wheel.automatic and not left:
             # Let the OLE drop event finish before hiding a canceled palette.
             self.released += 1
-            if self.released > 12:
+            if self.released > 30:
                 self.wheel.hide()
         else:
             self.released = 0
@@ -798,9 +742,11 @@ class Controller:
         if info and info['newer']:self.tray.showMessage('OrbitDrop-Update',info['version']+' verfügbar. Im Kreis: Alt → Updates.')
     def search_actions(self,files=None,kind=None):
         from action_search import ActionSearchDialog
-        files=list(files or []);actions=self.wheel.context_actions()
-        if self.wheel.link:actions=['download:AUDIO LADEN','download:VIDEO LADEN']+actions
-        dialog=ActionSearchDialog(actions,self.prefs,self.wheel.action_titles,files,self.wheel.kind,self.wheel.formats,self.wheel.link)
+        files=list(files or [])
+        link=self.wheel.link if kind=='Link' else None
+        actions=self.wheel.context_actions() if files else direct_actions([],None,[])
+        if link:actions=['download:AUDIO LADEN','download:VIDEO LADEN']
+        dialog=ActionSearchDialog(actions,self.prefs,self.wheel.action_titles,files,kind or 'OrbitDrop',self.wheel.formats if files else [],link)
         if dialog.exec() and dialog.chosen:
             self.wheel.files=dialog.files;self.wheel.kind=dialog.kind;self.wheel.formats=dialog.formats;self.wheel.link=dialog.link;self.wheel.node='direct';self.wheel.select_action(dialog.chosen)
     def record_diagnostics(self,items):

@@ -27,7 +27,7 @@ class MenuDownloadTests(unittest.TestCase):
     def test_contextual_actions_are_direct_and_grouped(self):
         from circle_menu import direct_actions,direct_color
         labels=direct_actions(['image.png'],'Bild',['PNG','JPG','SVG'])
-        self.assertIn('format:PNG',labels);self.assertIn('format:SVG ERWEITERT',labels);self.assertIn('edit:ZUSCHNEIDEN',labels);self.assertIn('tool:TERMINAL',labels);self.assertIn('app:EINSTELLUNGEN',labels)
+        self.assertIn('format:PNG',labels);self.assertIn('format:SVG ERWEITERT',labels);self.assertIn('edit:ZUSCHNEIDEN',labels);self.assertIn('tool:TERMINAL',labels);self.assertFalse(any(key.startswith('app:') for key in labels));self.assertNotIn('tool:EXPLORER',labels)
         self.assertEqual(len({direct_color(label) for label in labels}),3)
         self.assertNotIn('DREHEN',labels);self.assertIn('edit:90° LINKS',labels)
         self.assertIn('SCHNEIDEN',edit_actions(['sound.mp3'],'Audio'))

@@ -41,18 +41,3 @@ def pressed_mode(values,states,previous):
         parts=binding.split('+');edge_keys=[key for key in parts if key not in MODIFIERS] or parts
         if matches(binding,states) and not matches(binding,previous) and any(states.get(k) and not previous.get(k) for k in edge_keys):return mode
     return None
-
-
-def tapped_mode(values,raw,previous):
-    """Best-effort recovery of a released single-key tap between timer ticks.
-
-    Windows' low bit may be consumed by another process, so normal held-key
-    detection remains primary. Never infer a multi-key chord from old tap bits.
-    """
-    if any(raw.get(key,0)&0x8000 for key in MODIFIERS):return None
-    taps=[key for key,value in raw.items() if value&1 and not value&0x8000 and not previous.get(key)]
-    if len(taps)!=1:return None
-    key=taps[0]
-    for setting,mode in [('convert_key','convert'),('edit_key','edit'),('files_key','files')]:
-        if values[setting]==key:return mode
-    return None
