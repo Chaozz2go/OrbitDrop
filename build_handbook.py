@@ -13,7 +13,8 @@ MANUAL = ROOT / 'docs' / 'OrbitDrop-Handbuch.html'
 def build():
     sections = handbook(DEFAULTS, '%LOCALAPPDATA%/OrbitDrop')
     links = []; bodies = []
-    illustrations = {'Bilder bearbeiten, drehen & beschriften': 'preview-photo-studio.png',
+    illustrations = {'Menüs personalisieren & Favoriten': 'preview-radial-menu.png',
+                     'Bilder bearbeiten, drehen & beschriften': 'preview-photo-studio.png',
                      'Video- & Audioschnitt': 'preview-video-studio.png',
                      'PDF-Seiten & lokale OCR': 'preview-pdf-pages.png'}
     for i, (title, body) in enumerate(sections):

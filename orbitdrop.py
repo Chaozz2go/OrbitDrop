@@ -172,6 +172,8 @@ class Wheel(QWidget):
         self.setMouseTracking(True)
         self.resize(380, 410)
         self.circle_size=700
+        self.tile_size=112;self.menu_area=None;self.menu_expanded=False;self.outer_page=0;self.outer_supported=True
+        self.secondary_actions=[];self.secondary_pages=1;self._octagon_slots=[];self.hover_nav=None;self.hover_fired=False
         self.preview=None;self.ring_paths=[];self.action_titles={}
         self.selected = -1
         self.labels = []
@@ -179,7 +181,7 @@ class Wheel(QWidget):
         self.page = 0
         self.page_timer = QTimer(self)
         self.page_timer.setSingleShot(True)
-        self.page_timer.timeout.connect(self.next_page)
+        self.page_timer.timeout.connect(self.hover_navigation)
         self.mode = 'home'
         self.node = 'home'
         self.navigation_parent=None
@@ -206,6 +208,9 @@ class Wheel(QWidget):
         self.latched=False
 
         self.mode = mode
+        values=getattr(getattr(self.controller,'prefs',None),'values',{})
+        self.menu_expanded=values.get('menu_expanded',False);self.outer_page=0;self.hover_nav=None;self.hover_fired=False
+        cursor=QCursor.pos();screen=QApplication.screenAt(cursor) or QApplication.primaryScreen();self.menu_area=screen.availableGeometry()
         self.automatic = automatic
         self.page_timer.stop()
         self.all_actions = []
@@ -222,8 +227,8 @@ class Wheel(QWidget):
         cursor = QCursor.pos()
         screen = QApplication.screenAt(cursor) or QApplication.primaryScreen()
         area = screen.availableGeometry()
-        self.move(max(area.left(), min(cursor.x()-(self.circle_size//2 if self.node=='direct' else 190), area.right()-self.width()+1)),
-                  max(area.top(), min(cursor.y()-(self.circle_size//2 if self.node=='direct' else 190), area.bottom()-self.height()+1)))
+        self.move(max(area.left(), min(cursor.x()-(self.circle_size//2), area.right()-self.width()+1)),
+                  max(area.top(), min(cursor.y()-(self.circle_size//2), area.bottom()-self.height()+1)))
         self.show()
         self.raise_()
         self.update()
@@ -232,6 +237,7 @@ class Wheel(QWidget):
         if mode == self.mode:
             self.display_mode();return
         files=self.files[:]
+        self.outer_page=0;self.hover_nav=None;self.hover_fired=False
         self.mode=mode
         self.node='home' if mode=='home' else 'direct'
         self.navigation_parent=None
@@ -295,6 +301,7 @@ class Wheel(QWidget):
         if self.files == files:
             return
         self.files = files
+        self.outer_page=0;self.hover_nav=None;self.hover_fired=False;self.page_timer.stop()
         self.preview=None
         self.link=None
         self.revision += 1
@@ -350,6 +357,9 @@ class Wheel(QWidget):
         self.display_page();self.show();self.raise_()
 
     def select_action(self,target):
+        from octagon_menu import NAVIGATION
+        if target in NAVIGATION:
+            self.automatic=False;self.latched=True;self.run_navigation(target);return
         if self.node=='direct':
             category,action=target.split(':',1)
             if action=='ZURÜCK':
@@ -387,21 +397,34 @@ class Wheel(QWidget):
         values=getattr(getattr(self.controller,'prefs',None),'values',{})
         self.all_actions=visible_actions(self.all_actions,values)
         if not self.all_actions:self.message='Keine sichtbaren Aktionen · Anderen Bereich wählen oder Einstellungen öffnen'
-        if self.node=='direct':
-            self.labels=self.all_actions[:];self.selected=-1
-            screen=QApplication.screenAt(self.pos()) or QApplication.primaryScreen();area=screen.availableGeometry()
-            self.circle_size=max(320,min(720,area.width()-20,area.height()-90));self.resize(self.circle_size,self.circle_size+65)
-            self.move(max(area.left(),min(self.x(),area.right()-self.width()+1)),max(area.top(),min(self.y(),area.bottom()-self.height()+1)));self.repaint();return
-        if len(self.all_actions) <= 6:
-            self.labels = self.all_actions[:]
+        if self.node=='home' and len(self.all_actions)>6:
+            self.labels=self.all_actions[self.page*5:(self.page+1)*5]+['WEITER']
+            original=self.all_actions;self.all_actions=self.labels
+            from octagon_menu import configure
+            area=self.menu_area or QApplication.primaryScreen().availableGeometry()
+            configure(self,area);self.all_actions=original
         else:
-            self.labels = self.all_actions[self.page*5:(self.page+1)*5] + ['WEITER']
-        self.selected = -1
-        self.resize(470,450) if self.node=='home' else self.resize(880,510)
-        screen=QApplication.screenAt(self.pos()) or QApplication.primaryScreen()
-        area=screen.availableGeometry()
-        self.move(max(area.left(),min(self.x(),area.right()-self.width()+1)),max(area.top(),min(self.y(),area.bottom()-self.height()+1)))
-        self.repaint()
+            from octagon_menu import configure
+            area=self.menu_area or QApplication.primaryScreen().availableGeometry()
+            configure(self,area)
+        self.selected=-1;self.repaint()
+
+    def run_navigation(self,target,hover=False):
+        from octagon_menu import MORE,PREVIOUS,NEXT
+        self.page_timer.stop()
+        if target=='WEITER':self.next_page();return
+        if target==MORE:
+            if not self.outer_supported:
+                if hover:return
+                self.hide();QTimer.singleShot(0,lambda:self.controller.circle_action(self.files[:],'AKTIONSSUCHE',self.kind));return
+            self.menu_expanded=not self.menu_expanded
+        elif target==NEXT:self.outer_page=(self.outer_page+1)%self.secondary_pages
+        elif target==PREVIOUS:self.outer_page=(self.outer_page-1)%self.secondary_pages
+        self.display_page()
+
+    def hover_navigation(self):
+        if self.hover_nav and self.isVisible():
+            self.hover_fired=True;self.run_navigation(self.hover_nav,hover=True)
 
     def next_page(self):
         if not self.isVisible() or len(self.all_actions) <= 6:
@@ -447,20 +470,22 @@ class Wheel(QWidget):
             url=self.dropped_link(event.mimeData())
             if not url:self.inspect([u.toLocalFile() for u in event.mimeData().urls()])
             self.selected = self.segment(event.position())
-            if self.selected >= 0 and self.labels[self.selected] == 'WEITER':
-                if not self.page_timer.isActive():
-                    self.page_timer.start(650)
-                event.ignore()
+            from octagon_menu import NAVIGATION
+            target=self.labels[self.selected] if self.selected>=0 else None
+            if target in NAVIGATION or target=='WEITER':
+                if self.hover_nav!=target:
+                    self.hover_nav=target;self.hover_fired=False;self.page_timer.start(550)
+                event.accept()
             else:
-                self.page_timer.stop()
-                if self.selected < 0:
-                    event.ignore()
+                self.page_timer.stop();self.hover_nav=None;self.hover_fired=False
+                if self.selected<0:event.ignore()
         self.update()
 
     def dragLeaveEvent(self, event):
         self.page_timer.stop()
         self.receiving = False
         self.selected = -1
+        self.hover_nav=None;self.hover_fired=False
         self.update()
 
     def dropEvent(self, event):
@@ -472,7 +497,16 @@ class Wheel(QWidget):
         files = [u.toLocalFile() for u in event.mimeData().urls()]
         if files != self.files and not self.dropped_link(event.mimeData()):
             event.ignore();return
-        self.select_action(self.labels[index])
+        from octagon_menu import NAVIGATION
+        target=self.labels[index]
+        if target in NAVIGATION and self.hover_fired and target==self.hover_nav:
+            self.automatic=False;self.latched=True
+        else:self.select_action(target)
+        self.hover_nav=None;self.hover_fired=False
+
+    def hideEvent(self,event):
+        self.page_timer.stop();self.hover_nav=None;self.hover_fired=False
+        super().hideEvent(event)
 
     def mouseMoveEvent(self,event):
         self.selected=self.segment(event.position());self.update()

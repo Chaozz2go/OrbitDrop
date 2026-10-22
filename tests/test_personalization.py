@@ -60,7 +60,7 @@ class PersonalizationTests(unittest.TestCase):
         self.assertEqual(visible_actions(actions,values),['format:SVG SCHNELL'])
     def test_hidden_favorites_do_not_reappear_in_wheel_or_search(self):
         self.prefs.update(dict(self.prefs.values,hidden_actions=['edit:BITMAP','tool:TERMINAL','app:HILFE','download:VIDEO LADEN'],favorite_actions=['edit:BITMAP']))
-        wheel=Wheel(SimpleNamespace(prefs=self.prefs));self.addCleanup(wheel.close);wheel.files=['image.png'];wheel.kind='Bild';wheel.formats=['PNG'];wheel.mode='edit';wheel.display_mode();self.assertNotIn('edit:BITMAP',wheel.labels)
+        wheel=Wheel(SimpleNamespace(prefs=self.prefs));self.addCleanup(wheel.close);wheel.files=['image.png'];wheel.kind='Bild';wheel.formats=['PNG'];wheel.mode='edit';wheel.display_mode();self.assertNotIn('edit:BITMAP',wheel.all_actions)
         wheel.open_link('https://example.org/movie');self.assertNotIn('download:VIDEO LADEN',wheel.labels);self.assertIn('download:AUDIO LADEN',wheel.labels)
         search=ActionSearchDialog(['edit:BITMAP','app:HILFE','app:UPDATES'],self.prefs);self.addCleanup(search.close);self.assertEqual(search.list.count(),1);self.assertEqual(search.selected(),'app:UPDATES')
     def test_all_hidden_home_renders_and_settings_still_restore(self):

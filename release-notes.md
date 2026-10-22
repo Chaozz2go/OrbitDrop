@@ -1,16 +1,15 @@
-OrbitDrop 0.21.0
+OrbitDrop 0.22.0
 
-## 0.21.0 – 22.10.2026
+## 0.22.0 – 22.10.2026
 
 ### Neu
-- Dauerhafter, durchsuchbarer Änderungsverlauf direkt im Updatefenster und in „Anleitung & Info“; auch ohne Internet lesbar.
-- Nach einem Versionswechsel werden die Neuerungen einmal angezeigt. Übersprungene Versionen bleiben im Verlauf nachlesbar.
-- Eigenständiges Offline-Handbuch mit Inhaltsverzeichnis, Suche, konkreten Beispielen, Formatübersicht und Bildern. Direkt aus der Hilfe öffnen oder als HTML-Datei speichern.
-- Mehr praktische Hilfe zu Konvertierung, Bildbearbeitung, Schnitt, PDF/OCR, Downloads, Dateiaktionen und Fehlern.
+- Radiales Menü aus gleich großen, regelmäßigen Oktagonen für Startansicht, Konvertieren, Bearbeiten, Tools und Links.
+- Kompakter innerer Ring mit festen Plätzen für häufige Aktionen. „Weitere“ erweitert das Menü nach außen; „Weniger“ klappt es wieder ein.
+- Beim Ziehen öffnet kurzes Verweilen auf „Weitere“ den äußeren Ring. Ein anschließendes Ablegen darauf klappt ihn nicht versehentlich wieder ein.
+- Bei sehr vielen Aktionen blättert nur der äußere Ring; die inneren Aktionen bleiben an ihrem Platz.
+- Option „Mit erweitertem Oktagon-Menü starten“ in den Einstellungen.
 
 ### Verbessert
-- Direkt per Bereichstaste oder Tray geöffnetes Konvertieren/Bearbeiten/Tools hat keinen unnötigen Zurück-Eintrag. Die Bereichstasten wechseln weiterhin zwischen diesen Hauptbereichen.
-- Zurück erscheint erst nach einer tatsächlichen Menünavigation, etwa nach der manuellen Bereichsauswahl. Die aktuelle Dateiauswahl bleibt erhalten.
-- Das Updatefenster zeigt bei fehlendem Internet weiterhin die lokalen Neuerungen. Es installiert weiterhin erst nach deiner Bestätigung.
-- Reine Änderungen an README, Dokumentation oder Bildern lösen keinen Windows-Paketbau aus.
-- Ein bereits veröffentlichtes Paket wird bei einem erneuten Workflow-Lauf unverändert beibehalten.
+- Favoriten können einen inneren Platz erhalten; ausgeblendete Aktionen bleiben ausgeblendet.
+- Bildschirmränder und Monitore mit negativen Koordinaten werden berücksichtigt. Bei wenig Platz öffnet „Weitere“ die Aktionssuche statt unlesbar kleiner zusätzlicher Kacheln.
+- Neue Programmaufnahme und aktualisierte Offline-Anleitung zum Oktagon-Menü.

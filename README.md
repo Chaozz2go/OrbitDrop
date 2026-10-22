@@ -2,7 +2,7 @@
 
 **Dateien umwandeln, bearbeiten und organisieren – direkt dort, wo du sie gerade ziehst.**
 
-OrbitDrop ist ein Windows-Dateiwerkzeug mit einem radialen Drag-and-drop-Menü. Ziehe eine Datei, tippe eine Taste an und lege sie auf der gewünschten Aktion im Kreis ab. Statt für jede kleine Aufgabe ein eigenes Programm zu öffnen, erreichst du Konverter, Bildeditor, Audio-/Videoschnitt, Downloads und Dateiaktionen über dieselbe Oberfläche.
+OrbitDrop ist ein Windows-Dateiwerkzeug mit einem radialen Drag-and-drop-Menü aus gleich großen Oktagonen. Ziehe eine Datei, tippe eine Taste an und lege sie auf der gewünschten Aktion im Kreis ab. Statt für jede kleine Aufgabe ein eigenes Programm zu öffnen, erreichst du Konverter, Bildeditor, Audio-/Videoschnitt, Downloads und Dateiaktionen über dieselbe Oberfläche.
 
 OrbitDrop erkennt den Dateiinhalt und zeigt passende Aktionen für deine Auswahl. Du kannst mehrere Dateien gemeinsam verarbeiten, häufige Aktionen als Favoriten speichern und unbenutzte Menüpunkte ausblenden. Konvertierung, Bearbeitung und Texterkennung laufen lokal auf deinem Rechner.
 
@@ -10,7 +10,7 @@ OrbitDrop erkennt den Dateiinhalt und zeigt passende Aktionen für deine Auswahl
   <img src="docs/preview-radial-menu.png" alt="OrbitDrop-Kreismenü für ein Bild mit Zuschnitt, Bildeditor, Bitmap, Komprimierung, Drehung und Texterkennung" width="680">
 </p>
 
-*Aufnahme der aktuellen Programmoberfläche: Bearbeiten-Kreis für ein Bild. Je nach Datei und deinen Einstellungen erscheinen andere Aktionen.*
+*Programmaufnahme: kompakter und erweiterter Bearbeiten-Kreis. „Weitere“ baut den äußeren Ring auf, während die inneren Aktionen an ihrem Platz bleiben. Beim Ziehen kurz darauf halten oder anklicken. Bei sehr vielen Aktionen wird nur außen geblättert. In den Einstellungen kannst du das Menü direkt erweitert starten.*
 
 | Bereich | Standardtaste | Beispiele |
 | --- | --- | --- |
@@ -257,4 +257,5 @@ Die vollständige Hilfe findest du direkt im Programm unter **Alt → Anleitung 
 OrbitDrop von Chaozz2go · [GNU AGPL v3](LICENSE) · [Hinweise zu Drittanbietern](THIRD-PARTY-NOTICES.md) · [Fehler melden oder Funktion vorschlagen](https://github.com/Chaozz2go/OrbitDrop/issues)
 
 Dateiverarbeitung und OCR erfolgen lokal. Internet wird für gestartete Downloads, die Einrichtung zusätzlicher Komponenten und aktivierte Updateprüfungen verwendet. Es gibt keine eingebaute Telemetrie und keinen automatischen Upload deiner Dokumente.
+
 
