@@ -642,7 +642,8 @@ class Controller:
         events=[event for event in [*getattr(self,'pending_shortcuts',[]),*events] if 0<=now-event.at<=.5]
         self.pending_shortcuts=events[-16:] if left and getattr(context,'token',(0,0))==(0,0) and not modal and not self.shortcuts_paused else []
         if mode is None and left and context.drag:
-            mode=next((event.mode for event in reversed(events) if event.token==context.token and 0<=now-event.at<=.5),None)
+            bindings=dict(zip(('convert','edit','files'),(self.prefs.values[key] for key in ('convert_key','edit_key','files_key'))))
+            mode=next((event.mode for event in reversed(events) if event.token==context.token and 0<=now-event.at<=.5 and all(not states.get(mod) or mod in bindings[event.mode].split('+') for mod in ('Shift','Strg','Alt'))),None)
             if mode is None and left_started:mode=pressed_mode(self.prefs.values,states,{})
         if mode is None and left and context.drag:
             from shortcuts import tapped_mode

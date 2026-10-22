@@ -69,6 +69,9 @@ class ShortcutEventTests(unittest.TestCase):
         c=self.controller();c.pending_shortcuts=[ShortcutEvent('convert',(1,2),time.monotonic())]
         with patch('orbitdrop.QApplication.activeModalWidget',return_value=object()):self.poll(c,{1})
         self.assertFalse(c.pending_shortcuts);self.poll(c,{1});c.wheel.open.assert_not_called()
+    def test_retry_cannot_survive_additional_altgr_modifiers(self):
+        c=self.controller();c.pending_shortcuts=[ShortcutEvent('edit',(1,2),time.monotonic())]
+        self.poll(c,{1,0x11,0x12});c.wheel.open.assert_not_called()
     def test_desktop_child_classes_still_require_explorer_process(self):
         for cls in ('SHELLDLL_DefView','SysListView32'):
             self.assertTrue(classify_window(1,2,'explorer.exe',cls,own_pid=3).drag)
