@@ -63,6 +63,7 @@ class ReleaseHelpTests(unittest.TestCase):
 
     def test_handbook_is_self_contained_and_all_local_navigation_targets_exist(self):
         document = resource_path('docs/OrbitDrop-Handbuch.html').read_text(encoding='utf-8')
+        self.assertTrue(document.rstrip().endswith('</html>'), 'Das Offline-Handbuch muss vollständig im Paket liegen.')
         parser = HelpDocumentParser(); parser.feed(document)
         self.assertGreaterEqual(len(parser.images), 3)
         self.assertTrue(all(source.startswith('data:image/png;base64,') for source in parser.images))
