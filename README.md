@@ -20,9 +20,9 @@ OrbitDrop erkennt den Dateiinhalt und zeigt passende Aktionen für deine Auswahl
 
 ## Installation · Quick Install
 
-**[Windows-Setup 0.20.0 herunterladen](https://github.com/Chaozz2go/OrbitDrop/releases/download/v0.20.0/OrbitDrop-0.20.0-Windows-x64-Setup.exe)** · **[Windows-Downloads & Releases](https://github.com/Chaozz2go/OrbitDrop/releases)** · **[Quellcode als ZIP](https://github.com/Chaozz2go/OrbitDrop/archive/refs/heads/main.zip)**
+**[Windows-Setup 0.21.0 herunterladen](https://github.com/Chaozz2go/OrbitDrop/releases/download/v0.21.0/OrbitDrop-0.21.0-Windows-x64-Setup.exe)** · **[Windows-Downloads & Releases](https://github.com/Chaozz2go/OrbitDrop/releases)** · **[Quellcode als ZIP](https://github.com/Chaozz2go/OrbitDrop/archive/refs/heads/main.zip)**
 
-> **Aktuelle Windows-Version: 0.20.0.** Setup und portables Paket sind öffentlich verfügbar. Bestehende Nutzer können das Setup zum Aktualisieren verwenden. Ab 0.20.0 prüft OrbitDrop standardmäßig bei jedem Start auf weitere veröffentlichte stabile Releases; Download und Installation startest du selbst.
+> **Aktuelle Windows-Version: 0.21.0.** Setup und portables Paket sind öffentlich verfügbar. Bestehende Nutzer können das Setup zum Aktualisieren verwenden. Ab 0.20.0 prüft OrbitDrop standardmäßig bei jedem Start auf weitere veröffentlichte stabile Releases; Download und Installation startest du selbst.
 
 ### Windows-App ohne Python
 
@@ -248,7 +248,7 @@ Normale Konvertierungen und Bearbeitungen erstellen neue Dateien; vorhandene Nam
 
 **Alt → Updates** sucht nach veröffentlichten stabilen GitHub-Releases. Bei jedem Programmstart wird standardmäßig nach Updates gesucht. Das lässt sich unter **Einstellungen** oder **Updates** ausschalten. Bei bestehenden Installationen wird die neue Startprüfung einmalig aktiviert; eine anschließend gespeicherte Abwahl bleibt erhalten. Release-Entwürfe werden nicht angeboten. Download-Prüfsummen werden geprüft; die Installation startest du ausdrücklich, sobald keine Hintergrundaufträge mehr laufen.
 
-Die vollständige Hilfe findest du direkt im Programm unter **Alt → Anleitung & Info**: durchsuchbare Themen, Formatübersicht und konkrete Beispiele mit deiner aktuellen Tastenbelegung. **Handbuch öffnen** zeigt die eigenständige HTML-Hilfe im Browser. **Handbuch speichern** legt eine Kopie mit eingebetteten Bildern und Suche ab; sie funktioniert ohne Internet. Die Datei liegt auch unter [docs/OrbitDrop-Handbuch.html](docs/OrbitDrop-Handbuch.html) im Repository.
+Die vollständige Hilfe findest du direkt im Programm unter **Alt → Anleitung & Info**: durchsuchbare Themen, Formatübersicht und konkrete Beispiele mit deiner aktuellen Tastenbelegung. **Handbuch öffnen** zeigt die eigenständige HTML-Hilfe im Browser. **Handbuch speichern** legt eine Kopie mit eingebetteten Bildern und Suche ab; sie funktioniert ohne Internet. Die separate Datei beschreibt die Standardtasten; deine persönliche Belegung zeigt die integrierte Hilfe. Die Datei liegt auch unter [docs/OrbitDrop-Handbuch.html](docs/OrbitDrop-Handbuch.html) im Repository.
 
 **Änderungsverlauf** im Updatefenster oder in der Hilfe zeigt alle mitgelieferten Versionshinweise auch ohne Internet. Nach einem Versionswechsel erscheinen die Neuerungen einmal. Vor einem Update zeigt das Updatefenster die Hinweise der angebotenen Version. Die öffentliche Historie steht in [CHANGELOG.md](CHANGELOG.md).
 
