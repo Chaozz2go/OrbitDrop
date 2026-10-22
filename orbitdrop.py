@@ -148,12 +148,16 @@ class BackendCheck(QRunnable):
     def run(self):
         from filetypes import backend,run
         from extended import soffice
+        from backend_checks import probe_command
         status=[];missing=[]
         for name in ('ffmpeg','ffprobe','pandoc','LibreOffice'):
             executable=soffice() if name=='LibreOffice' else backend(name)
             if not executable:missing.append(name);status.append(name+': fehlt');continue
             try:
-                result=run([executable,'-version' if name.startswith('ff') else '--version'],timeout=12)
+                command=probe_command(name,executable)
+                if command is None:
+                    status.append(name+': '+executable+'\nGefunden; Versionsabfrage ohne Konsolenprogramm übersprungen.');continue
+                result=run(command,timeout=12)
                 if result.returncode:raise OSError(result.stderr[:160] or 'Start fehlgeschlagen')
                 line=result.stdout.splitlines()[0] if result.stdout else 'Gefunden'
                 status.append(name+': '+executable+'\n'+line)
@@ -813,9 +817,14 @@ class Controller:
     def backends_checked(self,status,missing):
         self.backend_check=None;self.backend_status=status;self.backend_missing=missing
         if self.show_backend_when_ready:self.show_backend_dialog()
-        elif missing:self.tray.showMessage('Konverterprüfung',', '.join(missing)+' fehlt oder startet nicht. Einrichtung im Infobereich-Menü.')
+        elif any(name in ('ffmpeg','ffprobe') for name in missing):
+            self.tray.showMessage('Audio und Video eingeschränkt','Die Medienwerkzeuge fehlen oder konnten nicht gestartet werden. OrbitDrop ist weiter nutzbar. Rechtsklick auf das OrbitDrop-Symbol neben der Uhr → Konverter prüfen / einrichten.')
     def show_backend_dialog(self):
-        box=QMessageBox();box.setWindowTitle('OrbitDrop · Konverter');box.setText('\n\n'.join(self.backend_status));box.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        from backend_checks import summary
+        box=QMessageBox();box.setWindowTitle('OrbitDrop · Verfügbare Funktionen')
+        box.setText(summary(self.backend_missing))
+        box.setInformativeText('LibreOffice und Pandoc sind optional. Du brauchst sie nur für die genannten zusätzlichen Dokumentformate. Deine anderen Funktionen bleiben nutzbar. Nach einer Einrichtung erneut prüfen.')
+        box.setDetailedText('\n\n'.join(self.backend_status));box.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         install=box.addButton('Medien einrichten',QMessageBox.ButtonRole.ActionRole)
         office=box.addButton('LibreOffice-Download',QMessageBox.ButtonRole.ActionRole)
         pandoc=box.addButton('Pandoc-Download',QMessageBox.ButtonRole.ActionRole)
