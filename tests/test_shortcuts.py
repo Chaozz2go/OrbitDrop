@@ -39,13 +39,16 @@ class ShortcutTests(unittest.TestCase):
         source=self.root/'image.png';Image.new('RGB',(80,40),'red').save(source)
         wheel=Wheel(object());self.addCleanup(wheel.close);wheel.open(automatic=True,mode='convert');wheel.inspect([str(source)])
         wheel.switch_mode('files');self.assertIn('tool:TERMINAL',wheel.labels);self.assertNotIn('edit:ZUSCHNEIDEN',wheel.labels);self.assertTrue(wheel.automatic)
-        wheel.select_action('app:ZURÜCK');wheel.select_action('BEARBEITEN');deadline=time.monotonic()+5
+        self.assertNotIn('app:ZURÜCK',wheel.labels);wheel.navigate('home');wheel.select_action('BEARBEITEN');deadline=time.monotonic()+5
         while wheel.checking and time.monotonic()<deadline:self.app.processEvents();time.sleep(.01)
         self.assertFalse(wheel.checking);self.assertIn('edit:ZUSCHNEIDEN',wheel.labels);self.assertNotIn('format:PNG',wheel.labels);self.assertNotIn('tool:TERMINAL',wheel.labels)
         wheel.switch_mode('convert')
         while wheel.checking and time.monotonic()<deadline:self.app.processEvents();time.sleep(.01)
         self.assertIn('format:PNG',wheel.labels);self.assertEqual(wheel.files,[str(source)])
-        wheel.select_action('format:ZURÜCK');wheel.switch_mode('convert');self.assertEqual(wheel.node,'direct');self.assertIn('format:PNG',wheel.labels)
+        wheel.navigate('home');wheel.switch_mode('convert');self.assertEqual(wheel.node,'direct')
+        deadline=time.monotonic()+5
+        while wheel.checking and time.monotonic()<deadline:self.app.processEvents();time.sleep(.01)
+        self.assertIn('format:PNG',wheel.labels);self.assertNotIn('format:ZURÜCK',wheel.labels)
         for kind in ('Video','Audio'):
             wheel.mode='edit';wheel.inspected(object(),wheel.revision,['MP3'],(kind,''));self.assertIn('edit:SCHNEIDEN',wheel.labels);self.assertNotIn('edit:ZUSCHNEIDEN',wheel.labels)
 

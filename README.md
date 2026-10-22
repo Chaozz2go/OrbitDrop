@@ -66,7 +66,7 @@ Für manche Formate werden weitere Programme gebraucht. Installiere sie nur, wen
 4. Auf das gewünschte Format oder Werkzeug ziehen und dort die Maustaste loslassen.
 5. Falls ein Einstellungsfenster erscheint, die Vorschau prüfen und die Aktion starten. Fortschritt und Ergebnisse stehen unter **Aufträge**.
 
-Du kannst während des Ziehens zwischen den drei Bereichen wechseln. Alternativ das OrbitDrop-Symbol neben der Uhr anklicken und eine Datei in den geöffneten Kreis ziehen. In der Startansicht wählst du zuerst Konvertieren, Bearbeiten oder Tools. **Esc** schließt den Kreis. **Zurück** führt zur Bereichsauswahl.
+Du kannst während des Ziehens zwischen den drei Bereichen wechseln. Alternativ das OrbitDrop-Symbol neben der Uhr anklicken und eine Datei in den geöffneten Kreis ziehen. In der Startansicht wählst du zuerst Konvertieren, Bearbeiten oder Tools. **Esc** schließt den Kreis. **Zurück** erscheint nach einer tatsächlichen Menünavigation, etwa nach der manuellen Bereichsauswahl. Direkt per Shift/Strg/Alt oder Tray geöffnete Hauptbereiche haben keinen Zurück-Eintrag; beim Ziehen wechselst du mit den Bereichstasten.
 
 **Rechtsklick im Kreis** öffnet die Aktionssuche. Suche beispielsweise nach „schneiden“ oder „komprimieren“ und öffne die passende Aktion mit Enter. Über **Favorit setzen** stehen häufig genutzte Aktionen im jeweiligen Bereich zuerst und erhalten einen Stern.
 
@@ -248,10 +248,13 @@ Normale Konvertierungen und Bearbeitungen erstellen neue Dateien; vorhandene Nam
 
 **Alt → Updates** sucht nach veröffentlichten stabilen GitHub-Releases. Bei jedem Programmstart wird standardmäßig nach Updates gesucht. Das lässt sich unter **Einstellungen** oder **Updates** ausschalten. Bei bestehenden Installationen wird die neue Startprüfung einmalig aktiviert; eine anschließend gespeicherte Abwahl bleibt erhalten. Release-Entwürfe werden nicht angeboten. Download-Prüfsummen werden geprüft; die Installation startest du ausdrücklich, sobald keine Hintergrundaufträge mehr laufen.
 
-Die vollständige Hilfe findest du jederzeit direkt im Programm unter **Alt → Anleitung & Info**. Sie zeigt auch deine aktuelle Tastenbelegung.
+Die vollständige Hilfe findest du direkt im Programm unter **Alt → Anleitung & Info**: durchsuchbare Themen, Formatübersicht und konkrete Beispiele mit deiner aktuellen Tastenbelegung. **Handbuch öffnen** zeigt die eigenständige HTML-Hilfe im Browser. **Handbuch speichern** legt eine Kopie mit eingebetteten Bildern und Suche ab; sie funktioniert ohne Internet. Die Datei liegt auch unter [docs/OrbitDrop-Handbuch.html](docs/OrbitDrop-Handbuch.html) im Repository.
+
+**Änderungsverlauf** im Updatefenster oder in der Hilfe zeigt alle mitgelieferten Versionshinweise auch ohne Internet. Nach einem Versionswechsel erscheinen die Neuerungen einmal. Vor einem Update zeigt das Updatefenster die Hinweise der angebotenen Version. Die öffentliche Historie steht in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
 OrbitDrop von Chaozz2go · [GNU AGPL v3](LICENSE) · [Hinweise zu Drittanbietern](THIRD-PARTY-NOTICES.md) · [Fehler melden oder Funktion vorschlagen](https://github.com/Chaozz2go/OrbitDrop/issues)
 
 Dateiverarbeitung und OCR erfolgen lokal. Internet wird für gestartete Downloads, die Einrichtung zusätzlicher Komponenten und aktivierte Updateprüfungen verwendet. Es gibt keine eingebaute Telemetrie und keinen automatischen Upload deiner Dokumente.
+

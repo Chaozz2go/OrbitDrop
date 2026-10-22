@@ -14,6 +14,10 @@ def self_test(report):
         import pymupdf
         from PySide6.QtWidgets import QApplication
         from image_editor import ImageEditor
+        from changelog import local_entries,resource_path
+        from app_version import VERSION
+        results['changelog']=any(entry['version']==VERSION for entry in local_entries())
+        results['manual']=resource_path('docs/OrbitDrop-Handbuch.html').is_file()
         with tempfile.TemporaryDirectory(prefix='orbit-smoke-') as temporary:
             root=Path(temporary);source=root/'image.png';Image.new('RGB',(160,100),'#447788').save(source)
             image=convert(source,'WEBP');results['image']=image.stat().st_size>0

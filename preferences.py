@@ -7,7 +7,7 @@ import subprocess
 import sys
 import tempfile
 
-DEFAULTS={'startup_update_policy':2,'check_updates':True,'hidden_actions':[],'favorite_actions':[],'workflows':[],'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
+DEFAULTS={'seen_version':'','startup_update_policy':2,'check_updates':True,'hidden_actions':[],'favorite_actions':[],'workflows':[],'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
           'convert_key':'Shift','edit_key':'Strg','files_key':'Alt','autostart':False,'check_backends':True}
 from shortcuts import KEY_CODES,pressed_mode,validate_bindings,polling_keys
 
@@ -38,6 +38,7 @@ class Preferences:
         finally:Path(temp).unlink(missing_ok=True)
     def validate(self,values):
         result={key:values.get(key,value) for key,value in DEFAULTS.items()}
+        if not isinstance(result['seen_version'],str) or len(result['seen_version'])>40:result['seen_version']=''
         result['startup_update_policy']=2
         result.update(validate_bindings(result))
         hidden_actions=result['hidden_actions']

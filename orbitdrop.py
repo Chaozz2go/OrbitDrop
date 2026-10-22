@@ -182,6 +182,7 @@ class Wheel(QWidget):
         self.page_timer.timeout.connect(self.next_page)
         self.mode = 'home'
         self.node = 'home'
+        self.navigation_parent=None
         self.formats = []
         self.link = None
         self.latched = False
@@ -198,6 +199,7 @@ class Wheel(QWidget):
 
     def open(self, automatic=False, mode='home'):
         self.node='home' if mode=='home' else 'direct'
+        self.navigation_parent=None
         self.formats=[]
         self.preview=None
         self.link=None
@@ -232,6 +234,7 @@ class Wheel(QWidget):
         files=self.files[:]
         self.mode=mode
         self.node='home' if mode=='home' else 'direct'
+        self.navigation_parent=None
         self.latched=False
         self.revision+=1
         self.page_timer.stop()
@@ -250,7 +253,7 @@ class Wheel(QWidget):
 
     def display_mode(self):
         if self.mode=='home':
-            self.node='home';self.all_actions=home_actions(self.files,self.kind,self.formats)
+            self.node='home';self.mode='home';self.navigation_parent=None;self.all_actions=home_actions(self.files,self.kind,self.formats)
             self.message='Konvertieren · Bearbeiten · Tools'
         else:
             self.node='direct'
@@ -258,10 +261,10 @@ class Wheel(QWidget):
             prefixes={'convert':('format:',),'edit':('edit:',),'files':('tool:','app:')}[self.mode]
             self.all_actions=[action for action in actions if action.startswith(prefixes)]
             back='format:' if self.mode=='convert' else 'edit:' if self.mode=='edit' else 'app:'
-            self.all_actions.append(back+'ZURÜCK')
+            if self.navigation_parent is not None:self.all_actions.append(back+'ZURÜCK')
             title={'convert':'Konvertieren','edit':'Bearbeiten','files':'Tools'}[self.mode]
             self.message=title+' · Datei hineinziehen' if not self.files else title+' · Aktion wählen'
-            if self.files and len(self.all_actions)==1:self.message=title+' · Keine passenden Aktionen verfügbar'
+            if self.files and not any(not key.endswith(':ZURÜCK') for key in self.all_actions):self.message=title+' · Keine passenden Aktionen verfügbar'
         self.display_page()
 
     def context_actions(self,files_only=False):
@@ -332,10 +335,12 @@ class Wheel(QWidget):
         self.page_timer.stop();self.automatic=False;self.latched=True;self.page=0
         actions=self.context_actions()
         if node=='home':
-            self.node='home';self.all_actions=home_actions(self.files,self.kind,self.formats)
+            self.node='home';self.mode='home';self.navigation_parent=None;self.all_actions=home_actions(self.files,self.kind,self.formats)
             self.message='Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools'
         else:
             self.node='direct'
+            self.navigation_parent={'svg':'formats','rotate':'edit','more':'tools'}.get(node,'home')
+            self.mode='convert' if node in ('formats','svg') else 'edit' if node in ('edit','rotate') else 'files'
             prefixes={'formats':('format:',),'edit':('edit:',),'rotate':('edit:90°','edit:180°'),'svg':('format:SVG ',),'more':('app:',)}.get(node,('tool:','app:'))
             self.all_actions=[action for action in actions if action.startswith(prefixes)]
             back='format:' if node in ('formats','svg') else 'edit:' if node in ('edit','rotate') else 'app:'
@@ -347,7 +352,9 @@ class Wheel(QWidget):
     def select_action(self,target):
         if self.node=='direct':
             category,action=target.split(':',1)
-            if action=='ZURÜCK':self.navigate('home');return
+            if action=='ZURÜCK':
+                if self.navigation_parent is not None:self.navigate(self.navigation_parent)
+                return
             files=self.files[:];kind=self.kind;url=self.link;self.hide()
             if category=='download' or action=='LINK LADEN':QTimer.singleShot(0,lambda:self.controller.download_dialog(url,'video' if action=='VIDEO LADEN' else 'audio'))
             elif category=='format' and action not in ('SVG SCHNELL','SVG ERWEITERT'):QTimer.singleShot(0,lambda:self.controller.convert_files(files,action))
@@ -358,7 +365,7 @@ class Wheel(QWidget):
         if target in category_modes:
             mode,node=category_modes[target]
             if self.files and self.kind=='Dateiaktionen' and mode!='files':
-                self.switch_mode(mode);self.automatic=False;self.latched=True
+                self.switch_mode(mode);self.navigation_parent='home';self.automatic=False;self.latched=True;self.display_mode()
             else:
                 self.mode=mode;self.navigate(node)
             return
@@ -379,7 +386,7 @@ class Wheel(QWidget):
         from menu_visibility import visible_actions
         values=getattr(getattr(self.controller,'prefs',None),'values',{})
         self.all_actions=visible_actions(self.all_actions,values)
-        if not self.all_actions:self.message='Alle Menüpunkte ausgeblendet · Einstellungen über das Tray öffnen'
+        if not self.all_actions:self.message='Keine sichtbaren Aktionen · Anderen Bereich wählen oder Einstellungen öffnen'
         if self.node=='direct':
             self.labels=self.all_actions[:];self.selected=-1
             screen=QApplication.screenAt(self.pos()) or QApplication.primaryScreen();area=screen.availableGeometry()
@@ -543,6 +550,20 @@ class Controller:
         if '--preview' in sys.argv:self.wheel.open()
         if self.prefs.values['check_backends']:QTimer.singleShot(300,lambda:self.check_backends(False))
         if self.prefs.values.get('check_updates',True):QTimer.singleShot(1500,self.auto_update_check)
+        QTimer.singleShot(850,self.show_whats_new)
+
+    def show_whats_new(self):
+        from app_version import VERSION
+        previous=self.prefs.values.get('seen_version','')
+        if previous==VERSION:return
+        existing=any((self.prefs.root/name).is_file() for name in ('settings.json','history.json'))
+        try:self.prefs.update(dict(self.prefs.values,seen_version=VERSION))
+        except OSError:
+            # A read-only state folder must not prevent normal app usage.
+            return
+        if not existing:return
+        from changelog_ui import ChangelogDialog
+        ChangelogDialog(previous=previous or None).exec()
 
     def activated(self, reason):
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
