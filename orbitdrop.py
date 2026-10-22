@@ -1,6 +1,7 @@
 import ctypes
 import math
 import sys
+import time
 from pathlib import Path
 from PySide6.QtCore import Qt, QTimer, QObject, Signal, QRunnable, QThreadPool, QRectF, QPointF, QStandardPaths
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QFont, QCursor, QIcon, QPixmap, QAction
@@ -537,6 +538,10 @@ class Controller:
         self.selection_job=None;self.selection_pending=False;self.selection_revision=0;self.selection_origin=None
         from activation_guard import ActivationGuard
         self.activation_guard=ActivationGuard();self.shortcuts_paused=False;self.update_job=None
+        from shortcut_events import ShortcutEvents
+        self.shortcut_events=ShortcutEvents(self.prefs.values).start()
+        self.app.aboutToQuit.connect(self.shortcut_events.close)
+        self.was_left=False
         self.backend_check=None
         self.backend_status=[]
         self.backend_missing=[]
@@ -604,6 +609,9 @@ class Controller:
 
     def pause_shortcuts(self,paused):
         self.shortcuts_paused=paused;self.selection_pending=False;self.selection_revision+=1
+        self.pending_shortcuts=[]
+        listener=getattr(self,'shortcut_events',None)
+        if listener is not None:listener.configure(self.prefs.values,enabled=not paused)
         if paused and self.wheel.automatic:self.wheel.hide()
         self.tray.setToolTip('OrbitDrop · Tastenzugänge pausiert' if paused else 'OrbitDrop · '+shortcut_hint(self.prefs.values))
 
@@ -614,13 +622,28 @@ class Controller:
         raw={name:key(code) for name,code in polling_keys(self.prefs.values).items()}
         states={name:bool(value&0x8000) for name,value in raw.items()}
         left,escape=bool(key(0x01)&0x8000),bool(key(0x1B)&0x8000)
+        modal=QApplication.activeModalWidget() is not None
+        listener=getattr(self,'shortcut_events',None)
+        events=[]
+        if listener is not None:
+            listener.configure(self.prefs.values,enabled=not self.shortcuts_paused and not modal)
+            events=listener.drain()
+        left_started=left and not getattr(self,'was_left',False);self.was_left=left
         if self.shortcuts_paused:
+            self.pending_shortcuts=[]
             if escape:self.wheel.hide()
             self.was_keys=states;self.selection_pending=False;return
-        if QApplication.activeModalWidget() is not None:
+        if modal:
+            self.pending_shortcuts=[]
             self.was_keys=states;self.selection_pending=False;return
         mode=pressed_mode(self.prefs.values,states,self.was_keys)
         context=self.activation_guard.context()
+        now=time.monotonic()
+        events=[event for event in [*getattr(self,'pending_shortcuts',[]),*events] if 0<=now-event.at<=.5]
+        self.pending_shortcuts=events[-16:] if left and getattr(context,'token',(0,0))==(0,0) and not modal and not self.shortcuts_paused else []
+        if mode is None and left and context.drag:
+            mode=next((event.mode for event in reversed(events) if event.token==context.token and 0<=now-event.at<=.5),None)
+            if mode is None and left_started:mode=pressed_mode(self.prefs.values,states,{})
         if mode is None and left and context.drag:
             from shortcuts import tapped_mode
             mode=tapped_mode(self.prefs.values,raw,self.was_keys)
@@ -630,9 +653,14 @@ class Controller:
         if mode=='convert' and not left and context.selection:self.request_selection()
         self.was_keys=states
         self.selection_pending=False
-        if not context.drag and self.wheel.isVisible() and self.wheel.automatic:
+        missing_focus=getattr(context,'token',(0,0))==(0,0)
+        if missing_focus:
+            if getattr(self,'missing_focus_since',None) is None:self.missing_focus_since=now
+        else:self.missing_focus_since=None
+        if not context.drag and (not missing_focus or now-self.missing_focus_since>.15) and self.wheel.isVisible() and self.wheel.automatic:
             self.wheel.hide();self.released=0
         if escape:
+            self.pending_shortcuts=[]
             self.selection_pending=False;self.selection_revision+=1;self.wheel.hide()
         if self.wheel.isVisible() and self.wheel.automatic and not left:
             # Let the OLE drop event finish before hiding a canceled palette.

@@ -1,5 +1,5 @@
 """Exercise bundled native libraries and real media without writing user data."""
-import importlib.util,json,tempfile,time
+import importlib.util,json,tempfile,time,sys
 from pathlib import Path
 
 
@@ -22,6 +22,12 @@ def self_test(report):
         from app_version import VERSION
         results['changelog']=any(entry['version']==VERSION for entry in local_entries())
         results['manual']=resource_path('docs/OrbitDrop-Handbuch.html').is_file()
+        if sys.platform=='win32':
+            from shortcut_events import ShortcutEvents
+            from preferences import DEFAULTS
+            listener=ShortcutEvents(DEFAULTS).start()
+            try:results['shortcut_events']=listener.ready.wait(3) and listener.available and not listener.error
+            finally:listener.close()
         with tempfile.TemporaryDirectory(prefix='orbit-smoke-') as temporary:
             root=Path(temporary);source=root/'image.png';Image.new('RGB',(160,100),'#447788').save(source)
             image=convert(source,'WEBP');results['image']=image.stat().st_size>0
