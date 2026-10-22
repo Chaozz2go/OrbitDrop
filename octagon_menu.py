@@ -1,7 +1,7 @@
 """Equal regular octagons on fixed concentric slots, painted natively with Qt."""
 import math
 from pathlib import Path
-from PySide6.QtCore import QPointF, QRectF, Qt
+from PySide6.QtCore import QPointF, QRectF, QRect, Qt
 from PySide6.QtGui import QColor, QFont, QFontMetrics, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap
 from circle_menu import HOME, action_color, direct_color
 from menu_icons import draw_icon
@@ -12,7 +12,7 @@ NEXT = 'nav:NÄCHSTE'
 NAVIGATION = frozenset((MORE, PREVIOUS, NEXT))
 INNER_RADIUS = 1.36
 OUTER_RADIUS = 2.82
-FOOTER_HEIGHT = 72
+FOOTER_HEIGHT = 0
 
 
 def octagon(center, size):
@@ -33,9 +33,8 @@ def stage_metrics(area):
     available = max(120, min(area.width()-20, area.height()-FOOTER_HEIGHT-20))
     outer_tile = math.floor((available-24)/(2*OUTER_RADIUS+1))
     outer_supported = outer_tile >= 72
-    radius = OUTER_RADIUS if outer_supported else INNER_RADIUS
-    tile = max(32, min(128, math.floor((available-24)/(2*radius+1))))
-    stage = math.ceil((2*radius+1)*tile+24)
+    tile = max(32, min(104, math.floor((available-24)/(2*INNER_RADIUS+1))))
+    stage = math.ceil((2*INNER_RADIUS+1)*tile+24)
     return tile, stage, outer_supported
 
 
@@ -80,28 +79,49 @@ def plan(w, actions):
     inner = [(key,0,slot) for slot,key in sorted(slots.items())]
     secondary = [key for key in actions if key not in slots.values()]
     w.secondary_actions = secondary
-    w.secondary_pages = max(1, math.ceil(len(secondary)/10)) if len(secondary)>12 else 1
+    outer_slots=getattr(w,'outer_slots',list(range(12)))
+    capacity=len(outer_slots)
+    page_size=max(1,capacity-2)
+    w.secondary_pages=max(1,math.ceil(len(secondary)/page_size)) if len(secondary)>capacity else 1
     w.outer_page %= w.secondary_pages
     if secondary:
         inner.append((MORE,0,5))
     if w.menu_expanded and w.outer_supported:
-        if len(secondary)<=12:
-            inner.extend((key,1,round(i*12/len(secondary))) for i,key in enumerate(secondary))
+        if len(secondary)<=capacity:
+            inner.extend((key,1,outer_slots[round(i*capacity/len(secondary))%capacity]) for i,key in enumerate(secondary))
         else:
-            page = secondary[w.outer_page*10:(w.outer_page+1)*10]
-            inner.extend((key,1,i) for i,key in enumerate(page))
-            inner.extend([(PREVIOUS,1,10),(NEXT,1,11)])
+            page=secondary[w.outer_page*page_size:(w.outer_page+1)*page_size]
+            inner.extend((key,1,outer_slots[i]) for i,key in enumerate(page))
+            inner.extend([(PREVIOUS,1,outer_slots[-2]),(NEXT,1,outer_slots[-1])])
+
     return inner
 
 
 def configure(w, area):
-    w.tile_size,w.circle_size,w.outer_supported = stage_metrics(area)
+    w.tile_size,compact_size,supported = stage_metrics(area)
+    size=w.tile_size;half=compact_size/2
+    anchor=getattr(w,'menu_anchor',None)
+    if anchor is None:anchor=QPointF(w.x()+half,w.y()+half)
+    anchor=QPointF(max(area.left()+half,min(anchor.x(),area.right()+1-half)),
+                   max(area.top()+half,min(anchor.y(),area.bottom()+1-half)))
+    # Keep the inner ring at its original screen position when expanding.
+    w.menu_anchor=anchor;w.outer_slots=[]
+    for slot in range(12):
+        angle=math.radians(-90+slot*30)
+        point=anchor+QPointF(size*OUTER_RADIUS*math.cos(angle),size*OUTER_RADIUS*math.sin(angle))
+        if QRectF(area).contains(octagon(point,size).boundingRect().adjusted(-4,-4,4,4)):
+            w.outer_slots.append(slot)
+    w.outer_supported=supported and len(w.outer_slots)>=3
     if not w.outer_supported:w.menu_expanded=False
     w._octagon_slots = plan(w,w.all_actions)
     w.labels = [entry[0] for entry in w._octagon_slots]
-    w.resize(w.circle_size,w.circle_size+FOOTER_HEIGHT)
-    w.move(max(area.left(),min(w.x(),area.right()-w.width()+1)),
-           max(area.top(),min(w.y(),area.bottom()-w.height()+1)))
+    radius=OUTER_RADIUS if w.menu_expanded and w.secondary_actions else INNER_RADIUS
+    extent=(radius+.5)*size+12
+    bounds=QRect(math.floor(anchor.x()-extent),math.floor(anchor.y()-extent),
+                 math.ceil(extent*2),math.ceil(extent*2)).intersected(area)
+    w.setGeometry(bounds)
+    w.menu_center=anchor-QPointF(bounds.topLeft())
+    w.circle_size=w.width()
     w.paths = [entry[1] for entry in geometry(w)]
     w.ring_paths = []
 
@@ -111,12 +131,12 @@ def geometry(w):
     if [entry[0] for entry in assignments] != w.labels:
         assignments = [(key,0,i%6) for i,key in enumerate(w.labels)]
     size = getattr(w,'tile_size',112)
-    center = w.circle_size/2
+    center = getattr(w,'menu_center',QPointF(w.circle_size/2,w.circle_size/2))
     result = []
     for index,(key,ring,slot) in enumerate(assignments):
         radius = size*(OUTER_RADIUS if ring else INNER_RADIUS)
         angle = math.radians(-90+slot*(30 if ring else 60))
-        point = QPointF(center+radius*math.cos(angle),center+radius*math.sin(angle))
+        point = center+QPointF(radius*math.cos(angle),radius*math.sin(angle))
         result.append((key,octagon(point,size),point,index))
     return result
 
@@ -179,11 +199,10 @@ def draw_label(p,rect,text,size,color):
 
 
 def paint(w):
-    from direct_wheel import action_hint
     p=QPainter(w);p.setCompositionMode(QPainter.CompositionMode.CompositionMode_Source)
-    p.fillRect(w.rect(),Qt.GlobalColor.transparent);p.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceOver)
+    p.fillRect(w.rect(),QColor(0,0,0,1));p.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceOver)
     p.setRenderHint(QPainter.RenderHint.Antialiasing)
-    center=w.circle_size/2;size=getattr(w,'tile_size',112)
+    center_point=getattr(w,'menu_center',QPointF(w.circle_size/2,w.circle_size/2));center=center_point.x();center_y=center_point.y();size=getattr(w,'tile_size',112)
     layout=geometry(w);w.paths=[entry[1] for entry in layout]
     for key,path,point,index in layout:
         color=accent(w,key);selected=index==w.selected
@@ -196,36 +215,17 @@ def paint(w):
         favorites=getattr(getattr(w.controller,'prefs',None),'values',{}).get('favorite_actions',[])
         if key in favorites:
             p.setPen(QColor('#101b29') if selected else QColor('#ffbe83'));p.setFont(QFont('Segoe UI',8));p.drawText(QRectF(point.x()+size*.20,point.y()-size*.22,18,18),'★')
-    center_point=QPointF(center,center)
     paint_surface(p,octagon(center_point,size),QColor('#526e89'))
     if w.preview is not None and not w.preview.isNull():
-        rect=QRectF(center-size*.25,center-size*.33,size*.50,size*.44)
+        rect=QRectF(center-size*.25,center_y-size*.33,size*.50,size*.44)
         clip=QPainterPath();clip.addRoundedRect(rect,4,4);p.save();p.setClipPath(clip)
         pixmap=QPixmap.fromImage(w.preview).scaled(int(rect.width()),int(rect.height()),Qt.AspectRatioMode.KeepAspectRatioByExpanding,Qt.TransformationMode.SmoothTransformation)
         p.drawPixmap(round(rect.center().x()-pixmap.width()/2),round(rect.center().y()-pixmap.height()/2),pixmap);p.restore()
     else:
         p.setFont(QFont('Segoe UI',max(8,round(size*.09)),QFont.Weight.Bold));p.setPen(QColor('#edf6ff'))
-        p.drawText(QRectF(center-size*.40,center-size*.24,size*.80,size*.25),Qt.AlignmentFlag.AlignCenter,'OrbitDrop')
+        p.drawText(QRectF(center-size*.40,center_y-size*.24,size*.80,size*.25),Qt.AlignmentFlag.AlignCenter,'OrbitDrop')
     name=Path(w.files[0]).name if len(w.files)==1 else f'{len(w.files)} Dateien' if w.files else 'Link' if w.link else 'Datei ziehen'
     if w.checking:name='Prüfe Dateien …'
     p.setFont(QFont('Segoe UI',max(7,round(size*.075)),QFont.Weight.DemiBold));p.setPen(QColor('#edf6ff'))
-    p.drawText(QRectF(center-size*.40,center+size*.15,size*.80,size*.22),Qt.AlignmentFlag.AlignCenter,QFontMetrics(p.font()).elidedText(name,Qt.TextElideMode.ElideMiddle,int(size*.80)))
-    radius=OUTER_RADIUS if w.menu_expanded and w.secondary_actions else INNER_RADIUS
-    width=min(w.circle_size-8,(radius*2+1)*size+12)
-    footer=QRectF(center-width/2,center+(radius+.5)*size+13,width,58)
-    p.setBrush(QColor('#17283a'));p.setPen(QPen(QColor('#344c66'),1));p.drawRoundedRect(footer,12,12)
-    p.setFont(QFont('Segoe UI',8))
-    for i,(color,text) in enumerate([('#7ed9ba','Konvertieren'),('#ffbe83','Bearbeiten'),('#83baff','Tools')]):
-        x=footer.left()+footer.width()*(i+.5)/3
-        p.setPen(QColor(color));p.drawText(QRectF(x-footer.width()/6,footer.top()+4,footer.width()/3,19),Qt.AlignmentFlag.AlignCenter,text)
-    if 0<=w.selected<len(w.labels):
-        key=w.labels[w.selected]
-        if key==MORE:message='Äußeren Ring einklappen' if w.menu_expanded else 'Weitere Werkzeuge · beim Ziehen kurz darauf halten'
-        elif key in (PREVIOUS,NEXT):message=f'Äußerer Ring · Seite {w.outer_page+1} von {w.secondary_pages}'
-        elif key in HOME:message='Bereich wählen · passende Aktionen für deine Datei'
-        else:message=action_hint(key)
-    else:
-        message=('Bereich wählen' if w.node=='home' else {'convert':'Konvertieren','edit':'Bearbeiten','files':'Tools'}.get(w.mode,'OrbitDrop'))+' · Rechtsklick: Suche · Esc: schließen'
-        if not w.outer_supported and w.secondary_actions:message='Wenig Platz · Weitere öffnet die Aktionssuche'
-    p.setPen(QColor('#c2d4e6'));p.drawText(footer.adjusted(8,25,-8,-3),Qt.AlignmentFlag.AlignCenter|Qt.TextFlag.TextWordWrap,message)
+    p.drawText(QRectF(center-size*.40,center_y+size*.15,size*.80,size*.22),Qt.AlignmentFlag.AlignCenter,QFontMetrics(p.font()).elidedText(name,Qt.TextElideMode.ElideMiddle,int(size*.80)))
     p.end()

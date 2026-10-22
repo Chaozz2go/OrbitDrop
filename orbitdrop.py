@@ -214,7 +214,7 @@ class Wheel(QWidget):
         self.mode = mode
         values=getattr(getattr(self.controller,'prefs',None),'values',{})
         self.menu_expanded=values.get('menu_expanded',False);self.outer_page=0;self.hover_nav=None;self.hover_fired=False
-        cursor=QCursor.pos();screen=QApplication.screenAt(cursor) or QApplication.primaryScreen();self.menu_area=screen.availableGeometry()
+        cursor=QCursor.pos();self.menu_anchor=QPointF(cursor);screen=QApplication.screenAt(cursor) or QApplication.primaryScreen();self.menu_area=screen.availableGeometry()
         self.automatic = automatic
         self.page_timer.stop()
         self.all_actions = []
@@ -228,18 +228,13 @@ class Wheel(QWidget):
         self.display_mode()
         self.revision += 1
         self.checking = False
-        cursor = QCursor.pos()
-        screen = QApplication.screenAt(cursor) or QApplication.primaryScreen()
-        area = screen.availableGeometry()
-        self.move(max(area.left(), min(cursor.x()-(self.circle_size//2), area.right()-self.width()+1)),
-                  max(area.top(), min(cursor.y()-(self.circle_size//2), area.bottom()-self.height()+1)))
         self.show()
         self.raise_()
-        self.update()
+        # A layered Windows window needs painted hit-test pixels immediately.
+        self.repaint()
 
     def switch_mode(self,mode):
-        if mode == self.mode:
-            self.display_mode();return
+        if mode == self.mode:return
         files=self.files[:]
         self.outer_page=0;self.hover_nav=None;self.hover_fired=False
         self.mode=mode
@@ -343,7 +338,7 @@ class Wheel(QWidget):
         self.update()
 
     def navigate(self,node):
-        self.page_timer.stop();self.automatic=False;self.latched=True;self.page=0
+        self.page_timer.stop();self.automatic=False;self.latched=True;self.page=0;self.outer_page=0;self.hover_nav=None;self.hover_fired=False
         actions=self.context_actions()
         if node=='home':
             self.node='home';self.mode='home';self.navigation_parent=None;self.all_actions=home_actions(self.files,self.kind,self.formats)
@@ -616,7 +611,8 @@ class Controller:
         if sys.platform != 'win32':
             return
         key = ctypes.windll.user32.GetAsyncKeyState
-        states={name:bool(key(code)&0x8000) for name,code in polling_keys(self.prefs.values).items()}
+        raw={name:key(code) for name,code in polling_keys(self.prefs.values).items()}
+        states={name:bool(value&0x8000) for name,value in raw.items()}
         left,escape=bool(key(0x01)&0x8000),bool(key(0x1B)&0x8000)
         if self.shortcuts_paused:
             if escape:self.wheel.hide()
@@ -625,6 +621,9 @@ class Controller:
             self.was_keys=states;self.selection_pending=False;return
         mode=pressed_mode(self.prefs.values,states,self.was_keys)
         context=self.activation_guard.context()
+        if mode is None and left and context.drag:
+            from shortcuts import tapped_mode
+            mode=tapped_mode(self.prefs.values,raw,self.was_keys)
         if mode and left and context.drag:
             if self.wheel.isVisible():self.wheel.switch_mode(mode)
             else:self.wheel.open(automatic=True,mode=mode)

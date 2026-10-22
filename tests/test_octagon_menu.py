@@ -20,14 +20,13 @@ class OctagonMenuTests(unittest.TestCase):
         self.w=Wheel(self.target);self.addCleanup(self.w.close);self.w.open(mode='edit')
         self.w.kind='Bild';self.w.files=[str(self.root/'image.png')];self.w.formats=['PNG','JPG'];self.w.display_mode()
     def test_regular_equal_tiles_stable_when_expanded_and_no_intersections(self):
-        before={key:(path.boundingRect(),point) for key,path,point,_ in geometry(self.w)}
-        position=self.w.pos();self.w.select_action(MORE)
+        before={key:(path.boundingRect().size(),point+QPointF(self.w.pos())) for key,path,point,_ in geometry(self.w)}
+        self.w.select_action(MORE)
         layout=geometry(self.w);size=self.w.tile_size
-        self.assertEqual(position,self.w.pos())
         for key,path,point,_ in layout:
             self.assertAlmostEqual(path.boundingRect().width(),size)
             self.assertAlmostEqual(path.boundingRect().height(),size)
-            if key in before:self.assertEqual((path.boundingRect(),point),before[key])
+            if key in before:self.assertEqual((path.boundingRect().size(),point+QPointF(self.w.pos())),before[key])
             edges=[]
             for i in range(8):
                 a,b=path.elementAt(i),path.elementAt((i+1)%8)
