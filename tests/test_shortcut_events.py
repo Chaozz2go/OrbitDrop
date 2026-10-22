@@ -21,7 +21,8 @@ class ShortcutEventTests(unittest.TestCase):
         q.feed(0xa0,True,True,(1,2));q.feed(0xa1,True,True,(1,2));q.feed(0xa0,False,True,(1,2))
         q.feed(KEY_CODES['F8'],True,True,(1,2));self.assertEqual(q.drain()[0].mode,'convert')
         q.feed(KEY_CODES['F8'],False,True,(1,2));q.feed(0xa1,False,True,(1,2));q.feed(KEY_CODES['F8'],True,True,(1,2));self.assertFalse(q.drain())
-        q=ShortcutEvents(DEFAULTS);q.feed(0xa2,True,False,(1,2));q.feed(0xa5,True,True,(1,2));self.assertFalse(q.drain())
+        q=ShortcutEvents(DEFAULTS);q.feed(0xa2,True,True,(1,2));q.feed(0xa5,True,True,(1,2));self.assertFalse(q.drain())
+        q=ShortcutEvents(DEFAULTS);q.feed(0xa0,True,True,(1,2));q.feed(0xa2,True,True,(1,2));self.assertFalse(q.drain())
         self.assertEqual(physical_key(0x10,0x36,0),0xa1);self.assertEqual(physical_key(0x11,0,2),0xa3)
     def test_pause_clears_pending_and_held_repeat_does_not_reactivate(self):
         q=ShortcutEvents(DEFAULTS);q.feed(0xa0,True,True,(1,2));q.configure(DEFAULTS,enabled=False);self.assertFalse(q.drain())

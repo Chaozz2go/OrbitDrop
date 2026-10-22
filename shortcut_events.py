@@ -10,7 +10,7 @@ from ctypes import wintypes
 import sys
 import threading
 import time
-from shortcuts import KEY_CODES,polling_keys,pressed_mode
+from shortcuts import MODIFIERS,polling_keys,pressed_mode
 
 SIDES={0x10:(0xa0,0xa1),0x11:(0xa2,0xa3),0x12:(0xa4,0xa5)}
 
@@ -55,7 +55,12 @@ class ShortcutEvents:
             before=self._snapshot()
             if down:self.down.add(vkey)
             else:self.down.discard(vkey)
-            mode=pressed_mode(self.values,self._snapshot(),before)
+            snapshot=self._snapshot()
+            if down and any(vkey in sides for sides in SIDES.values()):
+                active={key for key in MODIFIERS if snapshot.get(key)}
+                bindings=dict(zip(('convert','edit','files'),(self.values[key] for key in ('convert_key','edit_key','files_key'))))
+                self.events=deque((event for event in self.events if active<=set(bindings[event.mode].split('+'))),maxlen=16)
+            mode=pressed_mode(self.values,snapshot,before)
             if mode and left and self.enabled:
                 self.events.append(ShortcutEvent(mode,tuple(token),time.monotonic() if now is None else now))
     def drain(self):
