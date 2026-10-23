@@ -24,6 +24,8 @@ def backend(name):
     if sys.platform == 'win32':
         local = Path(os.environ.get('LOCALAPPDATA', str(Path.home()/'AppData/Local')))
         folders += [local/'Microsoft/WinGet/Links']
+        if name=='deno':folders += [Path.home()/'.deno/bin',local/'deno']
+        if name=='node':folders += [local/'Programs/nodejs']
         if name=='pandoc':
             folders += [local/'Pandoc',local/'Programs/Pandoc',Path.home()/'scoop/shims']
             chocolatey=Path(os.environ.get('ChocolateyInstall',os.environ.get('PROGRAMDATA','C:/ProgramData')+'/chocolatey'))
@@ -32,17 +34,18 @@ def backend(name):
             root=Path(os.environ.get(env,'C:/Program Files'))
             folders += [root/'ffmpeg/bin',root/'FFmpeg/bin']
             if name=='pandoc':folders.append(root/'Pandoc')
+            if name=='node':folders.append(root/'nodejs')
     for folder in folders:
         candidate = folder / executable
         if candidate.is_file():
             return str(candidate)
     found=shutil.which(name)
     if found:return found
-    if sys.platform=='win32' and name=='pandoc':
+    if sys.platform=='win32' and name in ('pandoc','deno','node','qjs','soffice'):
         found=windows_installed_path(name)
         if found:return found
         packages=local/'Microsoft/WinGet/Packages'
-        if packages.is_dir():
+        if packages.is_dir() and name=='pandoc':
             for package in sorted(packages.glob('*Pandoc*')):
                 for pattern in ('pandoc.exe','*/pandoc.exe','*/bin/pandoc.exe'):
                     for candidate in sorted(package.glob(pattern)):

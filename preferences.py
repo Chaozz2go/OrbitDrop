@@ -7,7 +7,7 @@ import subprocess
 import sys
 import tempfile
 
-DEFAULTS={'startup_update_policy':2,'check_updates':True,'hidden_actions':[],'favorite_actions':[],'workflows':[],'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
+DEFAULTS={'show_dashboard':True,'startup_update_policy':2,'check_updates':True,'hidden_actions':[],'favorite_actions':[],'workflows':[],'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
           'convert_key':'Shift','edit_key':'Strg','files_key':'Alt','autostart':False,'check_backends':True}
 from shortcuts import KEY_CODES,pressed_mode,validate_bindings,polling_keys
 
@@ -61,7 +61,7 @@ class Preferences:
         result['video_height']=int(result['video_height'])
         if not isinstance(result['download_dir'],str):raise ValueError('Ungültiger Downloadordner.')
         if not isinstance(result['output_dir'],str):raise ValueError('Ungültiger Ausgabeordner.')
-        for key in ('autostart','check_backends','check_updates'):result[key]=bool(result[key])
+        for key in ('autostart','check_backends','check_updates','show_dashboard'):result[key]=bool(result[key])
         return result
     def update(self,values):
         values=self.validate(values)

@@ -143,22 +143,19 @@ class MediaInstallJob(ManagedJob):
         from media_setup import install_media
         self.outputs=[str(install_media())]
 
+class SetupJob(ManagedJob):
+    def __init__(self,key,state_root):super().__init__();self.key=key;self.state_root=state_root
+    def work(self):
+        from setup_tools import install_tool
+        self.outputs=[install_tool(self.key,self.state_root)]
+
 class BackendCheck(QRunnable):
-    def __init__(self):super().__init__();self.signals=Signals()
+    def __init__(self,state_root):super().__init__();self.state_root=state_root;self.signals=Signals()
     def run(self):
-        from filetypes import backend,run
-        from extended import soffice
-        status=[];missing=[]
-        for name in ('ffmpeg','ffprobe','pandoc','LibreOffice'):
-            executable=soffice() if name=='LibreOffice' else backend(name)
-            if not executable:missing.append(name);status.append(name+': fehlt');continue
-            try:
-                result=run([executable,'-version' if name.startswith('ff') else '--version'],timeout=12)
-                if result.returncode:raise OSError(result.stderr[:160] or 'Start fehlgeschlagen')
-                line=result.stdout.splitlines()[0] if result.stdout else 'Gefunden'
-                status.append(name+': '+executable+'\n'+line)
-            except Exception as error:missing.append(name);status.append(name+': '+str(error))
-        self.signals.done.emit(status,missing)
+        from setup_tools import check_tools
+        status=check_tools(self.state_root)
+        self.signals.done.emit(status,[row['id'] for row in status if not row['ready']])
+
 
 class Wheel(QWidget):
     def __init__(self, controller):
@@ -497,6 +494,7 @@ class Controller:
         self.selection_job=None;self.selection_pending=False;self.selection_revision=0;self.selection_origin=None
         from activation_guard import ActivationGuard
         self.activation_guard=ActivationGuard();self.shortcuts_paused=False;self.update_job=None
+        self.dashboard=None;self.setup_job=None
         self.backend_check=None
         self.backend_status=[]
         self.backend_missing=[]
@@ -517,7 +515,8 @@ class Controller:
         self.tray = QSystemTrayIcon(QIcon(icon), app)
         self.tray.setToolTip('OrbitDrop · Tastenzugänge pausiert' if self.shortcuts_paused else 'OrbitDrop · '+shortcut_hint(self.prefs.values))
         menu = QMenu()
-        for label, callback in [('Aktionskreis', lambda: self.wheel.open()),
+        for label, callback in [('Dashboard',lambda:self.show_dashboard()),
+                                ('Aktionskreis', lambda: self.wheel.open()),
                                 ('Konvertieren', lambda: self.wheel.open(mode='convert')),
                                 ('Bearbeiten', lambda: self.wheel.open(mode='edit')),
                                 ('Tools / Dateiaktionen', lambda: self.wheel.open(mode='files')),
@@ -541,6 +540,7 @@ class Controller:
         self.timer.start(25)
         self.tray.showMessage('OrbitDrop bereit','Datei ziehen: '+shortcut_hint(self.prefs.values))
         if '--preview' in sys.argv:self.wheel.open()
+        if self.prefs.values['show_dashboard']:QTimer.singleShot(100,lambda:self.show_dashboard())
         if self.prefs.values['check_backends']:QTimer.singleShot(300,lambda:self.check_backends(False))
         if self.prefs.values.get('check_updates',True):QTimer.singleShot(1500,self.auto_update_check)
 
@@ -699,7 +699,7 @@ class Controller:
         import subprocess
         from updater import verify_installer
         if sys.platform!='win32':raise OSError('Setup kann nur unter Windows gestartet werden.')
-        if self.jobs or self.tasks.has_running() or self.pool.activeThreadCount():raise ValueError('Noch Hintergrundaufträge aktiv. Bitte kurz warten oder laufende Aufträge beenden.')
+        if self.setup_job or self.jobs or self.tasks.has_running() or self.pool.activeThreadCount():raise ValueError('Noch Hintergrundaufträge aktiv. Bitte kurz warten oder laufende Aufträge beenden.')
         path=verify_installer(installer,self.prefs.root);subprocess.Popen([str(path)]);QTimer.singleShot(100,self.app.quit)
     def auto_update_check(self):
         if self.update_job or not self.prefs.values.get('check_updates',True):return
@@ -726,10 +726,20 @@ class Controller:
     def submit_editor(self,action,files,parameters):
         self.submit(ToolJob(action,files,parameters,self.prefs.values),action+': '+Path(files[0]).name)
 
-    def settings(self):
-        if SettingsDialog(self.prefs).exec():
-            self.tray.setToolTip('OrbitDrop · Tastenzugänge pausiert' if self.shortcuts_paused else 'OrbitDrop · '+shortcut_hint(self.prefs.values))
+    def refresh_settings(self):
+        self.tray.setToolTip('OrbitDrop · Tastenzugänge pausiert' if self.shortcuts_paused else 'OrbitDrop · '+shortcut_hint(self.prefs.values))
+    def settings(self):self.show_dashboard('Einstellungen')
+    def show_dashboard(self,page=0):
+        if self.dashboard is None:
+            from dashboard_ui import Dashboard
+            self.dashboard=Dashboard(self)
+            area=QApplication.primaryScreen().availableGeometry()
+            self.dashboard.resize(min(1140,area.width()-30),min(800,area.height()-45))
+        self.dashboard.open_page(page);present(self.dashboard)
+        if self.backend_check:self.dashboard.set_checking()
+
     def quit(self):
+        if self.setup_job:self.setup_job.control.cancel()
         if self.tasks.has_running():
             self.tasks.cancel_all();self.show_tasks()
             self.tray.showMessage('Abbruch angefordert','OrbitDrop beendet sich, sobald die laufenden Aufträge gestoppt sind.')
@@ -748,29 +758,37 @@ class Controller:
             from filetypes import encoders
             from diagnostics import environment
             environment.cache_clear();encoders.cache_clear();self.check_backends(False)
-    def media_status(self):self.check_backends(True)
+    def media_status(self):
+        self.show_dashboard('Einrichtung');self.check_backends(False)
     def check_backends(self,show=False):
-        if self.backend_check:
-            self.show_backend_when_ready=getattr(self,'show_backend_when_ready',False) or show
-            return
-        self.show_backend_when_ready=show;job=BackendCheck();self.backend_check=job
+        if show:self.show_dashboard('Einrichtung')
+        if self.backend_check or self.setup_job:return
+        if self.dashboard:self.dashboard.set_checking()
+        job=BackendCheck(self.prefs.root);self.backend_check=job
         job.signals.done.connect(self.backends_checked);self.pool.start(job)
     def backends_checked(self,status,missing):
         self.backend_check=None;self.backend_status=status;self.backend_missing=missing
-        if self.show_backend_when_ready:self.show_backend_dialog()
-        elif missing:self.tray.showMessage('Konverterprüfung',', '.join(missing)+' fehlt oder startet nicht. Einrichtung im Infobereich-Menü.')
-    def show_backend_dialog(self):
-        box=QMessageBox();box.setWindowTitle('OrbitDrop · Konverter');box.setText('\n\n'.join(self.backend_status));box.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        install=box.addButton('Medien einrichten',QMessageBox.ButtonRole.ActionRole)
-        office=box.addButton('LibreOffice-Download',QMessageBox.ButtonRole.ActionRole)
-        pandoc=box.addButton('Pandoc-Download',QMessageBox.ButtonRole.ActionRole)
-        box.addButton(QMessageBox.StandardButton.Close);box.exec()
-        if box.clickedButton()==install:
-            self.submit(MediaInstallJob(),'Medien einrichten')
-        elif box.clickedButton() in (office,pandoc):
-            from PySide6.QtGui import QDesktopServices
-            from PySide6.QtCore import QUrl
-            QDesktopServices.openUrl(QUrl('https://www.libreoffice.org/download/download-libreoffice/' if box.clickedButton()==office else 'https://pandoc.org/installing.html'))
+        if self.dashboard:self.dashboard.update_results(status)
+    def show_backend_dialog(self):self.show_dashboard('Einrichtung')
+    def setup_tool(self,key):
+        from setup_tools import TOOLS
+        if key not in TOOLS or self.setup_job or self.backend_check:return
+        self.show_dashboard('Einrichtung')
+        job=SetupJob(key,self.prefs.root);self.setup_job=job;self.dashboard.setup_started(key)
+        job.signals.progress.connect(self.dashboard.setup_progress)
+        job.signals.done.connect(lambda outputs,errors:self.setup_finished(job,outputs,errors));self.pool.start(job)
+    def cancel_setup(self):
+        if self.setup_job:self.setup_job.control.cancel();self.dashboard.status.setText('Abbruch angefordert …')
+    def setup_finished(self,job,outputs,errors):
+        if self.setup_job is not job:return
+        self.setup_job=None
+        error='Einrichtung abgebrochen. Du kannst sie später erneut starten.' if job.was_cancelled else '\n'.join(errors)
+        self.dashboard.setup_finished(error)
+        if not error:
+            from filetypes import encoders
+            from diagnostics import environment
+            encoders.cache_clear();environment.cache_clear();self.check_backends(False)
+
 
     def file_action(self,files,action):
         try:
@@ -816,9 +834,7 @@ class Controller:
         title=Path(files[0]).name+f' → {target}'+(f' (+{len(files)-1})' if len(files)>1 else '')
         self.submit(Conversion(files,target,self.prefs.values),title)
 
-    def help(self):
-        from help_ui import HelpDialog
-        HelpDialog(self.prefs).exec()
+    def help(self):self.show_dashboard('Anleitung')
 
 if __name__ == '__main__':
     if '--download-worker' in sys.argv:
@@ -844,6 +860,6 @@ if __name__ == '__main__':
     single=SingleInstance(state_root)
     if not single.acquire():sys.exit(0)
     controller = Controller(app,Preferences(state_root))
-    single.activated.connect(controller.show_tasks)
+    single.activated.connect(lambda:controller.show_dashboard())
     app.aboutToQuit.connect(single.release)
     sys.exit(app.exec())

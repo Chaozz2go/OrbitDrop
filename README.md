@@ -22,7 +22,7 @@ OrbitDrop erkennt den Dateiinhalt und zeigt passende Aktionen für deine Auswahl
 
 **[Windows-Downloads & Releases](https://github.com/Chaozz2go/OrbitDrop/releases)** · **[Quellcode als ZIP](https://github.com/Chaozz2go/OrbitDrop/archive/refs/heads/main.zip)**
 
-> **Download-Status:** Die Windows-Pakete liegen derzeit noch als unveröffentlichte Release-Entwürfe vor. Besucher können sie erst nach der Veröffentlichung herunterladen. Der Quellcode ist bereits öffentlich und kann mit Python gestartet werden.
+> **Aktuelle veröffentlichte Windows-Version: 0.24.0.** Das neue Dashboard auf Grundlage von 0.20.0 wird als 0.25.0 veröffentlicht, sobald Windows-Tests und Setup-Prüfung erfolgreich sind.
 
 ### Windows-App ohne Python
 
@@ -55,6 +55,20 @@ Für manche Formate werden weitere Programme gebraucht. Installiere sie nur, wen
 | Office-Dokumente, Tabellen, Präsentationen und deren PDF-Export | [LibreOffice](https://www.libreoffice.org/download/download-libreoffice/) |
 | Bestimmte Umwandlungen zwischen DOCX, Markdown, TXT, EPUB und HTML | [Pandoc](https://pandoc.org/installing.html) |
 | Unverschlüsselte RAR-Dateien entpacken | Externer Decoder wie unrar, unar oder bsdtar im PATH |
+
+## Dashboard · Einstieg und Ersteinrichtung
+
+Beim Start öffnet sich das Dashboard. Es bleibt offen, bis du es selbst schließt. Rechtsklick auf das OrbitDrop-Symbol neben der Windows-Uhr → **Dashboard** öffnet es wieder. Mit **Dashboard beim Start öffnen** kannst du den automatischen Start abschalten; OrbitDrop bleibt nach Schließen des Fensters im Tray aktiv.
+
+- **Willkommen:** Kurzanleitung und deine Tastenbelegung. **Erst die Datei greifen und ziehen, dann die Bereichstaste drücken.**
+- **Einrichtung:** verständliche Statusanzeige, Zweck der Programme, Prüfen, Einrichten, offizielle Downloadseiten und Fehlerdetails.
+- **Anleitung:** lokal durchsuchbare Hilfe direkt im Dashboard.
+- **Einstellungen:** Tasten, Menüpunkte, Qualität, Ordner, Autostart und Startverhalten anpassen und speichern.
+- **Verwaltung:** Updates, Verlauf, eigene Abläufe, Schnellaktionen, Downloader und Debugging öffnen.
+
+Im Windows-Paket sind Python, Python-Pakete, FFmpeg/FFprobe und OCR-Sprachdaten bereits enthalten. LibreOffice und Pandoc sind optional für zusätzliche Dokumentformate. Deno, Node oder QuickJS ermöglicht das Lesen vieler YouTube-Player; „Einrichten“ installiert Deno. Die Prüfung lädt nichts herunter. **Einrichten** startet nur nach deinem Klick eine Installation: FFmpeg/OCR direkt, weitere Programme über den Windows-Paketmanager winget. Dabei gelten die Paket- und Quellenbedingungen; Windows kann Administratorrechte anfragen. Fehlt winget oder schlägt die Installation fehl, öffne die offizielle Downloadseite und prüfe danach erneut. Fortschritt, Abbruch und Fehler bleiben im Dashboard sichtbar.
+
+Das Radialmenü und seine Bedienung entsprechen weiterhin Version 0.20.0.
 
 ## Anleitung
 
