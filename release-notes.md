@@ -1,16 +1,14 @@
-OrbitDrop 0.23.0
+OrbitDrop 0.24.0
 
-## 0.23.0 – 22.10.2026
+## 0.24.0 – 23.10.2026
 
-### Menü
-- Klassisches Radialmenü mit abgerundeten Kreissegmenten auf Grundlage des Quellstands vom 21.10. wiederhergestellt. Passende Aktionen stehen direkt in einem oder mehreren Ringen.
-- Kein Oktagon-Ausklappen und kein unterer Informationsbalken mehr.
-- Beim Ziehen einer Datei zeigt Tools nur Dateiaktionen: z. B. ZIP, Ablage, Kopieren, Verschieben, Pfad kopieren, Terminal und Umbenennen. „Explorer“ und allgemeine Programmfunktionen entfallen im Datei-Menü.
-- Ein Link zeigt nur Audio- und Video-Download. Der Downloader ist außerdem im Tray ausdrücklich als „Audio/Video herunterladen“ erreichbar.
-- Einstellungen, Hilfe, Updates, Konverterprüfung, Aufträge, Bildabläufe, Schnellaktionen, Aktionssuche und Debugging bleiben über das Tray erreichbar.
+### Erste Schritte
+- Neue Einführung beim Start mit kurzer Bedienhilfe: Datei erst greifen und ziehen, danach die Bereichstaste drücken. Eine lokale Animation zeigt den Ablauf mit der aktuellen Konvertieren-Taste.
+- Erklärt, wofür FFmpeg/FFprobe, LibreOffice und Pandoc gebraucht werden und welche Werkzeuge optional sind. Die Konverter-Prüfung lässt sich direkt öffnen; es wird nichts automatisch installiert.
+- „Nicht mehr beim Start anzeigen“ wird gespeichert. Die Einführung bleibt im Tray unter „Erste Schritte“ erreichbar und ist in den Einstellungen wieder aktivierbar.
+- Einführung und Änderungsverlauf überlagern sich beim Start nicht. Neue Installationen bekommen die Einführung, ohne zusätzlich den Änderungsverlauf zu öffnen.
 
-### Bedienung
-- Die Eingabe-Erweiterung mit zusätzlichem Windows-Eingabefenster ist wieder entfernt. Die frühere regelmäßige Tastenerkennung arbeitet jetzt mit einem kurzen 10-ms-Intervall; der Spielschutz und frei belegbare Tasten bleiben erhalten.
-- Die bisherige Wartezeit für das Abschließen eines Drop-Ereignisses bleibt erhalten.
-- Konverter, Editoren, Downloads, Playlists, Updateprüfung, Verlauf und Einstellungen bleiben erhalten. Frühere Oktagon-Anzeigeoptionen werden nicht mehr verwendet.
-- Die globale Aktionssuche übernimmt keine alte Datei- oder Linkauswahl vom zuletzt geöffneten Kreis.
+### Kopierte YouTube-Links
+- Mit kopiertem YouTube-Link die Konvertieren-Taste (standardmäßig Shift) halten und einmal links klicken: Der Kreis bietet Audio- oder Video-Download an.
+- Ein echtes Ziehen bleibt für Dateiaktionen reserviert. Fensterwechsel, Esc, Pause, Spiele, modale Dialoge und veränderte Zwischenablage verwerfen den Aufruf.
+- Funktioniert auf Desktop, im Explorer, in unterstützten Dateimanagern und Browsern außerhalb des Vollbilds. Die Erkennung ist in den Einstellungen abschaltbar; Download erst nach Auswahl und Bestätigung.

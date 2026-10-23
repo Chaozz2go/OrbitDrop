@@ -23,7 +23,14 @@ def self_test(report):
         results['changelog']=any(entry['version']==VERSION for entry in local_entries())
         results['manual']=resource_path('docs/OrbitDrop-Handbuch.html').is_file()
         with tempfile.TemporaryDirectory(prefix='orbit-smoke-') as temporary:
-            root=Path(temporary);source=root/'image.png';Image.new('RGB',(160,100),'#447788').save(source)
+            root=Path(temporary)
+            from preferences import Preferences
+            from welcome_ui import WelcomeDialog
+            from clipboard_shortcut import youtube_link
+            welcome=WelcomeDialog(Preferences(root/'prefs'));welcome.show();QApplication.processEvents()
+            results['first_steps']=welcome.demo.timer.isActive() and welcome.demo.key=='Shift'
+            welcome.close();results['clipboard_links']=bool(youtube_link('https://youtu.be/OrbitDrop')) and youtube_link('https://youtube.com.example.org/video') is None
+            source=root/'image.png';Image.new('RGB',(160,100),'#447788').save(source)
             image=convert(source,'WEBP');results['image']=image.stat().st_size>0
             pdf=root/'source.pdf'
             with pymupdf.open() as doc:doc.new_page().insert_text((20,40),'OrbitDrop');doc.save(pdf)

@@ -509,6 +509,10 @@ class Controller:
         self.selection_job=None;self.selection_pending=False;self.selection_revision=0;self.selection_origin=None
         from activation_guard import ActivationGuard
         self.activation_guard=ActivationGuard();self.shortcuts_paused=False;self.update_job=None
+        self.startup_existing=any((self.prefs.root/name).is_file() for name in ('settings.json','history.json'))
+        self.intro_dialog=None
+        from clipboard_shortcut import ClipboardGesture
+        self.clipboard_gesture=ClipboardGesture()
         self.backend_check=None
         self.backend_status=[]
         self.backend_missing=[]
@@ -544,6 +548,7 @@ class Controller:
                                 ('Updates', self.updates),
                                 ('Werkzeuge: Bilder / PDF / Video', self.tools),
                                 ('Konverter prüfen / einrichten', self.media_status),
+                                ('Erste Schritte', lambda:self.show_intro(force=True)),
                                 ('Anleitung', self.help), ('Beenden', self.quit)]:
             action = QAction(label, menu)
             action.triggered.connect(callback)
@@ -560,13 +565,31 @@ class Controller:
         if '--preview' in sys.argv:self.wheel.open()
         if self.prefs.values['check_backends']:QTimer.singleShot(300,lambda:self.check_backends(False))
         if self.prefs.values.get('check_updates',True):QTimer.singleShot(1500,self.auto_update_check)
+        QTimer.singleShot(120,self.show_intro)
         QTimer.singleShot(850,self.show_whats_new)
 
+    def show_intro(self,force=False):
+        if not force and not self.prefs.values.get('show_intro',True):return
+        if self.intro_dialog is not None:
+            present(self.intro_dialog);return
+        from welcome_ui import WelcomeDialog
+        dialog=WelcomeDialog(self.prefs)
+        self.intro_dialog=dialog
+        def finished(unused):
+            self.intro_dialog=None
+            dialog.deleteLater()
+            self.show_whats_new()
+        dialog.finished.connect(finished)
+        dialog.check_requested.connect(self.media_status)
+        dialog.help_requested.connect(self.help)
+        present(dialog)
+
     def show_whats_new(self):
+        if getattr(self,'intro_dialog',None) is not None:return
         from app_version import VERSION
         previous=self.prefs.values.get('seen_version','')
         if previous==VERSION:return
-        existing=any((self.prefs.root/name).is_file() for name in ('settings.json','history.json'))
+        existing=getattr(self,'startup_existing',any((self.prefs.root/name).is_file() for name in ('settings.json','history.json')))
         try:self.prefs.update(dict(self.prefs.values,seen_version=VERSION))
         except OSError:
             # A read-only state folder must not prevent normal app usage.
@@ -591,16 +614,21 @@ class Controller:
         states={name:bool(key(code)&0x8000) for name,code in polling_keys(self.prefs.values).items()}
         left,escape=bool(key(0x01)&0x8000),bool(key(0x1B)&0x8000)
         if self.shortcuts_paused:
+            self.reset_clipboard_gesture(left)
             if escape:self.wheel.hide()
             self.was_keys=states;self.selection_pending=False;return
         if QApplication.activeModalWidget() is not None:
+            self.reset_clipboard_gesture(left)
             self.was_keys=states;self.selection_pending=False;return
         mode=pressed_mode(self.prefs.values,states,self.was_keys)
         context=self.activation_guard.context()
+        gesture=self.clipboard_click(states,left,context,escape)
+        if gesture=='drag':mode='convert'
+        if gesture in ('pending','click'):mode=None
         if mode and left and context.drag:
             if self.wheel.isVisible():self.wheel.switch_mode(mode)
             else:self.wheel.open(automatic=True,mode=mode)
-        if mode=='convert' and not left and context.selection:self.request_selection()
+        if mode=='convert' and not left and context.selection and gesture not in ('pending','click'):self.request_selection()
         self.was_keys=states
         self.selection_pending=False
         if not context.drag and self.wheel.isVisible() and self.wheel.automatic:
@@ -614,6 +642,25 @@ class Controller:
                 self.wheel.hide()
         else:
             self.released = 0
+
+    def reset_clipboard_gesture(self,left=False):
+        if hasattr(self,'clipboard_gesture'):self.clipboard_gesture.reset(left)
+
+    def clipboard_click(self,states,left,context,escape=False):
+        from clipboard_shortcut import ClipboardGesture
+        gesture=getattr(self,'clipboard_gesture',None)
+        if gesture is None:self.clipboard_gesture=gesture=ClipboardGesture()
+        allowed=(context.drag or context.selection) and self.prefs.values.get('clipboard_download',True) and not escape
+        if not allowed:
+            gesture.reset(left);return None
+        held=pressed_mode(self.prefs.values,states,{})=='convert'
+        point=QCursor.pos()
+        phase,url=gesture.update(left,held,(point.x(),point.y()),context.token,
+            lambda:QApplication.clipboard().text())
+        if phase=='click' and not (self.wheel.isVisible() and self.wheel.files):
+            self.selection_revision+=1
+            self.wheel.open_link(url)
+        return phase
 
     def request_selection(self):
         if self.selection_job or self.shortcuts_paused:return
@@ -739,7 +786,7 @@ class Controller:
         self.update_job=UpdateJob(lambda progress:latest_release());self.update_job.signals.done.connect(self.update_checked);self.pool.start(self.update_job)
     def update_checked(self,info,error):
         self.update_job=None
-        if info and info['newer']:self.tray.showMessage('OrbitDrop-Update',info['version']+' verfügbar. Im Kreis: Alt → Updates.')
+        if info and info['newer']:self.tray.showMessage('OrbitDrop-Update',info['version']+' verfügbar. Rechtsklick auf das OrbitDrop-Symbol neben der Uhr → Updates.')
     def search_actions(self,files=None,kind=None):
         from action_search import ActionSearchDialog
         files=list(files or [])

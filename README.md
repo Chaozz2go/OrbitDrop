@@ -47,6 +47,10 @@ Nach dem Start findest du OrbitDrop im Windows-Infobereich neben der Uhr, gegebe
 
 ### Zusätzliche Dokumentkonverter
 
+Beim Start erklärt **Erste Schritte** die Bedienung mit einer Animation: **erst die Datei greifen und ziehen, dann die Taste drücken**. Der Dialog erklärt auch die Zusatzprogramme und öffnet **Konverter prüfen / einrichten**. Mit „Nicht mehr beim Start anzeigen“ lässt er sich dauerhaft ausblenden; über das OrbitDrop-Symbol neben der Uhr → Erste Schritte oder die Einstellungen kommt er zurück.
+
+**YouTube-Link in der Zwischenablage:** Link kopieren, **Shift halten und einmal links klicken, ohne zu ziehen**. Im Kreis zwischen Audio und Video wählen, dann den Download bestätigen. Bei eigener Tastenbelegung gilt die Konvertieren-Taste. Funktioniert auf Desktop, im Explorer, in unterstützten Dateimanagern und Browsern außerhalb des Vollbilds. Datei-Drag-and-drop bleibt vorrangig, Spiele sind ausgeschlossen. Unter Einstellungen → Allgemein lässt sich die Erkennung abschalten; die Zwischenablage wird nicht verändert.
+
 Für manche Formate werden weitere Programme gebraucht. Installiere sie nur, wenn du die jeweilige Funktion nutzt, und starte OrbitDrop anschließend neu. **Tray → Konverter prüfen / einrichten** zeigt, welche Programme gefunden wurden.
 
 | Aufgabe | Benötigtes Programm |
