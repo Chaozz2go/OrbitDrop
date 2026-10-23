@@ -136,6 +136,7 @@ class ImageEditor(QDialog):
         for title,field in [('Breite',self.width),('Höhe',self.height)]:
             field.setRange(0,30000);field.setSpecialValueText('Automatisch');field.setSuffix(' px');form.addRow(title,field)
         self.keep_ratio=QCheckBox('Seitenverhältnis beibehalten');self.keep_ratio.setChecked(True);form.addRow(self.keep_ratio)
+        upscale=QPushButton('Vergrößern & verbessern');upscale.clicked.connect(self.upscale);form.addRow(upscale)
         note=QLabel('0 / Automatisch behält die passende Kante bei. Zwei Werte mit Seitenverhältnis bilden einen Begrenzungsrahmen.');note.setWordWrap(True);note.setObjectName('editorSubtitle');form.addRow(note)
         bottom=QHBoxLayout();layout.addLayout(bottom);reset=QPushButton('Alles zurücksetzen');reset.clicked.connect(self.reset);bottom.addWidget(reset);bottom.addStretch()
         cancel=QPushButton('Schließen');cancel.clicked.connect(self.reject);bottom.addWidget(cancel)
@@ -164,6 +165,11 @@ class ImageEditor(QDialog):
         if result is None:return
         self.original,self.preview_source=result;self.image=self.original
         self.canvas.set_image(self.image,self.preview_source);self.set_loaded_controls(True);self.update_status()
+    def upscale(self):
+        if self.image is None:return
+        from upscale_ui import UpscaleDialog
+        edit={'angle':self.angle,'crop':self.canvas.crop_box(),'adjustments':self.options()}
+        UpscaleDialog(self.path,self.submit,edit,self).exec()
     def options(self):return photo_settings({**{key:field.value() for key,field in self.fields.items()},'grayscale':self.gray.isChecked()})
     def changed(self,*unused):
         if self.image is None:return

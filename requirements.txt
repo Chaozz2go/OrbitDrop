@@ -21,3 +21,5 @@ requests>=2.32.2,<3
 urllib3>=2,<3
 websockets>=13
 vtracer==1.0.0a4
+
+pyzipper>=0.4,<1

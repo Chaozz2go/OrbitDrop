@@ -12,8 +12,8 @@ from task_runtime import checkpoint,copy_stream
 FILE_ACTIONS = ('ZIP', 'ABLAGE', 'KOPIEREN', 'VERSCHIEBEN', 'ENTPACKEN', 'PFAD', 'TERMINAL', 'EXPLORER','UMBENENNEN')
 DESCRIPTIONS = {
     'UMBENENNEN': 'Dateinamen mit Vorschau und Konfliktprüfung ändern.',
-    'ZIP': 'Dateien und Ordner gemeinsam als ZIP speichern. Originale bleiben erhalten.',
-    'ENTPACKEN': 'Archive in neue Unterordner entpacken. Originalarchive bleiben erhalten.',
+    'ZIP': 'Archiv erstellen: ZIP, 7z oder TAR.GZ mit Kompression, Passwort und Zielwahl.',
+    'ENTPACKEN': 'Archivinhalt ansehen, auswählen, prüfen und am gewählten Ort entpacken.',
     'ABLAGE': 'In der schwebenden Ablage parken; Originale bleiben an ihrem Ort.',
     'KOPIEREN': 'Dateien/Ordner in die Zwischenablage. Danach mit Strg+V einfügen.',
     'VERSCHIEBEN': 'Zielordner wählen und Originale dorthin verschieben.',
@@ -28,7 +28,7 @@ def available_file_actions(files=None):
         can_unpack=bool(files) and all(archive_kind(file) for file in files)
     except OSError:
         can_unpack=False
-    return tuple(action for action in FILE_ACTIONS if (action!='ENTPACKEN' or can_unpack) and (action!='UMBENENNEN' or bool(files) and all(Path(file).is_file() and not Path(file).is_symlink() for file in files)))
+    return tuple(action for action in FILE_ACTIONS if (action!='ENTPACKEN' or can_unpack) and (action!='UMBENENNEN' or bool(files) and all((Path(file).is_file() or Path(file).is_dir()) and not Path(file).is_symlink() for file in files)))
 
 def paths_from_urls(urls):
     if not urls or not all(url.isLocalFile() for url in urls):

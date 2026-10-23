@@ -108,9 +108,9 @@ class ExpansionTests(unittest.TestCase):
         d.timeline.position=.8;d.timeline_view.center_playhead();self.assertGreater(d.timeline_view.scroll.horizontalScrollBar().value(),0)
     def test_rename_dialog_undo_checks_source_identity(self):
         from rename_ui import RenameDialog
-        source=self.root/'original.txt';source.write_text('Original');d=RenameDialog([str(source)]);self.addCleanup(d.close);d.pattern.setText('New_{n}');d.apply();self.wait(lambda:d.job is None)
+        source=self.root/'original.txt';source.write_text('Original');d=RenameDialog([str(source)],self.root/'rename-state');self.addCleanup(d.close);d.pattern.setText('New_{n}');self.wait(lambda:bool(d.plans));d.apply();self.wait(lambda:d.job is None)
         target=Path(d.files[0]);self.assertEqual(target.name,'New_001.txt');self.assertTrue(d.undo.isEnabled());d.restore();self.wait(lambda:d.job is None);self.assertTrue(source.exists());self.assertFalse(target.exists())
-        d.apply();self.wait(lambda:d.job is None);target=Path(d.files[0]);target.write_text('Changed externally');d.restore();self.wait(lambda:d.job is None);self.assertIn('geändert',d.status.text());self.assertEqual(target.read_text(),'Changed externally')
+        self.wait(lambda:bool(d.plans));d.apply();self.wait(lambda:d.job is None);target=Path(d.files[0]);target.write_text('Changed externally');d.restore();self.wait(lambda:d.job is None);self.assertIn('geändert',d.status.text());self.assertEqual(target.read_text(),'Changed externally')
     def test_cut_undo_redo_restores_marks_and_keep_flags(self):
         model=CutModel(10);model.add(2);model.add(5);model.keep(1,False);expected=model.snapshot();model.remove(0)
         self.assertTrue(model.undo());self.assertEqual(model.snapshot(),expected);self.assertTrue(model.undo());self.assertTrue(all(s[2] for s in model.segments));self.assertTrue(model.redo());self.assertFalse(model.segments[1][2]);model.add(7);self.assertFalse(model.redo())

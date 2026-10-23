@@ -11,7 +11,7 @@ def edit_actions(files,kind):
         from filetypes import backend
         if backend('ffmpeg') and backend('ffprobe'):actions.append('AUDIO VERBESSERN')
     if kind=='Bild':
-        if len(files)==1:actions+=['BILD EDITOR','ZUSCHNEIDEN','MARKIEREN']
+        if len(files)==1:actions+=['BILD EDITOR','ZUSCHNEIDEN','MARKIEREN','VERGRÖSSERN']
         actions+=['DREHEN','GRÖSSE','SCHWARZWEISS','BITMAP']
     elif kind=='Video' and len(files)==1:actions+=['SCHNEIDEN','DREHEN']
     elif kind=='Audio' and len(files)==1:actions+=['SCHNEIDEN']

@@ -77,6 +77,10 @@ def tool_outputs(action,files,parameters,options):
             from video_export import export_video
             if len(sources)!=1:raise ValueError('Bitte genau ein Video auswählen.')
             return export_video(sources[0],parameters,options)
+        if action=='Bild vergrößern':
+            from image_upscale import export_upscale
+            if len(sources)!=1:raise ValueError('Bitte genau ein Bild auswählen.')
+            return export_upscale(sources[0],parameters.get('upscale',{}),parameters.get('edit'),options,parameters.get('source_signature'))
         if action=='Bild bearbeiten':
             if len(sources)!=1:raise ValueError('Bitte genau ein Bild auswählen.')
             with Image.open(sources[0]) as original:

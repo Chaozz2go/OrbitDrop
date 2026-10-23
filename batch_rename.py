@@ -28,7 +28,7 @@ def validate_pairs(pairs):
         valid_name(target.name);src=str(source).casefold();dst=str(target).casefold()
         if src in sources or dst in targets:raise ValueError('Doppelter Quell- oder Zielname: '+target.name)
         sources.add(src);targets.add(dst);plans.append((source,target,signature(source)))
-    if not plans or len(plans)>1000:raise ValueError('Bitte 1 bis 1000 Dateien auswählen.')
+    if not plans or len(plans)>10000:raise ValueError('Bitte 1 bis 10000 Dateien auswählen.')
     existing={}
     for folder in {target.parent for _,target,_ in plans}:
         for entry in folder.iterdir():existing.setdefault((folder,entry.name.casefold()),[]).append(str(entry.absolute()).casefold())
@@ -49,7 +49,7 @@ def execute_renames(plans):
     validate_pairs([(s,t) for s,t,_ in plans]);staged=[];finished=[]
     try:
         for source,target,_ in plans:
-            if source==target:continue
+            if str(source)==str(target):continue
             temporary=source.with_name('.orbit-rename-'+uuid.uuid4().hex+'.tmp');move_one(source,temporary);staged.append((source,temporary,target))
         for source,temporary,target in staged:move_one(temporary,target);finished.append((source,temporary,target))
         return [str(target) for _,target,_ in plans]
@@ -66,3 +66,57 @@ def execute_renames(plans):
             except Exception as rollback:failures.append(str(temporary)+': '+str(rollback))
         if failures:raise OSError(str(error)+'; Rücknahme unvollständig. Bitte prüfen: '+'; '.join(failures)) from error
         raise
+
+
+# Journals contain local paths only; identity checks also apply to persistent undo.
+def _write_journal(path,record):
+    import json
+    path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
+    temporary=path.with_name(path.name+'.'+uuid.uuid4().hex+'.tmp')
+    try:
+        with temporary.open('x',encoding='utf-8') as handle:
+            json.dump(record,handle,ensure_ascii=False,indent=2);handle.flush();os.fsync(handle.fileno())
+        os.replace(temporary,path)
+    finally:temporary.unlink(missing_ok=True)
+
+def rename_with_journal(plans,root):
+    from datetime import datetime,timezone
+    path=Path(root)/'rename-journals'/(uuid.uuid4().hex+'.json')
+    record={'version':1,'state':'prepared','time':datetime.now(timezone.utc).isoformat(),'plans':[[str(s),str(t),list(stamp)] for s,t,stamp in plans]}
+    _write_journal(path,record)
+    try:outputs=execute_renames(plans)
+    except Exception:
+        record['state']='failed';_write_journal(path,record);raise
+    undo=validate_pairs([(t,s) for s,t,_ in plans])
+    record.update(state='complete',undo=[[str(s),str(t),list(stamp)] for s,t,stamp in undo])
+    try:_write_journal(path,record)
+    except Exception as error:
+        try:execute_renames(undo)
+        except Exception as rollback:raise OSError('Protokoll konnte nicht gespeichert werden; Rücknahme unvollständig: '+str(rollback)) from error
+        raise OSError('Protokoll konnte nicht gespeichert werden. Namen wurden zurückgenommen.') from error
+    return outputs,path
+
+def read_journal(path):
+    import json
+    path=Path(path)
+    if path.stat().st_size>20*1024*1024:raise ValueError('Umbenennungsprotokoll ist zu groß.')
+    record=json.loads(path.read_text(encoding='utf-8'))
+    if record.get('version')!=1 or record.get('state')!='complete':raise ValueError('Diese Umbenennung ist nicht rücknehmbar.')
+    undo=[(Path(s),Path(t),tuple(stamp)) for s,t,stamp in record['undo']]
+    if not 1<=len(undo)<=10000:raise ValueError('Ungültiges Umbenennungsprotokoll.')
+    return record,undo
+
+def undo_journal(path):
+    record,undo=read_journal(path);outputs=execute_renames(undo);record['state']='undone'
+    try:_write_journal(path,record)
+    except Exception as error:
+        try:execute_renames(validate_pairs([(t,s) for s,t,_ in undo]))
+        except Exception as rollback:raise OSError('Protokoll konnte nicht aktualisiert werden; Namen bitte prüfen: '+str(rollback)) from error
+        raise OSError('Protokoll konnte nicht aktualisiert werden. Die Rücknahme wurde zurückgesetzt.') from error
+    return outputs
+
+def latest_journal(root):
+    for path in sorted((Path(root)/'rename-journals').glob('*.json'),key=lambda p:p.stat().st_mtime_ns,reverse=True):
+        try:read_journal(path);return path
+        except (OSError,ValueError,KeyError,TypeError):continue
+    return None

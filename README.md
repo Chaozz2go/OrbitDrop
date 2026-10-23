@@ -47,7 +47,7 @@ Nach dem Start findest du OrbitDrop im Windows-Infobereich neben der Uhr, gegebe
 
 ### Zusätzliche Dokumentkonverter
 
-Für manche Formate werden weitere Programme gebraucht. Installiere sie nur, wenn du die jeweilige Funktion nutzt, und starte OrbitDrop anschließend neu. **Alt → Konverter** zeigt, welche Programme gefunden wurden.
+Für manche Formate werden weitere Programme gebraucht. Installiere sie nur, wenn du die jeweilige Funktion nutzt, und starte OrbitDrop anschließend neu. **Dashboard → Einrichtung** zeigt, welche Programme gefunden wurden.
 
 | Aufgabe | Benötigtes Programm |
 | --- | --- |
@@ -87,7 +87,7 @@ Unter **Warteschlange & Verlauf** kannst du Fortschritt ansehen, wartende Auftr�
 4. Auf das gewünschte Format oder Werkzeug ziehen und dort die Maustaste loslassen.
 5. Falls ein Einstellungsfenster erscheint, die Vorschau prüfen und die Aktion starten. Fortschritt und Ergebnisse stehen unter **Aufträge**.
 
-Du kannst während des Ziehens zwischen den drei Bereichen wechseln. Alternativ das Dashboard öffnen, unter Verwaltung den Aktionskreis öffnen und eine Datei hineinziehen. In der Startansicht wählst du zuerst Konvertieren, Bearbeiten oder Tools. **Esc** schließt den Kreis. **Zurück** führt zur Bereichsauswahl.
+Du kannst während des Ziehens zwischen den drei Bereichen wechseln. Ein Linksklick auf das Tray-Symbol öffnet den Startkreis. Alternativ das Dashboard öffnen, unter Verwaltung den Aktionskreis öffnen und eine Datei hineinziehen. In der Startansicht wählst du zuerst Konvertieren, Bearbeiten oder Tools. Der Tools-Kreis bleibt nach dem Loslassen offen, auch bei Linksklick auf eine freie Stelle im Explorer/Desktop und anschließendem Alt. **Esc** schließt den Kreis. **Zurück** führt zur Bereichsauswahl.
 
 **Rechtsklick im Kreis** öffnet die Aktionssuche. Suche beispielsweise nach „schneiden“ oder „komprimieren“ und öffne die passende Aktion mit Enter. Über **Favorit setzen** stehen häufig genutzte Aktionen im jeweiligen Bereich zuerst und erhalten einen Stern.
 
@@ -201,7 +201,7 @@ Die Erkennung läuft lokal. Beim Erstellen einer Scan-PDF werden die Seiten neu 
 
 ### 9. Audio, Videos und Playlists herunterladen
 
-**Einen vollständigen http(s)-Link markieren → Shift drücken.** Alternativ den Link in den Kreis ziehen oder **Alt → Link einfügen** verwenden. Die Konvertieren-Taste kann eine markierte Textauswahl auch ohne Datei-Drag als Link übernehmen; es startet dabei kein automatischer Download.
+**Einen vollständigen http(s)-Link markieren → Shift drücken.** Alternativ den Link in den Kreis ziehen oder die Download-Verwaltung im Tray öffnen. Die Konvertieren-Taste kann eine markierte Textauswahl auch ohne Datei-Drag als Link übernehmen; es startet dabei kein automatischer Download.
 
 1. **Audio laden** oder **Video laden** wählen.
 2. Link prüfen und einen Ausgabeordner auswählen. OrbitDrop merkt sich den zuletzt verwendeten Downloadordner.
@@ -232,9 +232,9 @@ Neue Downloads bringen die Auftragsansicht wieder nach vorn, auch wenn sie berei
 
 **Ablage:** Sie merkt sich Dateiverweise und kopiert oder verschiebt die Originale nicht. **Andocken** setzt das Fenster an den rechten Monitorrand. Leeren, Entf oder „Aus Ablage entfernen“ entfernen nur die Einträge. Die Ablage gilt für die laufende Sitzung; extern verschobene Dateien können ungültige Verweise hinterlassen.
 
-**Archive:** Normale ZIPs benötigen keine zusätzliche Einrichtung. Auch TAR und GZIP werden unterstützt; RAR braucht einen externen Decoder. Keine Passwortarchive oder 7z. Beim Entpacken gelten maximal 2 GiB und 10.000 Einträge; problematische Pfade und Links werden abgewiesen. Bestehende Dateien werden nicht überschrieben, Archiv-Metadaten und NTFS-Rechte werden nicht vollständig übernommen.
+**Archive:** Normale ZIPs benötigen keine zusätzliche Einrichtung. Auch TAR und GZIP werden unterstützt; RAR braucht einen externen Decoder. ZIP unterstützt optional AES-256-Passwörter. 7z, verschlüsselte Dateinamen (7z) und geteilte ZIP-/7z-Archive benötigen **7-Zip**, optional über Dashboard → Einrichtung installierbar. TAR.GZ unterstützt keine Passwörter oder Teilarchive. Beim Entpacken gelten maximal 2 GiB und 10.000 Einträge; problematische Pfade und Links werden abgewiesen. Beim Packen wählst du Format, Kompressionsstufe, Passwort und anschließende Prüfung. Entpacken zeigt den Inhalt zur Auswahl, Zielordner und Konfliktverhalten (Abbrechen, Überspringen, Umbenennen, Überschreiben). Archiv-Metadaten und NTFS-Rechte werden nicht vollständig übernommen. Bei vielen JPEG-/MP4-Dateien bringt stärkere Kompression wenig.
 
-**Stapel-Umbenennen:** Ein Muster wie `Urlaub_{n}` oder `{name}_{n}`, Startnummer und Ziffernzahl einstellen. Die Dateiendung bleibt erhalten. Vorher-/Nachher-Liste prüfen und **Wie angezeigt umbenennen** wählen. **Letzte Umbenennung zurücknehmen** funktioniert bis zum Schließen des Fensters, sofern die Dateien unverändert sind. Verschieben und Umbenennen ändern die Originale; kontrolliere deshalb das Ziel und die Vorschau.
+**Stapel-Umbenennen:** Ein Muster wie `Urlaub_{n}` oder `{name}_{n}`, Startnummer und Ziffernzahl einstellen. Die Dateiendung bleibt erhalten. Vorher-/Nachher-Liste prüfen und **Wie angezeigt umbenennen** wählen. Vorlagen können EXIF-Aufnahmedatum, Uhrzeit und Kameramodell nutzen: `{date}_{time}_{camera}_{n}`. Fehlt EXIF, wählst du ausdrücklich Überspringen, Namen behalten oder Datei-Änderungsdatum verwenden. Ganze Ordner sind auswählbar, optional mit Unterordnern und nur Bildern; Ordnernamen bleiben erhalten. **Letzte Umbenennung zurücknehmen** bleibt auch nach einem Neustart verfügbar, sofern die betroffenen Dateien unverändert sind. Verschieben und Umbenennen ändern die Originale; kontrolliere deshalb das Ziel und die Vorschau.
 
 ### 11. Eigene Bildabläufe erstellen
 
@@ -266,7 +266,7 @@ Bilder laden im Editor im Hintergrund. Die Ladeanzeige nennt die aktuelle Phase;
 
 Normale Konvertierungen und Bearbeitungen erstellen neue Dateien; vorhandene Namen erhalten Nummernzusätze. Bei Abbruch bleiben bereits fertige Konvertierungen oder Playlist-Titel erhalten. Mehrstufige Bildabläufe und manche Werkzeug-Stapel räumen ihre selbst erzeugten Teilergebnisse dagegen vollständig auf. Die Details nennen Fehler oder zu prüfende Pfade.
 
-**Datei nicht erkannt?** Unter **Alt → Konverter** prüfen, ob benötigte Programme gefunden werden. Dateien aus Cloud- oder Netzlaufwerken gegebenenfalls erst vollständig lokal speichern. Nicht erkannte Typen erscheinen unter **Debugging** und können für die Fehlersuche exportiert werden. Vor dem Weitergeben persönliche Dateipfade und Fehlermeldungen prüfen.
+**Datei nicht erkannt?** Unter **Dashboard → Einrichtung** prüfen, ob benötigte Programme gefunden werden. Dateien aus Cloud- oder Netzlaufwerken gegebenenfalls erst vollständig lokal speichern. Nicht erkannte Typen erscheinen unter **Debugging** und können für die Fehlersuche exportiert werden. Vor dem Weitergeben persönliche Dateipfade und Fehlermeldungen prüfen.
 
 **Dashboard → Updates** sucht nach veröffentlichten stabilen GitHub-Releases. Bei jedem Programmstart wird standardmäßig nach Updates gesucht. Das lässt sich unter **Einstellungen** oder **Updates** ausschalten. Bei bestehenden Installationen wird die neue Startprüfung einmalig aktiviert; eine anschließend gespeicherte Abwahl bleibt erhalten. Release-Entwürfe werden nicht angeboten. Download-Prüfsummen werden geprüft; die Installation startest du ausdrücklich, sobald keine Hintergrundaufträge mehr laufen.
 
@@ -277,3 +277,11 @@ Die vollständige Hilfe findest du jederzeit direkt im Programm unter **Dashboar
 OrbitDrop von Chaozz2go · [GNU AGPL v3](LICENSE) · [Hinweise zu Drittanbietern](THIRD-PARTY-NOTICES.md) · [Fehler melden oder Funktion vorschlagen](https://github.com/Chaozz2go/OrbitDrop/issues)
 
 Dateiverarbeitung und OCR erfolgen lokal. Internet wird für gestartete Downloads, die Einrichtung zusätzlicher Komponenten und aktivierte Updateprüfungen verwendet. Es gibt keine eingebaute Telemetrie und keinen automatischen Upload deiner Dokumente.
+
+### Vergrößern ohne KI
+
+**Bild → Strg → Vergrößern** oder im Bildeditor **Vergrößern & verbessern**: 2×, 3×, 4× oder eine eigene Zielgröße wählen. Lanczos, bikubische Interpolation oder Pixel-Art, optional Entrauschen und Nachschärfen. Die Ausschnittvorschau zeigt Original und Ergebnis bei gleicher Pixelgröße. Ausgabe ist eine neue PNG-Datei; das Original bleibt erhalten. Interpolation kann fehlende Details nicht rekonstruieren. Maximal 8× und 80 Megapixel.
+
+### Webcam & Mikrofon prüfen
+
+**Tray-Symbol anklicken → Tools → Webcam / Mikro**. Gerät wählen und Kamera bzw. Mikrofon ausdrücklich starten. Livebild und Mikrofonpegel zeigen, ob Signale ankommen. Es wird nichts aufgezeichnet oder gespeichert. Stoppen oder Schließen gibt die Geräte frei. Bei Problemen Windows-Zugriff prüfen und andere Kamera-Apps schließen.

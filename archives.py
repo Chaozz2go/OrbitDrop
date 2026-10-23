@@ -17,6 +17,7 @@ def archive_kind(source):
     path=Path(source)
     if not path.is_file():return None
     with path.open('rb') as handle:header=handle.read(512)
+    if header.startswith(b'7z\xbc\xaf\x27\x1c') or path.name.lower().endswith('.001') and header.startswith(b'PK'):return '7Z'
     if header.startswith(b'Rar!\x1a\x07'):return 'RAR'
     if header.startswith(b'\x1f\x8b'):return 'GZIP'
     if header[257:262]==b'ustar':return 'TAR'
@@ -29,7 +30,7 @@ def _linklike(path):
     return path.is_symlink() or bool(getattr(status,'st_file_attributes',0)&0x400)
 
 
-def create_zip(files,output):
+def source_entries(files,output):
     sources=[Path(os.path.abspath(file)) for file in files]
     if not sources:raise ValueError('Keine Dateien ausgewählt.')
     output=Path(os.path.abspath(output))
@@ -58,20 +59,41 @@ def create_zip(files,output):
                     entries.append((child,str(Path(source.name)/child.relative_to(source))))
                     if len(entries)>MAX_ENTRIES:raise ValueError('Zu viele Einträge zum Zippen (max. 10000).')
         if len(entries)>MAX_ENTRIES:raise ValueError('Zu viele Einträge zum Zippen (max. 10000).')
+    return entries
+
+
+def create_zip(files,output,level=6,password='',verify=False):
+    if level not in (0,1,6,9):raise ValueError('Ungültige ZIP-Kompressionsstufe.')
+    entries=source_entries(files,output);output=Path(output)
     # 'x' reserves the archive exclusively. Never delete an output we did not create.
-    archive=zipfile.ZipFile(output,'x',zipfile.ZIP_DEFLATED,allowZip64=True)
+    module=zipfile
+    if password:
+        import pyzipper
+        module=pyzipper
+    compression=module.ZIP_STORED if level==0 else module.ZIP_DEFLATED
+    archive=module.AESZipFile(str(output),'x',compression,compresslevel=level,allowZip64=True) if password else zipfile.ZipFile(output,'x',compression,compresslevel=level,allowZip64=True)
+    if password:archive.setpassword(password.encode('utf-8'));archive.setencryption(module.WZ_AES,nbits=256)
     try:
         with archive:
             total=sum(source.stat().st_size for source,name in entries if source.is_file());done=0
             for source,name in entries:
                 checkpoint(done/max(1,total)*100,'ZIP: '+name)
-                if source.is_dir():archive.write(source,name)
+                if source.is_dir():archive.write(str(source),name)
                 else:
-                    info=zipfile.ZipInfo.from_file(source,name);info.compress_type=zipfile.ZIP_DEFLATED
+                    info=getattr(archive,'zipinfo_cls',zipfile.ZipInfo).from_file(str(source),name);info.compress_type=compression;info._compresslevel=level
                     with source.open('rb') as input_file,archive.open(info,'w',force_zip64=True) as output_file:
                         while block:=input_file.read(1024*1024):
                             checkpoint(done/max(1,total)*100,'ZIP: '+name)
                             output_file.write(block);done+=len(block)
+        if verify:
+            reader=module.AESZipFile(str(output)) if password else zipfile.ZipFile(output)
+            with reader:
+                if password:reader.setpassword(password.encode('utf-8'))
+                for info in reader.infolist():
+                    checkpoint(message='Archiv wird geprüft …')
+                    if not info.is_dir():
+                        with reader.open(info) as handle:
+                            while handle.read(1024*1024):checkpoint(message='Archiv wird geprüft …')
         return output
     except Exception:
         output.unlink(missing_ok=True)

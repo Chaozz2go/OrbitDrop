@@ -28,7 +28,7 @@ def build(onefile=False):
     root=Path(__file__).resolve().parent
     version=re.search(r"StringStruct\('ProductVersion','([^']+)'",(root/'version_info.txt').read_text()).group(1)
     args=[sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onefile' if onefile else '--onedir','--windowed','--name','OrbitDrop','--version-file','version_info.txt']
-    for package in ('pillow_heif','pymupdf','av','vtracer','yt_dlp','yt_dlp_ejs'):args+=['--collect-all',package]
+    for package in ('pillow_heif','pymupdf','av','vtracer','yt_dlp','yt_dlp_ejs','pyzipper'):args+=['--collect-all',package]
     notices=collect_notices(root)
     args+=['--add-data','README.md;.','--add-data','LICENSE;.','--add-data',str(notices)+';third-party']
     for file in (root/'bin').glob('*'):

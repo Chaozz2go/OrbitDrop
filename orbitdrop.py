@@ -114,6 +114,18 @@ class ArchiveJob(ManagedJob):
                     if target.exists():number+=1;continue
                     raise
 
+class ArchiveOptionsJob(ManagedJob):
+    def __init__(self,files,output,parameters,extract=False):
+        super().__init__();self.files,self.output,self.parameters,self.extract=files,output,dict(parameters),extract;self.errors=[]
+    def work(self):
+        from archive_options import create_archive,extract_options
+        if not self.extract:self.outputs=create_archive(self.files,self.output,**self.parameters);return
+        for file in self.files:
+            checkpoint(message='Archiv: '+Path(file).name)
+            try:self.outputs.extend(extract_options(file,self.output,**self.parameters))
+            except Cancelled:raise
+            except Exception as error:self.errors.append(Path(file).name+': '+str(error))
+
 class ToolJob(ManagedJob):
     def __init__(self,action,files,parameters,options):
         super().__init__();self.action,self.files,self.parameters,self.options=action,files,parameters,dict(options)
@@ -535,7 +547,7 @@ class Controller:
 
     def activated(self, reason):
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
-            self.show_dashboard()
+            self.wheel.open()
 
     def pause_shortcuts(self,paused):
         self.shortcuts_paused=paused;self.selection_pending=False;self.selection_revision+=1
@@ -564,8 +576,9 @@ class Controller:
         mode=pressed_mode(self.prefs.values,states,self.was_keys)
         context=self.activation_guard.context(mouse_down=left)
         if mode and left and context.drag:
-            if self.wheel.isVisible():self.wheel.switch_mode(mode)
-            else:self.wheel.open(automatic=True,mode=mode)
+            if self.wheel.isVisible():
+                self.wheel.automatic=mode!='files';self.wheel.switch_mode(mode)
+            else:self.wheel.open(automatic=mode!='files',mode=mode)
         if mode=='convert' and not left and context.selection:self.request_selection()
         self.was_keys=states
         self.selection_pending=False
@@ -624,7 +637,14 @@ class Controller:
             else:self.submit(ToolJob(action,files,parameters,self.prefs.values),action)
     def circle_action(self,files,action,kind):
         try:
-            if action=='TEXT ERKENNEN':
+            if action=='WEBCAM / MIKRO':
+                from device_test_ui import DeviceTestDialog
+                DeviceTestDialog().exec()
+            elif action=='VERGRÖSSERN':
+                from upscale_ui import UpscaleDialog
+                if len(files)!=1:raise ValueError('Bitte genau ein Bild auswählen.')
+                UpscaleDialog(files[0],self.submit_editor).exec()
+            elif action=='TEXT ERKENNEN':
                 from ocr_ui import OcrDialog
                 if len(files)!=1:raise ValueError('Bitte ein Bild oder PDF wählen.')
                 OcrDialog(files[0],self.prefs,self.submit_editor).exec()
@@ -800,7 +820,7 @@ class Controller:
             validate_paths(files)
             if action=='UMBENENNEN':
                 from rename_ui import RenameDialog
-                RenameDialog(files).exec()
+                RenameDialog(files,self.prefs.root).exec()
             elif action=='ABLAGE':
                 self.shelf.open(files)
             elif action=='KOPIEREN':
@@ -813,19 +833,12 @@ class Controller:
                 open_terminals(files)
             elif action=='EXPLORER':
                 show_in_explorer(files)
-            elif action in ('ZIP','ENTPACKEN'):
-                if action=='ZIP':
-                    suggested=Path(files[0]).parent/((Path(files[0]).stem if len(files)==1 else 'Auswahl')+'.zip')
-                    output,_=QFileDialog.getSaveFileName(None,'Neue ZIP-Datei speichern',str(suggested),'ZIP-Archiv (*.zip)',options=QFileDialog.Option.DontConfirmOverwrite)
-                    if not output:return
-                    if not output.lower().endswith('.zip'):output+='.zip'
-                    if Path(output).exists():
-                        raise FileExistsError('Diese ZIP existiert bereits. Bitte einen neuen Namen wählen.')
-                else:
-                    output=QFileDialog.getExistingDirectory(None,'Zielordner zum Entpacken wählen')
-                    if not output:return
-                job=ArchiveJob(files,action,output)
-                self.submit(job,'ZIP erstellen' if action=='ZIP' else 'Entpacken')
+            elif action=='ZIP':
+                from archive_ui import ArchiveCreateDialog
+                ArchiveCreateDialog(files,lambda selected,output,options:self.submit(ArchiveOptionsJob(selected,output,options),'Archiv erstellen'),lambda:self.show_dashboard('Einrichtung')).exec()
+            elif action=='ENTPACKEN':
+                from archive_ui import ArchiveExtractDialog
+                ArchiveExtractDialog(files,lambda selected,output,options:self.submit(ArchiveOptionsJob(selected,output,options,True),'Archiv entpacken')).exec()
             elif action=='VERSCHIEBEN':
                 folder=QFileDialog.getExistingDirectory(None,'Zielordner für die Originale wählen')
                 if not folder:return

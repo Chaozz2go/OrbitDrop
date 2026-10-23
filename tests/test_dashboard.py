@@ -19,11 +19,11 @@ class SetupTests(unittest.TestCase):
             console=exe.with_suffix('.com');console.touch()
             self.assertEqual(office_probe(str(exe),'win32'),[str(console),'--headless','--version'])
     def test_quiet_readiness_check_has_per_feature_results_and_no_network(self):
-        with patch('setup_tools.backend',return_value='/tool'),patch('extended.soffice',return_value='/office'),patch('setup_tools.office_probe',return_value=None),patch('ocr_data.find_tessdata',return_value=Path('/tessdata')),patch('setup_tools.run',return_value=SimpleNamespace(returncode=0,stdout='1.0\n',stderr='')) as run:
+        with patch('archive_options.sevenzip',return_value='/tool'),patch('setup_tools.backend',return_value='/tool'),patch('extended.soffice',return_value='/office'),patch('setup_tools.office_probe',return_value=None),patch('ocr_data.find_tessdata',return_value=Path('/tessdata')),patch('setup_tools.run',return_value=SimpleNamespace(returncode=0,stdout='1.0\n',stderr='')) as run:
             rows=check_tools('/state')
         self.assertEqual({r['id'] for r in rows},set(TOOLS));self.assertTrue(all(r['ready'] for r in rows))
         self.assertFalse(any(call.args[0][0]=='/office' for call in run.call_args_list))
-        with patch('setup_tools.backend',return_value=None),patch('extended.soffice',return_value=None),patch('ocr_data.find_tessdata',return_value=None):
+        with patch('archive_options.sevenzip',return_value=None),patch('setup_tools.backend',return_value=None),patch('extended.soffice',return_value=None),patch('ocr_data.find_tessdata',return_value=None):
             rows=check_tools('/state')
         self.assertTrue(all(not row['ready'] for row in rows))
     def test_install_commands_are_fixed_and_never_disable_hash_checks(self):
@@ -66,7 +66,7 @@ class DashboardTests(unittest.TestCase):
         self.assertTrue(d.isVisible());self.assertIsNone(self.app.activeModalWidget())
         self.c.show_dashboard('Einrichtung');self.assertIs(self.c.dashboard,d);self.assertEqual(d.pages.currentIndex(),1)
         self.c.backends_checked([{'id':key,'ready':True,'detail':'Ready'} for key in TOOLS],[])
-        self.assertTrue(d.isVisible());self.assertIn('5 von 5',d.home_status.text())
+        self.assertTrue(d.isVisible());self.assertIn(f'{len(TOOLS)} von {len(TOOLS)}',d.home_status.text())
         self.c.help();self.assertEqual(d.pages.currentIndex(),2);self.assertTrue(d.isVisible())
         self.c.settings();self.assertEqual(d.pages.currentIndex(),3);self.assertTrue(d.isVisible())
         d.close();self.assertFalse(d.isVisible())

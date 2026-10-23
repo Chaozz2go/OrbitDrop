@@ -4,6 +4,7 @@ from pathlib import Path
 from filetypes import backend,run
 
 TOOLS={
+ 'archives':{'title':'Archive · 7-Zip','purpose':'7z-Archive und geteilte Archive erstellen, öffnen und prüfen. ZIP, AES-ZIP und TAR.GZ sind bereits enthalten.','optional':True,'package':'7zip.7zip','url':'https://www.7-zip.org/download.html'},
  'media':{'title':'Audio & Video · FFmpeg + FFprobe','purpose':'Erkennen, umwandeln, schneiden und komprimieren; Tonspuren aus Downloads erstellen. Im Windows-Paket bereits enthalten.','optional':False,'url':'https://ffmpeg.org/download.html#build-windows'},
  'office':{'title':'Office-Dokumente · LibreOffice','purpose':'Word-, Excel- und PowerPoint-Dateien sowie zusätzliche Office-Formate umwandeln und als PDF ausgeben. Nur für diese Formate nötig.','optional':True,'package':'TheDocumentFoundation.LibreOffice','url':'https://www.libreoffice.org/download/download-libreoffice/'},
  'pandoc':{'title':'Dokumente & E-Books · Pandoc','purpose':'Zusätzliche Text-, Dokument- und E-Book-Formate umwandeln, etwa Markdown, DOCX und EPUB.','optional':True,'package':'JohnMacFarlane.Pandoc','url':'https://pandoc.org/installing.html'},
@@ -32,7 +33,10 @@ def check_tools(state_root):
                 if not path:raise OSError('Deutsche und englische Sprachdaten fehlen.')
                 detail=str(path)
             else:
-                if key=='media':executables=[(backend(name),['-version']) for name in ('ffmpeg','ffprobe')]
+                if key=='archives':
+                    from archive_options import sevenzip
+                    executables=[(sevenzip(),['i'])]
+                elif key=='media':executables=[(backend(name),['-version']) for name in ('ffmpeg','ffprobe')]
                 elif key=='office':
                     path=soffice();executables=[(path,None)]
                 elif key=='pandoc':executables=[(backend('pandoc'),['--version'])]
@@ -47,7 +51,7 @@ def check_tools(state_root):
                         details.append(str(path)+' · gefunden; GUI-Versionsabfrage ausgelassen.');continue
                     result=run(command,timeout=10)
                     if result.returncode:raise OSError((result.stderr or result.stdout or 'Programm konnte nicht gestartet werden.')[:800])
-                    version=(result.stdout or result.stderr or 'Startbereit').splitlines()[0]
+                    version=next((line for line in (result.stdout or result.stderr).splitlines() if line.strip()),'Startbereit')
                     details.append(str(path)+'\n'+version)
                 detail='\n'.join(details)
             rows.append({'id':key,'ready':True,'detail':detail})

@@ -87,6 +87,8 @@ def identify_extra(path, header):
         except Exception as error:
             if b'<svg' in header:
                 return FileInfo('SVG', (), str(error))
+    if header.startswith(b'7z\xbc\xaf\x27\x1c') or path.name.lower().endswith('.001') and header.startswith(b'PK'):
+        return FileInfo('7z', (), 'Archiv ansehen und entpacken über Tools → Entpacken. Benötigt 7-Zip.')
     if zipfile.is_zipfile(path):
         with zipfile.ZipFile(path) as archive:
             names = set(archive.namelist())

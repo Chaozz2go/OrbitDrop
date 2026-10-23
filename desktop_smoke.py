@@ -31,6 +31,23 @@ def self_test(report):
             manager=DownloadManager(c);manager.show();QApplication.processEvents();results['download_manager']=manager.isVisible() and manager.composer is not None;manager.close()
             source=root/'image.png';Image.new('RGB',(160,100),'#447788').save(source)
             image=convert(source,'WEBP');results['image']=image.stat().st_size>0
+            from image_upscale import export_upscale
+            [enlarged]=export_upscale(source,{'factor':2,'method':'lanczos'})
+            with Image.open(enlarged) as check:results['upscale']=check.size==(320,200)
+            from archive_options import create_archive,extract_options
+            archive=root/'aes.zip';create_archive([source],archive,password='smoke-test',verify=True)
+            destination=root/'extracted';destination.mkdir();[folder]=extract_options(archive,destination,password='smoke-test')
+            results['archive_aes']=(Path(folder)/source.name).read_bytes()==source.read_bytes()
+            from photo_metadata import metadata_plan
+            from batch_rename import rename_with_journal,undo_journal
+            plans,_=metadata_plan([source],'Renamed_{n}');renamed,journal=rename_with_journal(plans,root/'state');undo_journal(journal)
+            results['rename_undo']=source.exists() and not Path(renamed[0]).exists()
+            from device_test_ui import DeviceTestDialog
+            tester=DeviceTestDialog();tester.show();QApplication.processEvents();results['device_dialog']=tester.isVisible() and tester.camera is None and tester.audio is None;tester.close()
+            from upscale_ui import UpscaleDialog
+            upscale=UpscaleDialog(source,lambda *args:None);upscale.show();deadline=time.monotonic()+15
+            while not upscale.save_button.isEnabled() and time.monotonic()<deadline:QApplication.processEvents();time.sleep(.01)
+            results['upscale_dialog']=upscale.save_button.isEnabled();upscale.close()
             pdf=root/'source.pdf'
             with pymupdf.open() as doc:doc.new_page().insert_text((20,40),'OrbitDrop');doc.save(pdf)
             with pymupdf.open(pdf) as doc:results['pdf']='OrbitDrop' in doc[0].get_text()

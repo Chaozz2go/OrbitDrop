@@ -31,7 +31,7 @@ class ShortcutTests(unittest.TestCase):
             controller.was_keys={key:False for key in KEY_CODES}
             def state(code):return 0x8000 if code in (KEY_CODES[name],1) else 0
             with patch('orbitdrop.sys.platform','win32'),patch('orbitdrop.ctypes.windll',SimpleNamespace(user32=SimpleNamespace(GetAsyncKeyState=state)),create=True):controller.poll()
-            controller.wheel.open.assert_called_with(automatic=True,mode=mode)
+            controller.wheel.open.assert_called_with(automatic=mode!='files',mode=mode)
         controller.wheel.open.reset_mock();controller.was_keys={key:False for key in KEY_CODES}
         with patch('orbitdrop.sys.platform','win32'),patch('orbitdrop.ctypes.windll',SimpleNamespace(user32=SimpleNamespace(GetAsyncKeyState=lambda code:0x8000 if code==KEY_CODES['Alt'] else 0)),create=True):controller.poll()
         controller.wheel.open.assert_not_called()
