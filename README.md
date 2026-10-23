@@ -2,7 +2,7 @@
 
 **Dateien umwandeln, bearbeiten und organisieren – direkt dort, wo du sie gerade ziehst.**
 
-OrbitDrop ist ein Windows-Dateiwerkzeug mit einem klassischen radialen Drag-and-drop-Menü mit abgerundeten Kreissegmenten. Ziehe eine Datei, tippe eine Taste an und lege sie auf der gewünschten Aktion im Kreis ab. Statt für jede kleine Aufgabe ein eigenes Programm zu öffnen, erreichst du Konverter, Bildeditor, Audio-/Videoschnitt, Downloads und Dateiaktionen über dieselbe Oberfläche.
+OrbitDrop ist ein Windows-Dateiwerkzeug mit einem radialen Drag-and-drop-Menü. Ziehe eine Datei, tippe eine Taste an und lege sie auf der gewünschten Aktion im Kreis ab. Statt für jede kleine Aufgabe ein eigenes Programm zu öffnen, erreichst du Konverter, Bildeditor, Audio-/Videoschnitt, Downloads und Dateiaktionen über dieselbe Oberfläche.
 
 OrbitDrop erkennt den Dateiinhalt und zeigt passende Aktionen für deine Auswahl. Du kannst mehrere Dateien gemeinsam verarbeiten, häufige Aktionen als Favoriten speichern und unbenutzte Menüpunkte ausblenden. Konvertierung, Bearbeitung und Texterkennung laufen lokal auf deinem Rechner.
 
@@ -10,23 +10,23 @@ OrbitDrop erkennt den Dateiinhalt und zeigt passende Aktionen für deine Auswahl
   <img src="docs/preview-radial-menu.png" alt="OrbitDrop-Kreismenü für ein Bild mit Zuschnitt, Bildeditor, Bitmap, Komprimierung, Drehung und Texterkennung" width="680">
 </p>
 
-*Programmaufnahme: klassischer Startkreis und Bearbeiten-Kreis für ein Bild. Alle passenden Aktionen stehen direkt in den Ringen. Im Datei-Menü erscheinen ausschließlich Dateiaktionen; Programmfunktionen bleiben im Tray erreichbar.*
+*Aufnahme der aktuellen Programmoberfläche: Bearbeiten-Kreis für ein Bild. Je nach Datei und deinen Einstellungen erscheinen andere Aktionen.*
 
 | Bereich | Standardtaste | Beispiele |
 | --- | --- | --- |
 | 🟢 Konvertieren | **Shift** | Bilder, Audio, Video, Dokumente und Untertitel umwandeln |
 | 🟠 Bearbeiten | **Strg** | Schneiden, zuschneiden, drehen, komprimieren, Text erkennen |
-| 🔵 Tools | **Alt** | ZIP, Ablage, Terminal, Pfad kopieren und Umbenennen |
+| 🔵 Tools | **Alt** | ZIP, Ablage, Terminal, Umbenennen, Downloads und Einstellungen |
 
 ## Installation · Quick Install
 
-**[Windows-Setup 0.24.0 herunterladen](https://github.com/Chaozz2go/OrbitDrop/releases/download/v0.24.0/OrbitDrop-0.24.0-Windows-x64-Setup.exe)** · **[Windows-Downloads & Releases](https://github.com/Chaozz2go/OrbitDrop/releases)** · **[Quellcode als ZIP](https://github.com/Chaozz2go/OrbitDrop/archive/refs/heads/main.zip)**
+**[Windows-Downloads & Releases](https://github.com/Chaozz2go/OrbitDrop/releases)** · **[Quellcode als ZIP](https://github.com/Chaozz2go/OrbitDrop/archive/refs/heads/main.zip)**
 
-> **Aktuelle Windows-Version: 0.24.0.** Setup und portables Paket sind öffentlich verfügbar. Bestehende Nutzer können das Setup zum Aktualisieren verwenden. Ab 0.20.0 prüft OrbitDrop standardmäßig bei jedem Start auf weitere veröffentlichte stabile Releases; Download und Installation startest du selbst.
+> **Download-Status:** Die Windows-Pakete liegen derzeit noch als unveröffentlichte Release-Entwürfe vor. Besucher können sie erst nach der Veröffentlichung herunterladen. Der Quellcode ist bereits öffentlich und kann mit Python gestartet werden.
 
 ### Windows-App ohne Python
 
-Das Windows-Paket enthält alle grundlegenden Laufzeitkomponenten:
+Sobald ein Windows-Release veröffentlicht ist:
 
 1. [Releases öffnen](https://github.com/Chaozz2go/OrbitDrop/releases) und beim aktuellen Release **Assets** aufklappen.
 2. **`OrbitDrop-<Version>-Windows-x64-Setup.exe`** herunterladen und starten.
@@ -47,11 +47,7 @@ Nach dem Start findest du OrbitDrop im Windows-Infobereich neben der Uhr, gegebe
 
 ### Zusätzliche Dokumentkonverter
 
-Beim Start erklärt **Erste Schritte** die Bedienung mit einer Animation: **erst die Datei greifen und ziehen, dann die Taste drücken**. Der Dialog erklärt auch die Zusatzprogramme und öffnet **Konverter prüfen / einrichten**. Mit „Nicht mehr beim Start anzeigen“ lässt er sich dauerhaft ausblenden; über das OrbitDrop-Symbol neben der Uhr → Erste Schritte oder die Einstellungen kommt er zurück.
-
-**YouTube-Link in der Zwischenablage:** Link kopieren, **Shift halten und einmal links klicken, ohne zu ziehen**. Im Kreis zwischen Audio und Video wählen, dann den Download bestätigen. Bei eigener Tastenbelegung gilt die Konvertieren-Taste. Funktioniert auf Desktop, im Explorer, in unterstützten Dateimanagern und Browsern außerhalb des Vollbilds. Datei-Drag-and-drop bleibt vorrangig, Spiele sind ausgeschlossen. Unter Einstellungen → Allgemein lässt sich die Erkennung abschalten; die Zwischenablage wird nicht verändert.
-
-Für manche Formate werden weitere Programme gebraucht. Installiere sie nur, wenn du die jeweilige Funktion nutzt, und starte OrbitDrop anschließend neu. **Tray → Konverter prüfen / einrichten** zeigt, welche Programme gefunden wurden.
+Für manche Formate werden weitere Programme gebraucht. Installiere sie nur, wenn du die jeweilige Funktion nutzt, und starte OrbitDrop anschließend neu. **Alt → Konverter** zeigt, welche Programme gefunden wurden.
 
 | Aufgabe | Benötigtes Programm |
 | --- | --- |
@@ -70,7 +66,7 @@ Für manche Formate werden weitere Programme gebraucht. Installiere sie nur, wen
 4. Auf das gewünschte Format oder Werkzeug ziehen und dort die Maustaste loslassen.
 5. Falls ein Einstellungsfenster erscheint, die Vorschau prüfen und die Aktion starten. Fortschritt und Ergebnisse stehen unter **Aufträge**.
 
-Du kannst während des Ziehens zwischen den drei Bereichen wechseln. Alternativ das OrbitDrop-Symbol neben der Uhr anklicken und eine Datei in den geöffneten Kreis ziehen. In der Startansicht wählst du zuerst Konvertieren, Bearbeiten oder Tools. **Esc** schließt den Kreis. **Zurück** erscheint nach einer tatsächlichen Menünavigation, etwa nach der manuellen Bereichsauswahl. Direkt per Shift/Strg/Alt oder Tray geöffnete Hauptbereiche haben keinen Zurück-Eintrag; beim Ziehen wechselst du mit den Bereichstasten.
+Du kannst während des Ziehens zwischen den drei Bereichen wechseln. Alternativ das OrbitDrop-Symbol neben der Uhr anklicken und eine Datei in den geöffneten Kreis ziehen. In der Startansicht wählst du zuerst Konvertieren, Bearbeiten oder Tools. **Esc** schließt den Kreis. **Zurück** führt zur Bereichsauswahl.
 
 **Rechtsklick im Kreis** öffnet die Aktionssuche. Suche beispielsweise nach „schneiden“ oder „komprimieren“ und öffne die passende Aktion mit Enter. Über **Favorit setzen** stehen häufig genutzte Aktionen im jeweiligen Bereich zuerst und erhalten einen Stern.
 
@@ -184,7 +180,7 @@ Die Erkennung läuft lokal. Beim Erstellen einer Scan-PDF werden die Seiten neu 
 
 ### 9. Audio, Videos und Playlists herunterladen
 
-**Einen vollständigen http(s)-Link markieren → Shift drücken.** Alternativ den Link in den Kreis ziehen oder **Tray → Audio/Video herunterladen** verwenden. Die Konvertieren-Taste kann eine markierte Textauswahl auch ohne Datei-Drag als Link übernehmen; es startet dabei kein automatischer Download.
+**Einen vollständigen http(s)-Link markieren → Shift drücken.** Alternativ den Link in den Kreis ziehen oder **Alt → Link einfügen** verwenden. Die Konvertieren-Taste kann eine markierte Textauswahl auch ohne Datei-Drag als Link übernehmen; es startet dabei kein automatischer Download.
 
 1. **Audio laden** oder **Video laden** wählen.
 2. Link prüfen und einen Ausgabeordner auswählen. OrbitDrop merkt sich den zuletzt verwendeten Downloadordner.
@@ -222,7 +218,7 @@ Neue Downloads bringen die Auftragsansicht wieder nach vorn, auch wenn sie berei
 
 ### 11. Eigene Bildabläufe erstellen
 
-**Tray → Bildabläufe.** Schritte hinzufügen, mit den Pfeilen ordnen und unter einem eigenen Namen speichern. Möglich sind Verkleinern, Drehen, Graustufen, Metadaten entfernen, Komprimierung, Formatwechsel und Ausgaben benennen.
+**Alt → Bildabläufe.** Schritte hinzufügen, mit den Pfeilen ordnen und unter einem eigenen Namen speichern. Möglich sind Verkleinern, Drehen, Graustufen, Metadaten entfernen, Komprimierung, Formatwechsel und Ausgaben benennen.
 
 Beispiel: **Längste Kante 1600 px → Metadaten entfernen → WebP → `Web_{n}`**.
 
@@ -230,7 +226,7 @@ Benennen gehört an das Ende. Gespeicherte Abläufe erscheinen für Bilder direk
 
 ### 12. Tasten und Menüs personalisieren
 
-**Tray → Einstellungen** oder Rechtsklick auf das Symbol neben der Uhr → **Einstellungen**.
+**Alt → Einstellungen** oder Rechtsklick auf das Symbol neben der Uhr → **Einstellungen**.
 
 - **Allgemein:** Die drei Bereichstasten frei auf unterstützte Einzeltasten oder Kombinationen legen, etwa F8, Strg+E und F9. Taste eingeben oder im Aufnahmefeld drücken, anschließend speichern. **Standardtasten wiederherstellen** setzt Shift / Strg / Alt zurück.
 - **Menüpunkte:** Formate, Bearbeitungen, Dateiaktionen, Programmfunktionen und eigene Abläufe per Checkbox ein-/ausblenden. Die Suche hilft beim Finden; Gruppen-Checkboxen schalten die gesamte Gruppe. SVG Schnell und SVG Erweitert sind einzeln steuerbar.
@@ -244,22 +240,18 @@ Ausblendungen gelten im Kreis und in der Aktionssuche, auch für Favoriten. Fall
 
 ### 13. Aufträge, Fehler und Updates
 
-**Tray → Aufträge & Verlauf** zeigt Fortschritt, fertige Ergebnisse und Fehler. Auftrag auswählen, **Ergebnis öffnen**, **Ordner anzeigen**, **Details** oder **Abbrechen** verwenden. **Verlauf leeren** entfernt nur Einträge, keine Ergebnisdateien.
+**Alt → Aufträge** zeigt Fortschritt, fertige Ergebnisse und Fehler. Auftrag auswählen, **Ergebnis öffnen**, **Ordner anzeigen**, **Details** oder **Abbrechen** verwenden. **Verlauf leeren** entfernt nur Einträge, keine Ergebnisdateien.
 
 Normale Konvertierungen und Bearbeitungen erstellen neue Dateien; vorhandene Namen erhalten Nummernzusätze. Bei Abbruch bleiben bereits fertige Konvertierungen oder Playlist-Titel erhalten. Mehrstufige Bildabläufe und manche Werkzeug-Stapel räumen ihre selbst erzeugten Teilergebnisse dagegen vollständig auf. Die Details nennen Fehler oder zu prüfende Pfade.
 
-**Datei nicht erkannt?** Unter **Tray → Konverter prüfen / einrichten** prüfen, ob benötigte Programme gefunden werden. Dateien aus Cloud- oder Netzlaufwerken gegebenenfalls erst vollständig lokal speichern. Nicht erkannte Typen erscheinen unter **Debugging** und können für die Fehlersuche exportiert werden. Vor dem Weitergeben persönliche Dateipfade und Fehlermeldungen prüfen.
+**Datei nicht erkannt?** Unter **Alt → Konverter** prüfen, ob benötigte Programme gefunden werden. Dateien aus Cloud- oder Netzlaufwerken gegebenenfalls erst vollständig lokal speichern. Nicht erkannte Typen erscheinen unter **Debugging** und können für die Fehlersuche exportiert werden. Vor dem Weitergeben persönliche Dateipfade und Fehlermeldungen prüfen.
 
-**Tray → Updates** sucht nach veröffentlichten stabilen GitHub-Releases. Bei jedem Programmstart wird standardmäßig nach Updates gesucht. Das lässt sich unter **Einstellungen** oder **Updates** ausschalten. Bei bestehenden Installationen wird die neue Startprüfung einmalig aktiviert; eine anschließend gespeicherte Abwahl bleibt erhalten. Release-Entwürfe werden nicht angeboten. Download-Prüfsummen werden geprüft; die Installation startest du ausdrücklich, sobald keine Hintergrundaufträge mehr laufen.
+**Alt → Updates** sucht nach veröffentlichten stabilen GitHub-Releases. Bei jedem Programmstart wird standardmäßig nach Updates gesucht. Das lässt sich unter **Einstellungen** oder **Updates** ausschalten. Bei bestehenden Installationen wird die neue Startprüfung einmalig aktiviert; eine anschließend gespeicherte Abwahl bleibt erhalten. Release-Entwürfe werden nicht angeboten. Download-Prüfsummen werden geprüft; die Installation startest du ausdrücklich, sobald keine Hintergrundaufträge mehr laufen.
 
-Die vollständige Hilfe findest du direkt im Programm unter **Tray → Anleitung**: durchsuchbare Themen, Formatübersicht und konkrete Beispiele mit deiner aktuellen Tastenbelegung. **Handbuch öffnen** zeigt die eigenständige HTML-Hilfe im Browser. **Handbuch speichern** legt eine Kopie mit eingebetteten Bildern und Suche ab; sie funktioniert ohne Internet. Die separate Datei beschreibt die Standardtasten; deine persönliche Belegung zeigt die integrierte Hilfe. Die Datei liegt auch unter [docs/OrbitDrop-Handbuch.html](docs/OrbitDrop-Handbuch.html) im Repository.
-
-**Änderungsverlauf** im Updatefenster oder in der Hilfe zeigt alle mitgelieferten Versionshinweise auch ohne Internet. Nach einem Versionswechsel erscheinen die Neuerungen einmal. Vor einem Update zeigt das Updatefenster die Hinweise der angebotenen Version. Die öffentliche Historie steht in [CHANGELOG.md](CHANGELOG.md).
+Die vollständige Hilfe findest du jederzeit direkt im Programm unter **Alt → Anleitung & Info**. Sie zeigt auch deine aktuelle Tastenbelegung.
 
 ---
 
 OrbitDrop von Chaozz2go · [GNU AGPL v3](LICENSE) · [Hinweise zu Drittanbietern](THIRD-PARTY-NOTICES.md) · [Fehler melden oder Funktion vorschlagen](https://github.com/Chaozz2go/OrbitDrop/issues)
 
 Dateiverarbeitung und OCR erfolgen lokal. Internet wird für gestartete Downloads, die Einrichtung zusätzlicher Komponenten und aktivierte Updateprüfungen verwendet. Es gibt keine eingebaute Telemetrie und keinen automatischen Upload deiner Dokumente.
-
-

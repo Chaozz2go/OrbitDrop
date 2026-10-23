@@ -7,7 +7,6 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import shutil
-import sys
 import tarfile
 import tempfile
 import zipfile
@@ -35,13 +34,11 @@ def image_actions():
 def soffice():
     found = backend('soffice')
     if found:
-        console=Path(found).with_suffix('.com')
-        return str(console) if sys.platform=='win32' and console.is_file() else found
+        return found
     for env in ['PROGRAMFILES', 'PROGRAMFILES(X86)']:
         candidate = Path(os.environ.get(env, 'C:/Program Files')) / 'LibreOffice/program/soffice.exe'
         if candidate.is_file():
-            console=candidate.with_suffix('.com')
-            return str(console) if sys.platform=='win32' and console.is_file() else str(candidate)
+            return str(candidate)
     return None
 
 def document_actions(kind):

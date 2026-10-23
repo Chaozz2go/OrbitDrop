@@ -68,7 +68,7 @@ class ToolboxTests(unittest.TestCase):
             def __init__(self):self.prefs=prefs
             def circle_action(self,files,action,kind):calls.append((files,action,kind))
         wheel=Wheel(Target());self.addCleanup(wheel.close);wheel.open(mode='edit');wheel.files=[str(self.source)];wheel.kind='Bild';wheel.display_mode();self.app.processEvents()
-        keys=[key for key in wheel.labels if key.startswith('edit:quick:')];self.assertEqual(len(keys),1);self.assertEqual(wheel.action_titles[keys[0]],'Webbilder');self.assertIn('edit:MARKIEREN',wheel.all_actions);self.assertIn('edit:KOMPRIMIEREN',wheel.labels)
+        keys=[key for key in wheel.labels if key.startswith('edit:quick:')];self.assertEqual(len(keys),1);self.assertEqual(wheel.action_titles[keys[0]],'Webbilder');self.assertIn('edit:MARKIEREN',wheel.labels);self.assertIn('edit:KOMPRIMIEREN',wheel.labels)
         point=next(point for key,path,point,index in geometry(wheel) if key==keys[0]);QTest.mouseClick(wheel,Qt.MouseButton.LeftButton,pos=point.toPoint());self.app.processEvents();self.assertTrue(calls[0][1].startswith('quick:'))
         manager=QuickActionsDialog(prefs);self.addCleanup(manager.close);manager.starters();self.assertEqual(len(prefs.values['quick_actions']),4);manager.items.setCurrentRow(0);manager.remove();self.assertEqual(len(prefs.values['quick_actions']),3)
     def test_compression_preview_submit_and_save_recipe(self):

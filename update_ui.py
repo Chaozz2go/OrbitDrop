@@ -14,18 +14,12 @@ class UpdateJob(QRunnable):
 
 class UpdateDialog(QDialog):
     def __init__(self,prefs,install):
-        super().__init__();self.prefs=prefs;self.install=install;self.info=None;self.installer=None;self.job=None;self.stopped=threading.Event();self.setWindowTitle('OrbitDrop · Updates');self.setStyleSheet(EDITOR_STYLE);self.resize(900,650)
+        super().__init__();self.prefs=prefs;self.install=install;self.info=None;self.installer=None;self.job=None;self.stopped=threading.Event();self.setWindowTitle('OrbitDrop · Updates');self.setStyleSheet(EDITOR_STYLE);self.resize(700,600)
         layout=QVBoxLayout(self);heading(layout,'Updates','Installierte Version: '+VERSION+' · Windows x64')
         self.auto=QCheckBox('Bei jedem Programmstart nach Updates suchen');self.auto.setChecked(prefs.values.get('check_updates',True));self.auto.toggled.connect(self.save_auto);layout.addWidget(self.auto)
-        self.status=QLabel('Updateprüfung …');self.status.setWordWrap(True);layout.addWidget(self.status);self.notes=QTextEdit();self.notes.setReadOnly(True);layout.addWidget(self.notes,1)
-        from changelog import notes_for
-        self.notes.setMarkdown(notes_for(VERSION));self.notes.setAccessibleName('Änderungen der installierten oder angebotenen Version')
-        self.progress=QProgressBar();self.progress.hide();layout.addWidget(self.progress)
+        self.status=QLabel('Updateprüfung …');self.status.setWordWrap(True);layout.addWidget(self.status);self.notes=QTextEdit();self.notes.setReadOnly(True);layout.addWidget(self.notes,1);self.progress=QProgressBar();self.progress.hide();layout.addWidget(self.progress)
         hint=QLabel('Updates werden von GitHub geladen und anhand SHA-256 geprüft. Installieren startet das normale Windows-Setup und beendet OrbitDrop, sobald keine Aufträge mehr laufen. Quelle: Chaozz2go/OrbitDrop. Nur veröffentlichte stabile Releases werden angeboten; Download und Installation startest du selbst.');hint.setWordWrap(True);hint.setObjectName('editorSubtitle');layout.addWidget(hint)
-        row=QHBoxLayout();layout.addLayout(row);self.check_button=action_button('Erneut prüfen');self.check_button.clicked.connect(self.check);row.addWidget(self.check_button);browser=action_button('Releases im Browser');browser.clicked.connect(lambda:QDesktopServices.openUrl(QUrl(RELEASE_PAGE)));row.addWidget(browser);history=action_button('Änderungsverlauf');history.clicked.connect(self.show_history);row.addWidget(history);row.addStretch();close=action_button('Schließen');close.clicked.connect(self.reject);row.addWidget(close);self.download_button=action_button('Herunterladen','download',True);self.download_button.clicked.connect(self.download_or_install);self.download_button.setEnabled(False);row.addWidget(self.download_button);QTimer.singleShot(0,self.check)
-    def show_history(self):
-        from changelog_ui import ChangelogDialog
-        ChangelogDialog(self).exec()
+        row=QHBoxLayout();layout.addLayout(row);self.check_button=action_button('Erneut prüfen');self.check_button.clicked.connect(self.check);row.addWidget(self.check_button);browser=action_button('Releases im Browser');browser.clicked.connect(lambda:QDesktopServices.openUrl(QUrl(RELEASE_PAGE)));row.addWidget(browser);row.addStretch();close=action_button('Schließen');close.clicked.connect(self.reject);row.addWidget(close);self.download_button=action_button('Herunterladen','download',True);self.download_button.clicked.connect(self.download_or_install);self.download_button.setEnabled(False);row.addWidget(self.download_button);QTimer.singleShot(0,self.check)
     def save_auto(self,value):
         try:self.prefs.update(dict(self.prefs.values,check_updates=value))
         except Exception as error:self.status.setText(str(error))

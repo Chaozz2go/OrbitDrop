@@ -1,14 +1,10 @@
-OrbitDrop 0.24.0
+OrbitDrop 0.20.0 verbessert Start-Updates und verhindert automatische Kreismenüs in normalen Spielen.
 
-## 0.24.0 – 23.10.2026
+- Bei jedem Programmstart standardmäßig Updateprüfung auf veröffentlichte stabile Releases in Chaozz2go/OrbitDrop. Download und Installation bleiben manuell.
+- Bestehende Einstellungen werden einmalig auf die neue Startprüfung umgestellt; danach bleibt eine gespeicherte Abwahl erhalten. Schalter in Einstellungen und Updates.
+- Automatisches Datei-Kreismenü nur für Explorer, Desktop, OrbitDrop und unterstützte Dateimanager. Native Spiele sind dadurch auch im Fenstermodus ausgeschlossen.
+- Linkübernahme ohne gedrückte Maustaste aus unterstützten Browsern außerhalb des Vollbilds; verspätete Ergebnisse öffnen nach einem Fensterwechsel keinen Kreis.
+- Tray-Schalter „Tastenzugänge pausieren“, etwa für Browser-Spiele. Manuelles Öffnen bleibt möglich.
+- README mit Funktionsanleitung und echter Aufnahme des Kreismenüs; integrierte Hilfe aktualisiert.
 
-### Erste Schritte
-- Neue Einführung beim Start mit kurzer Bedienhilfe: Datei erst greifen und ziehen, danach die Bereichstaste drücken. Eine lokale Animation zeigt den Ablauf mit der aktuellen Konvertieren-Taste.
-- Erklärt, wofür FFmpeg/FFprobe, LibreOffice und Pandoc gebraucht werden und welche Werkzeuge optional sind. Die Konverter-Prüfung lässt sich direkt öffnen; es wird nichts automatisch installiert.
-- „Nicht mehr beim Start anzeigen“ wird gespeichert. Die Einführung bleibt im Tray unter „Erste Schritte“ erreichbar und ist in den Einstellungen wieder aktivierbar.
-- Einführung und Änderungsverlauf überlagern sich beim Start nicht. Neue Installationen bekommen die Einführung, ohne zusätzlich den Änderungsverlauf zu öffnen.
-
-### Kopierte YouTube-Links
-- Mit kopiertem YouTube-Link die Konvertieren-Taste (standardmäßig Shift) halten und einmal links klicken: Der Kreis bietet Audio- oder Video-Download an.
-- Ein echtes Ziehen bleibt für Dateiaktionen reserviert. Fensterwechsel, Esc, Pause, Spiele, modale Dialoge und veränderte Zwischenablage verwerfen den Aufruf.
-- Funktioniert auf Desktop, im Explorer, in unterstützten Dateimanagern und Browsern außerhalb des Vollbilds. Die Erkennung ist in den Einstellungen abschaltbar; Download erst nach Auswahl und Bestätigung.
+Windows x64. Nicht digital signiert. Release-Entwürfe werden weiterhin nicht als Updates angeboten.

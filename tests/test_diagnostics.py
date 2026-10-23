@@ -47,8 +47,7 @@ class DiagnosticsTests(unittest.TestCase):
         store=DiagnosticStore(self.prefs);store.add([{'name':str(i),'extension':'.x','reason':'unsupported','kind':'Unbekannt'} for i in range(110)])
         self.assertEqual(len(store.records),100)
         dialog=DiagnosticsDialog(store);self.addCleanup(dialog.close);self.assertEqual(dialog.tree.topLevelItemCount(),100);self.assertFalse(dialog.names.isChecked())
-        from circle_menu import direct_actions
-        self.assertIn('app:DEBUGGING',direct_actions([],None,[]))
+        wheel=Wheel(object());self.addCleanup(wheel.close);wheel.open();wheel.navigate('more');self.assertIn('app:DEBUGGING',wheel.labels)
     def test_inspection_only_logs_individual_unavailable_formats(self):
         files=[]
         for index in range(2):

@@ -29,10 +29,8 @@ def build(onefile=False):
     version=re.search(r"StringStruct\('ProductVersion','([^']+)'",(root/'version_info.txt').read_text()).group(1)
     args=[sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onefile' if onefile else '--onedir','--windowed','--name','OrbitDrop','--version-file','version_info.txt']
     for package in ('pillow_heif','pymupdf','av','vtracer','yt_dlp','yt_dlp_ejs'):args+=['--collect-all',package]
-    from build_handbook import build as build_handbook
-    build_handbook()
     notices=collect_notices(root)
-    args+=['--add-data','CHANGELOG.md;.','--add-data','docs/OrbitDrop-Handbuch.html;docs','--add-data','README.md;.','--add-data','LICENSE;.','--add-data',str(notices)+';third-party']
+    args+=['--add-data','README.md;.','--add-data','LICENSE;.','--add-data',str(notices)+';third-party']
     for file in (root/'bin').glob('*'):
         if file.is_file():args+=['--add-binary' if file.suffix.lower() in ('.exe','.dll') else '--add-data',str(file)+';bin']
     if (root/'tessdata').is_dir():args+=['--add-data','tessdata;tessdata']

@@ -47,7 +47,5 @@ class PhotoEditorTests(unittest.TestCase):
         for key,path,point,index in layout:
             self.assertEqual(wheel.segment(point),index,key)
             self.assertEqual(sum(other.contains(point) for _,other,_,_ in layout),1,key)
-            for other_key,other,_,_ in layout:
-                if other_key!=key:self.assertFalse(path.intersects(other),(key,other_key))
 
 if __name__=='__main__':unittest.main()

@@ -148,16 +148,12 @@ class BackendCheck(QRunnable):
     def run(self):
         from filetypes import backend,run
         from extended import soffice
-        from backend_checks import probe_command
         status=[];missing=[]
         for name in ('ffmpeg','ffprobe','pandoc','LibreOffice'):
             executable=soffice() if name=='LibreOffice' else backend(name)
             if not executable:missing.append(name);status.append(name+': fehlt');continue
             try:
-                command=probe_command(name,executable)
-                if command is None:
-                    status.append(name+': '+executable+'\nGefunden; Versionsabfrage ohne Konsolenprogramm übersprungen.');continue
-                result=run(command,timeout=12)
+                result=run([executable,'-version' if name.startswith('ff') else '--version'],timeout=12)
                 if result.returncode:raise OSError(result.stderr[:160] or 'Start fehlgeschlagen')
                 line=result.stdout.splitlines()[0] if result.stdout else 'Gefunden'
                 status.append(name+': '+executable+'\n'+line)
@@ -176,7 +172,6 @@ class Wheel(QWidget):
         self.setMouseTracking(True)
         self.resize(380, 410)
         self.circle_size=700
-        self.menu_area=None
         self.preview=None;self.ring_paths=[];self.action_titles={}
         self.selected = -1
         self.labels = []
@@ -187,7 +182,6 @@ class Wheel(QWidget):
         self.page_timer.timeout.connect(self.next_page)
         self.mode = 'home'
         self.node = 'home'
-        self.navigation_parent=None
         self.formats = []
         self.link = None
         self.latched = False
@@ -204,14 +198,12 @@ class Wheel(QWidget):
 
     def open(self, automatic=False, mode='home'):
         self.node='home' if mode=='home' else 'direct'
-        self.navigation_parent=None
         self.formats=[]
         self.preview=None
         self.link=None
         self.latched=False
 
         self.mode = mode
-        cursor=QCursor.pos();screen=QApplication.screenAt(cursor) or QApplication.primaryScreen();self.menu_area=screen.availableGeometry()
         self.automatic = automatic
         self.page_timer.stop()
         self.all_actions = []
@@ -225,18 +217,21 @@ class Wheel(QWidget):
         self.display_mode()
         self.revision += 1
         self.checking = False
-        center=self.circle_size//2 if self.node=='direct' else 190
-        area=self.menu_area
-        self.move(max(area.left(),min(cursor.x()-center,area.right()-self.width()+1)),
-                  max(area.top(),min(cursor.y()-center,area.bottom()-self.height()+1)))
-        self.show();self.raise_();self.repaint()
+        cursor = QCursor.pos()
+        screen = QApplication.screenAt(cursor) or QApplication.primaryScreen()
+        area = screen.availableGeometry()
+        self.move(max(area.left(), min(cursor.x()-(self.circle_size//2 if self.node=='direct' else 190), area.right()-self.width()+1)),
+                  max(area.top(), min(cursor.y()-(self.circle_size//2 if self.node=='direct' else 190), area.bottom()-self.height()+1)))
+        self.show()
+        self.raise_()
+        self.update()
 
     def switch_mode(self,mode):
-        if mode == self.mode:return
+        if mode == self.mode:
+            self.display_mode();return
         files=self.files[:]
         self.mode=mode
         self.node='home' if mode=='home' else 'direct'
-        self.navigation_parent=None
         self.latched=False
         self.revision+=1
         self.page_timer.stop()
@@ -255,7 +250,7 @@ class Wheel(QWidget):
 
     def display_mode(self):
         if self.mode=='home':
-            self.node='home';self.mode='home';self.navigation_parent=None;self.all_actions=home_actions(self.files,self.kind,self.formats)
+            self.node='home';self.all_actions=home_actions(self.files,self.kind,self.formats)
             self.message='Konvertieren · Bearbeiten · Tools'
         else:
             self.node='direct'
@@ -263,15 +258,14 @@ class Wheel(QWidget):
             prefixes={'convert':('format:',),'edit':('edit:',),'files':('tool:','app:')}[self.mode]
             self.all_actions=[action for action in actions if action.startswith(prefixes)]
             back='format:' if self.mode=='convert' else 'edit:' if self.mode=='edit' else 'app:'
-            if self.navigation_parent is not None:self.all_actions.append(back+'ZURÜCK')
+            self.all_actions.append(back+'ZURÜCK')
             title={'convert':'Konvertieren','edit':'Bearbeiten','files':'Tools'}[self.mode]
             self.message=title+' · Datei hineinziehen' if not self.files else title+' · Aktion wählen'
-            if self.files and not any(not key.endswith(':ZURÜCK') for key in self.all_actions):self.message=title+' · Keine passenden Aktionen verfügbar'
+            if self.files and len(self.all_actions)==1:self.message=title+' · Keine passenden Aktionen verfügbar'
         self.display_page()
 
     def context_actions(self,files_only=False):
         values=getattr(getattr(self.controller,'prefs',None),'values',{})
-        if not self.files:return []
         presets=values.get('quick_actions',[])
         self.action_titles={'edit:quick:'+p['id']:p['name'] for p in presets};workflows=values.get('workflows',[])
         self.action_titles.update({'edit:flow:'+p['id']:p['name'] for p in workflows})
@@ -292,13 +286,12 @@ class Wheel(QWidget):
     def open_link(self,url):
         if not media_link(url):return
         self.open();self.link=url;self.kind='Link';self.message='Download wählen · Audio oder Video';self.automatic=False;self.latched=True
-        self.node='direct';self.all_actions=['download:AUDIO LADEN','download:VIDEO LADEN'];self.display_page()
+        self.node='direct';self.all_actions=['download:AUDIO LADEN','download:VIDEO LADEN']+direct_actions([],None,[]);self.display_page()
 
     def inspect(self, files):
         if self.files == files:
             return
         self.files = files
-        self.page_timer.stop()
         self.preview=None
         self.link=None
         self.revision += 1
@@ -339,12 +332,10 @@ class Wheel(QWidget):
         self.page_timer.stop();self.automatic=False;self.latched=True;self.page=0
         actions=self.context_actions()
         if node=='home':
-            self.node='home';self.mode='home';self.navigation_parent=None;self.all_actions=home_actions(self.files,self.kind,self.formats)
+            self.node='home';self.all_actions=home_actions(self.files,self.kind,self.formats)
             self.message='Grün: Konvertieren · Orange: Bearbeiten · Blau: Tools'
         else:
             self.node='direct'
-            self.navigation_parent={'svg':'formats','rotate':'edit','more':'tools'}.get(node,'home')
-            self.mode='convert' if node in ('formats','svg') else 'edit' if node in ('edit','rotate') else 'files'
             prefixes={'formats':('format:',),'edit':('edit:',),'rotate':('edit:90°','edit:180°'),'svg':('format:SVG ',),'more':('app:',)}.get(node,('tool:','app:'))
             self.all_actions=[action for action in actions if action.startswith(prefixes)]
             back='format:' if node in ('formats','svg') else 'edit:' if node in ('edit','rotate') else 'app:'
@@ -356,9 +347,7 @@ class Wheel(QWidget):
     def select_action(self,target):
         if self.node=='direct':
             category,action=target.split(':',1)
-            if action=='ZURÜCK':
-                if self.navigation_parent is not None:self.navigate(self.navigation_parent)
-                return
+            if action=='ZURÜCK':self.navigate('home');return
             files=self.files[:];kind=self.kind;url=self.link;self.hide()
             if category=='download' or action=='LINK LADEN':QTimer.singleShot(0,lambda:self.controller.download_dialog(url,'video' if action=='VIDEO LADEN' else 'audio'))
             elif category=='format' and action not in ('SVG SCHNELL','SVG ERWEITERT'):QTimer.singleShot(0,lambda:self.controller.convert_files(files,action))
@@ -369,7 +358,7 @@ class Wheel(QWidget):
         if target in category_modes:
             mode,node=category_modes[target]
             if self.files and self.kind=='Dateiaktionen' and mode!='files':
-                self.switch_mode(mode);self.navigation_parent='home';self.automatic=False;self.latched=True;self.display_mode()
+                self.switch_mode(mode);self.automatic=False;self.latched=True
             else:
                 self.mode=mode;self.navigate(node)
             return
@@ -390,19 +379,20 @@ class Wheel(QWidget):
         from menu_visibility import visible_actions
         values=getattr(getattr(self.controller,'prefs',None),'values',{})
         self.all_actions=visible_actions(self.all_actions,values)
-        area=self.menu_area or QApplication.primaryScreen().availableGeometry()
+        if not self.all_actions:self.message='Alle Menüpunkte ausgeblendet · Einstellungen über das Tray öffnen'
         if self.node=='direct':
-            self.labels=self.all_actions[:]
-            self.circle_size=max(320,min(720,area.width()-20,area.height()-20))
-            self.resize(self.circle_size,self.circle_size)
-            from direct_wheel import geometry
-            self.paths=[entry[1] for entry in geometry(self)]
+            self.labels=self.all_actions[:];self.selected=-1
+            screen=QApplication.screenAt(self.pos()) or QApplication.primaryScreen();area=screen.availableGeometry()
+            self.circle_size=max(320,min(720,area.width()-20,area.height()-90));self.resize(self.circle_size,self.circle_size+65)
+            self.move(max(area.left(),min(self.x(),area.right()-self.width()+1)),max(area.top(),min(self.y(),area.bottom()-self.height()+1)));self.repaint();return
+        if len(self.all_actions) <= 6:
+            self.labels = self.all_actions[:]
         else:
-            self.labels=self.all_actions[:] if len(self.all_actions)<=6 else self.all_actions[self.page*5:(self.page+1)*5]+['WEITER']
-            self.resize(420,380)
-            from wheel_render import home_paths
-            self.paths=home_paths(self.labels)
-        self.selected=-1;self.ring_paths=[]
+            self.labels = self.all_actions[self.page*5:(self.page+1)*5] + ['WEITER']
+        self.selected = -1
+        self.resize(470,450) if self.node=='home' else self.resize(880,510)
+        screen=QApplication.screenAt(self.pos()) or QApplication.primaryScreen()
+        area=screen.availableGeometry()
         self.move(max(area.left(),min(self.x(),area.right()-self.width()+1)),max(area.top(),min(self.y(),area.bottom()-self.height()+1)))
         self.repaint()
 
@@ -440,7 +430,7 @@ class Wheel(QWidget):
         if self.receiving:
             url=self.dropped_link(event.mimeData())
             if url:
-                if self.link!=url:self.revision+=1;self.link=url;self.checking=False;self.files=[];self.kind='Link';self.node='direct';self.all_actions=['download:AUDIO LADEN','download:VIDEO LADEN'];self.message='Download wählen · Audio oder Video';self.display_page()
+                if self.link!=url:self.revision+=1;self.link=url;self.checking=False;self.files=[];self.kind='Link';self.node='direct';self.all_actions=['download:AUDIO LADEN','download:VIDEO LADEN']+direct_actions([],None,[]);self.message='Download wählen · Audio oder Video';self.display_page()
             else:self.inspect([u.toLocalFile() for u in event.mimeData().urls()])
         self.selected = self.segment(event.position()) if self.receiving else -1
         self.update()
@@ -450,12 +440,14 @@ class Wheel(QWidget):
             url=self.dropped_link(event.mimeData())
             if not url:self.inspect([u.toLocalFile() for u in event.mimeData().urls()])
             self.selected = self.segment(event.position())
-            if self.selected>=0 and self.labels[self.selected]=='WEITER':
-                if not self.page_timer.isActive():self.page_timer.start(400)
+            if self.selected >= 0 and self.labels[self.selected] == 'WEITER':
+                if not self.page_timer.isActive():
+                    self.page_timer.start(650)
                 event.ignore()
             else:
                 self.page_timer.stop()
-                if self.selected<0:event.ignore()
+                if self.selected < 0:
+                    event.ignore()
         self.update()
 
     def dragLeaveEvent(self, event):
@@ -474,10 +466,6 @@ class Wheel(QWidget):
         if files != self.files and not self.dropped_link(event.mimeData()):
             event.ignore();return
         self.select_action(self.labels[index])
-
-    def hideEvent(self,event):
-        self.page_timer.stop()
-        super().hideEvent(event)
 
     def mouseMoveEvent(self,event):
         self.selected=self.segment(event.position());self.update()
@@ -509,10 +497,6 @@ class Controller:
         self.selection_job=None;self.selection_pending=False;self.selection_revision=0;self.selection_origin=None
         from activation_guard import ActivationGuard
         self.activation_guard=ActivationGuard();self.shortcuts_paused=False;self.update_job=None
-        self.startup_existing=any((self.prefs.root/name).is_file() for name in ('settings.json','history.json'))
-        self.intro_dialog=None
-        from clipboard_shortcut import ClipboardGesture
-        self.clipboard_gesture=ClipboardGesture()
         self.backend_check=None
         self.backend_status=[]
         self.backend_missing=[]
@@ -538,17 +522,11 @@ class Controller:
                                 ('Bearbeiten', lambda: self.wheel.open(mode='edit')),
                                 ('Tools / Dateiaktionen', lambda: self.wheel.open(mode='files')),
                                 ('Dateiablage öffnen', lambda: self.shelf.open()),
-                                ('Audio/Video herunterladen', lambda:self.download_dialog()),
-                                ('Aktion suchen', lambda:self.circle_action([],'AKTIONSSUCHE','OrbitDrop')),
-                                ('Bildabläufe', lambda:self.circle_action([],'BILDABLÄUFE','OrbitDrop')),
-                                ('Schnellaktionen', lambda:self.circle_action([],'SCHNELLAKTIONEN','OrbitDrop')),
-                                ('Debugging', lambda:self.circle_action([],'DEBUGGING','OrbitDrop')),
                                 ('Aufträge & Verlauf', self.show_tasks),
                                 ('Einstellungen', self.settings),
                                 ('Updates', self.updates),
                                 ('Werkzeuge: Bilder / PDF / Video', self.tools),
                                 ('Konverter prüfen / einrichten', self.media_status),
-                                ('Erste Schritte', lambda:self.show_intro(force=True)),
                                 ('Anleitung', self.help), ('Beenden', self.quit)]:
             action = QAction(label, menu)
             action.triggered.connect(callback)
@@ -560,43 +538,11 @@ class Controller:
         self.released = 0
         self.timer = QTimer()
         self.timer.timeout.connect(self.poll)
-        self.timer.start(10)
+        self.timer.start(25)
         self.tray.showMessage('OrbitDrop bereit','Datei ziehen: '+shortcut_hint(self.prefs.values))
         if '--preview' in sys.argv:self.wheel.open()
         if self.prefs.values['check_backends']:QTimer.singleShot(300,lambda:self.check_backends(False))
         if self.prefs.values.get('check_updates',True):QTimer.singleShot(1500,self.auto_update_check)
-        QTimer.singleShot(120,self.show_intro)
-        QTimer.singleShot(850,self.show_whats_new)
-
-    def show_intro(self,force=False):
-        if not force and not self.prefs.values.get('show_intro',True):return
-        if self.intro_dialog is not None:
-            present(self.intro_dialog);return
-        from welcome_ui import WelcomeDialog
-        dialog=WelcomeDialog(self.prefs)
-        self.intro_dialog=dialog
-        def finished(unused):
-            self.intro_dialog=None
-            dialog.deleteLater()
-            self.show_whats_new()
-        dialog.finished.connect(finished)
-        dialog.check_requested.connect(self.media_status)
-        dialog.help_requested.connect(self.help)
-        present(dialog)
-
-    def show_whats_new(self):
-        if getattr(self,'intro_dialog',None) is not None:return
-        from app_version import VERSION
-        previous=self.prefs.values.get('seen_version','')
-        if previous==VERSION:return
-        existing=getattr(self,'startup_existing',any((self.prefs.root/name).is_file() for name in ('settings.json','history.json')))
-        try:self.prefs.update(dict(self.prefs.values,seen_version=VERSION))
-        except OSError:
-            # A read-only state folder must not prevent normal app usage.
-            return
-        if not existing:return
-        from changelog_ui import ChangelogDialog
-        ChangelogDialog(previous=previous or None).exec()
 
     def activated(self, reason):
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
@@ -614,21 +560,16 @@ class Controller:
         states={name:bool(key(code)&0x8000) for name,code in polling_keys(self.prefs.values).items()}
         left,escape=bool(key(0x01)&0x8000),bool(key(0x1B)&0x8000)
         if self.shortcuts_paused:
-            self.reset_clipboard_gesture(left)
             if escape:self.wheel.hide()
             self.was_keys=states;self.selection_pending=False;return
         if QApplication.activeModalWidget() is not None:
-            self.reset_clipboard_gesture(left)
             self.was_keys=states;self.selection_pending=False;return
         mode=pressed_mode(self.prefs.values,states,self.was_keys)
         context=self.activation_guard.context()
-        gesture=self.clipboard_click(states,left,context,escape)
-        if gesture=='drag':mode='convert'
-        if gesture in ('pending','click'):mode=None
         if mode and left and context.drag:
             if self.wheel.isVisible():self.wheel.switch_mode(mode)
             else:self.wheel.open(automatic=True,mode=mode)
-        if mode=='convert' and not left and context.selection and gesture not in ('pending','click'):self.request_selection()
+        if mode=='convert' and not left and context.selection:self.request_selection()
         self.was_keys=states
         self.selection_pending=False
         if not context.drag and self.wheel.isVisible() and self.wheel.automatic:
@@ -638,29 +579,10 @@ class Controller:
         if self.wheel.isVisible() and self.wheel.automatic and not left:
             # Let the OLE drop event finish before hiding a canceled palette.
             self.released += 1
-            if self.released > 30:
+            if self.released > 12:
                 self.wheel.hide()
         else:
             self.released = 0
-
-    def reset_clipboard_gesture(self,left=False):
-        if hasattr(self,'clipboard_gesture'):self.clipboard_gesture.reset(left)
-
-    def clipboard_click(self,states,left,context,escape=False):
-        from clipboard_shortcut import ClipboardGesture
-        gesture=getattr(self,'clipboard_gesture',None)
-        if gesture is None:self.clipboard_gesture=gesture=ClipboardGesture()
-        allowed=(context.drag or context.selection) and self.prefs.values.get('clipboard_download',True) and not escape
-        if not allowed:
-            gesture.reset(left);return None
-        held=pressed_mode(self.prefs.values,states,{})=='convert'
-        point=QCursor.pos()
-        phase,url=gesture.update(left,held,(point.x(),point.y()),context.token,
-            lambda:QApplication.clipboard().text())
-        if phase=='click' and not (self.wheel.isVisible() and self.wheel.files):
-            self.selection_revision+=1
-            self.wheel.open_link(url)
-        return phase
 
     def request_selection(self):
         if self.selection_job or self.shortcuts_paused:return
@@ -786,14 +708,12 @@ class Controller:
         self.update_job=UpdateJob(lambda progress:latest_release());self.update_job.signals.done.connect(self.update_checked);self.pool.start(self.update_job)
     def update_checked(self,info,error):
         self.update_job=None
-        if info and info['newer']:self.tray.showMessage('OrbitDrop-Update',info['version']+' verfügbar. Rechtsklick auf das OrbitDrop-Symbol neben der Uhr → Updates.')
+        if info and info['newer']:self.tray.showMessage('OrbitDrop-Update',info['version']+' verfügbar. Im Kreis: Alt → Updates.')
     def search_actions(self,files=None,kind=None):
         from action_search import ActionSearchDialog
-        files=list(files or [])
-        link=self.wheel.link if kind=='Link' else None
-        actions=self.wheel.context_actions() if files else direct_actions([],None,[])
-        if link:actions=['download:AUDIO LADEN','download:VIDEO LADEN']
-        dialog=ActionSearchDialog(actions,self.prefs,self.wheel.action_titles,files,kind or 'OrbitDrop',self.wheel.formats if files else [],link)
+        files=list(files or []);actions=self.wheel.context_actions()
+        if self.wheel.link:actions=['download:AUDIO LADEN','download:VIDEO LADEN']+actions
+        dialog=ActionSearchDialog(actions,self.prefs,self.wheel.action_titles,files,self.wheel.kind,self.wheel.formats,self.wheel.link)
         if dialog.exec() and dialog.chosen:
             self.wheel.files=dialog.files;self.wheel.kind=dialog.kind;self.wheel.formats=dialog.formats;self.wheel.link=dialog.link;self.wheel.node='direct';self.wheel.select_action(dialog.chosen)
     def record_diagnostics(self,items):
@@ -838,14 +758,9 @@ class Controller:
     def backends_checked(self,status,missing):
         self.backend_check=None;self.backend_status=status;self.backend_missing=missing
         if self.show_backend_when_ready:self.show_backend_dialog()
-        elif any(name in ('ffmpeg','ffprobe') for name in missing):
-            self.tray.showMessage('Audio und Video eingeschränkt','Die Medienwerkzeuge fehlen oder konnten nicht gestartet werden. OrbitDrop ist weiter nutzbar. Rechtsklick auf das OrbitDrop-Symbol neben der Uhr → Konverter prüfen / einrichten.')
+        elif missing:self.tray.showMessage('Konverterprüfung',', '.join(missing)+' fehlt oder startet nicht. Einrichtung im Infobereich-Menü.')
     def show_backend_dialog(self):
-        from backend_checks import summary
-        box=QMessageBox();box.setWindowTitle('OrbitDrop · Verfügbare Funktionen')
-        box.setText(summary(self.backend_missing))
-        box.setInformativeText('LibreOffice und Pandoc sind optional. Du brauchst sie nur für die genannten zusätzlichen Dokumentformate. Deine anderen Funktionen bleiben nutzbar. Nach einer Einrichtung erneut prüfen.')
-        box.setDetailedText('\n\n'.join(self.backend_status));box.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        box=QMessageBox();box.setWindowTitle('OrbitDrop · Konverter');box.setText('\n\n'.join(self.backend_status));box.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         install=box.addButton('Medien einrichten',QMessageBox.ButtonRole.ActionRole)
         office=box.addButton('LibreOffice-Download',QMessageBox.ButtonRole.ActionRole)
         pandoc=box.addButton('Pandoc-Download',QMessageBox.ButtonRole.ActionRole)

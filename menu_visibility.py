@@ -25,7 +25,7 @@ def action_catalog(values):
     from file_actions import FILE_ACTIONS
     from direct_wheel import NAMES
     def title(label):return NAMES.get(label,label).replace('\n',' ')
-    groups=[('Bereichsauswahl',[('home:'+key,title(key)) for key in ('KONVERTIEREN','BEARBEITEN','TOOLS')]),('Konvertieren',[]),('Bearbeiten',[('edit:'+key,title(key)) for key in EDIT_IDS]),('Tools · Dateien',[('tool:'+key,title(key)) for key in FILE_ACTIONS]),('Programm · Aktionssuche ohne Datei',[('app:'+key,title(key)) for key in APP_IDS]),('Links & Downloads',[('download:'+key,title(key)) for key in ('AUDIO LADEN','VIDEO LADEN')]),('Navigation',[('nav:ZURÜCK','Zurück nach einer Menünavigation')])]
+    groups=[('Bereichsauswahl',[('home:'+key,title(key)) for key in ('KONVERTIEREN','BEARBEITEN','TOOLS')]),('Konvertieren',[]),('Bearbeiten',[('edit:'+key,title(key)) for key in EDIT_IDS]),('Tools · Dateien',[('tool:'+key,title(key)) for key in FILE_ACTIONS]),('Tools · Programm',[('app:'+key,title(key)) for key in APP_IDS]),('Links & Downloads',[('download:'+key,title(key)) for key in ('AUDIO LADEN','VIDEO LADEN')]),('Navigation',[('nav:ZURÜCK','Zurück zur Bereichsauswahl')])]
     for target in sorted(EXTENSIONS):
         groups[1][1].extend([('format:SVG SCHNELL','SVG · Schnell'),('format:SVG ERWEITERT','SVG · Erweitert')] if target=='SVG' else [('format:'+target,title(target))])
     custom=[('edit:quick:'+item['id'],item['name']) for item in values.get('quick_actions',[])]+[('edit:flow:'+item['id'],item['name']) for item in values.get('workflows',[])]

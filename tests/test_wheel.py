@@ -32,9 +32,9 @@ class WheelTests(unittest.TestCase):
             self.wheel.labels = list(labels)
             self.wheel.repaint()
             for i in range(len(labels)):
-                angle=math.radians(-90+180/len(labels)+i*360/len(labels))
-                self.assertEqual(self.wheel.segment(QPointF(190+125*math.cos(angle),190+125*math.sin(angle))),i)
-            self.assertEqual(self.wheel.segment(QPointF(190,190)),-1)
+                angle = math.radians(-90 + 180/len(labels) + i*360/len(labels))
+                self.assertEqual(self.wheel.segment(QPointF(190+125*math.cos(angle),190+125*math.sin(angle))), i)
+            self.assertEqual(self.wheel.segment(QPointF(190,190)), -1)
 
     def test_page_navigation(self):
         self.wheel.all_actions = ['MP4','WEBM','MOV','MKV','AVI','WMV','GIF','STANDBILD','MP3','WAV','FLAC']

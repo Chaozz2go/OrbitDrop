@@ -15,7 +15,7 @@ FILE_MANAGERS = frozenset({'totalcmd.exe', 'totalcmd64.exe', 'doublecmd.exe',
                           'dopus.exe', 'freecommander.exe', 'freecommander64.exe', 'files.exe'})
 BROWSERS = frozenset({'msedge.exe', 'chrome.exe', 'firefox.exe', 'brave.exe',
                       'vivaldi.exe', 'opera.exe', 'librewolf.exe', 'waterfox.exe', 'floorp.exe'})
-SHELL_CLASSES = frozenset({'CabinetWClass', 'ExploreWClass', 'Progman', 'WorkerW', 'SHELLDLL_DefView', 'SysListView32'})
+SHELL_CLASSES = frozenset({'CabinetWClass', 'ExploreWClass', 'Progman', 'WorkerW'})
 
 
 @dataclass(frozen=True)
@@ -82,7 +82,7 @@ class ActivationGuard:
             now = time.monotonic()
             if token == self._token and now < self._until:
                 return self._context
-            self._token, self._until = token, now
+            self._token, self._until = token, now + .25
             self._context = ActivationContext()
             cls = ctypes.create_unicode_buffer(256)
             if not user.GetClassNameW(hwnd, cls, len(cls)):

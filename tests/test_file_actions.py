@@ -82,7 +82,7 @@ class FileActionTests(unittest.TestCase):
             def file_action(self,files,target):calls.append((files,target))
         wheel=Wheel(Controller());self.addCleanup(wheel.close)
         wheel.open(mode='files');self.app.processEvents()
-        self.assertEqual(wheel.all_actions,[])
+        self.assertIn('app:EINSTELLUNGEN',wheel.all_actions)
         self.assertNotIn('tool:ENTPACKEN',wheel.all_actions)
         unknown=self.source/'unknown.xyz';unknown.write_text('arbitrary bytes')
         mime=QMimeData();mime.setUrls([QUrl.fromLocalFile(str(self.folder)),QUrl.fromLocalFile(str(unknown))])

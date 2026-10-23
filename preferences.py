@@ -7,7 +7,7 @@ import subprocess
 import sys
 import tempfile
 
-DEFAULTS={'show_intro':True,'clipboard_download':True,'menu_expanded':False,'seen_version':'','startup_update_policy':2,'check_updates':True,'hidden_actions':[],'favorite_actions':[],'workflows':[],'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
+DEFAULTS={'startup_update_policy':2,'check_updates':True,'hidden_actions':[],'favorite_actions':[],'workflows':[],'quick_actions':[],'hidden_formats':[],'download_dir':'','output_dir':'','image_quality':92,'video_profile':'Ausgewogen','video_height':0,
           'convert_key':'Shift','edit_key':'Strg','files_key':'Alt','autostart':False,'check_backends':True}
 from shortcuts import KEY_CODES,pressed_mode,validate_bindings,polling_keys
 
@@ -38,7 +38,6 @@ class Preferences:
         finally:Path(temp).unlink(missing_ok=True)
     def validate(self,values):
         result={key:values.get(key,value) for key,value in DEFAULTS.items()}
-        if not isinstance(result['seen_version'],str) or len(result['seen_version'])>40:result['seen_version']=''
         result['startup_update_policy']=2
         result.update(validate_bindings(result))
         hidden_actions=result['hidden_actions']
@@ -62,7 +61,7 @@ class Preferences:
         result['video_height']=int(result['video_height'])
         if not isinstance(result['download_dir'],str):raise ValueError('Ungültiger Downloadordner.')
         if not isinstance(result['output_dir'],str):raise ValueError('Ungültiger Ausgabeordner.')
-        for key in ('autostart','check_backends','check_updates','menu_expanded','show_intro','clipboard_download'):result[key]=bool(result[key])
+        for key in ('autostart','check_backends','check_updates'):result[key]=bool(result[key])
         return result
     def update(self,values):
         values=self.validate(values)

@@ -46,9 +46,9 @@ def direct_actions(files,kind,formats,hidden=(),files_only=False,presets=(),work
     if not files_only and 'edit:KOMPRIMIEREN' in actions:
         actions+=['edit:quick:'+item['id'] for item in presets if item['kind']==kind]
     if not files_only and kind=='Bild':actions+=['edit:flow:'+item['id'] for item in workflows]
-    if files:actions+=['tool:'+action for action in available_file_actions(files) if action!='EXPLORER']
+    if files:actions+=['tool:'+action for action in available_file_actions(files)]
     from menu_visibility import APP_IDS
-    if not files:actions+=['app:'+key for key in APP_IDS]
+    actions+=['app:'+key for key in APP_IDS]
     return actions
 
 

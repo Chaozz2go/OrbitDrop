@@ -64,17 +64,27 @@ def paint_wheel(w):
         p.setPen(QColor('#edf4ff'));p.setFont(QFont('Segoe UI',13,QFont.Weight.Bold));p.drawText(QRectF(116,153,148,32),Qt.AlignmentFlag.AlignCenter,'OrbitDrop')
         title='Bitte kurz halten …' if w.checking else Path(w.files[0]).name if len(w.files)==1 else f'{len(w.files)} Dateien' if w.files else 'Link erkannt' if w.link else 'Datei hineinziehen'
         p.setFont(QFont('Segoe UI',9));p.setPen(QColor('#b6c4d6'));p.drawText(QRectF(116,194,148,42),Qt.AlignmentFlag.AlignCenter|Qt.TextFlag.TextWordWrap,QFontMetrics(p.font()).elidedText(title,Qt.TextElideMode.ElideMiddle,145))
+    p.setFont(QFont('Segoe UI',9));p.setPen(QColor('#c4d0e1'));p.drawText(QRectF(5,374,410,42),Qt.AlignmentFlag.AlignCenter|Qt.TextFlag.TextWordWrap,'Datei prüfen …' if w.checking else 'Bereich wählen' if w.node=='home' else TITLES.get(w.node,'OrbitDrop'))
+    pill(p,QRectF(96,416,190,27),'Esc  ·  Menü schließen',QColor('#526178'))
+    if w.node!='home':
+        rect=QRectF(428,20,434,478);p.setPen(QPen(QColor('#39475b'),1));p.setBrush(QColor('#151e2c'));p.drawRoundedRect(rect,18,18)
+        accent=QColor(action_color(w.node,''));p.setPen(QPen(accent,4,Qt.PenStyle.SolidLine,Qt.PenCapStyle.RoundCap));p.drawLine(430,38,430,97)
+        p.setPen(accent);p.setFont(QFont('Segoe UI',11,QFont.Weight.DemiBold));p.drawText(QRectF(448,35,390,25),TITLES.get(w.node,'OrbitDrop'))
+        p.setPen(QColor('#f3f7ff'));p.setFont(QFont('Segoe UI',14,QFont.Weight.Bold));p.drawText(QRectF(448,66,395,32),'Wie möchtest du starten?' if w.node=='svg' else 'Was möchtest du machen?')
+        y=112
+        for i,label in enumerate(w.labels):
+            large=w.node=='svg' and label!='ZURÜCK';height=100 if large else 45
+            box=QRectF(448,y,394,height);path=QPainterPath();path.addRoundedRect(box,10,10);w.paths.append(path)
+            gradient=QLinearGradient(box.topLeft(),box.bottomRight());gradient.setColorAt(0,accent.darker(320 if i==w.selected else 550));gradient.setColorAt(1,QColor('#1b2635'));p.setBrush(gradient);p.setPen(QPen(accent if i==w.selected else QColor('#3b4d61'),1.4));p.drawPath(path)
+            title,subtitle=CAPTIONS.get(label,(label.title() if len(label)>5 else label,''))
+            textx=box.left()+15
+            if large:
+                p.setPen(QPen(accent,2.1,Qt.PenStyle.SolidLine,Qt.PenCapStyle.RoundCap));icon(p,label,box.left()+32,box.center().y(),30);textx+=45
+            p.setPen(QColor('#f3f7ff'));p.setFont(QFont('Segoe UI',13 if large else 10,QFont.Weight.DemiBold));p.drawText(QRectF(textx,y+12 if large else y+4,box.right()-textx-12,28),Qt.AlignmentFlag.AlignVCenter,title)
+            if subtitle:
+                p.setFont(QFont('Segoe UI',9 if large else 8));p.setPen(QColor('#acbdcf'));p.drawText(QRectF(textx,y+43 if large else y+24,box.right()-textx-12,45 if large else 18),Qt.TextFlag.TextWordWrap,subtitle)
+            y+=height+8
+        p.setPen(QColor('#acbdcf'));p.setFont(QFont('Segoe UI',9));file=Path(w.files[0]).name if len(w.files)==1 else f'{len(w.files)} Dateien' if w.files else 'Link' if w.link else 'OrbitDrop'
+        if len(w.all_actions)>6:file+=f' · Seite {w.page+1}/{math.ceil(len(w.all_actions)/5)}'
+        p.drawText(QRectF(448,463,394,23),Qt.AlignmentFlag.AlignVCenter,QFontMetrics(p.font()).elidedText(file,Qt.TextElideMode.ElideMiddle,390))
     p.end()
-
-
-def home_paths(labels):
-    paths=[]
-    if not labels:return paths
-    step=360/len(labels)
-    for index,label in enumerate(labels):
-        path=rounded_sector(QPointF(190,190),166,83,index*step+2,step-4,12)
-        if len(labels)==3 and all(key in HOME for key in labels):
-            rect=[QRectF(278,71,138,32),QRectF(120,332,145,32),QRectF(0,71,93,32)][index]
-            extra=QPainterPath();extra.addRoundedRect(rect,14,14);path=path.united(extra)
-        paths.append(path)
-    return paths
