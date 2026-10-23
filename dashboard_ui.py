@@ -138,6 +138,6 @@ class Dashboard(QWidget):
         else:self.progress.setRange(0,100);self.progress.setValue(percent)
     def setup_finished(self,error):
         self.cancel.hide();self.progress.hide();self.set_controls(True)
-        self.status.setText(error or 'Einrichtung abgeschlossen. Werkzeuge werden erneut geprüft.')
+        self.status.setText(('Einrichtung abgebrochen. Du kannst sie später erneut starten.' if error.startswith('Einrichtung abgebrochen.') else 'Einrichtung nicht abgeschlossen. Hinweise findest du unter Einrichtung → Details.') if error else 'Einrichtung abgeschlossen. Werkzeuge werden erneut geprüft.')
         if error:
             row=self.tool_rows[self.install_key];row['detail'].setPlainText(error);row['detail'].show();row['state'].setText('Einrichtung nicht abgeschlossen · siehe Details')

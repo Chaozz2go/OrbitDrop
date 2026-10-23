@@ -79,6 +79,10 @@ class DashboardTests(unittest.TestCase):
             self.c.cancel_setup();self.assertTrue(job.control.cancelled.is_set())
             job.was_cancelled=True;self.c.setup_finished(job,[],[])
         self.assertIsNone(self.c.setup_job);self.assertTrue(d.isVisible());self.assertIn('abgebrochen',d.status.text());self.assertTrue(d.check.isEnabled())
+    def test_long_installer_errors_stay_in_details_without_expanding_footer(self):
+        self.c.show_dashboard('Einrichtung');d=self.c.dashboard;d.setup_started('office')
+        d.setup_finished('Installer error: '+('technical details '*300))
+        self.assertLess(len(d.status.text()),160);self.assertIn('technical details',d.tool_rows['office']['detail'].toPlainText());self.assertTrue(d.isVisible())
     def test_tray_dashboard_and_start_scheduling_and_polling_remain_v20(self):
         self.assertIn('Dashboard',[a.text() for a in self.c.tray.contextMenu().actions()]);self.assertEqual(self.c.timer.interval(),25)
         for enabled in (True,False):
