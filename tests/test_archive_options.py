@@ -82,6 +82,11 @@ class ArchiveOptionsTests(unittest.TestCase):
         with self.assertRaises(ValueError):list_archive(outputs[0],'Wrong')
         rows=list_archive(outputs[0],'Secret123');self.assertIn('source/random.bin',[r['name'] for r in rows]);test_archive(outputs[0],'Secret123')
         [folder]=extract_options(outputs[0],self.dest,password='Secret123',selected=['source/one.txt']);self.assertEqual((Path(folder)/'source/one.txt').read_text(),'First '*1000);self.assertFalse((Path(folder)/'source/random.bin').exists())
+    def test_native_windows_paths_use_stable_selection_names(self):
+        archive=self.root/'fake.7z';archive.write_bytes(b'7z\xbc\xaf\x27\x1c')
+        listing='Path = source\\one.txt\nSize = 12\nFolder = -\n'
+        with patch('archive_options._uses_seven',return_value=True),patch('archive_options._seven',return_value=listing):
+            [row]=list_archive(archive);self.assertEqual(row['name'],'source/one.txt');self.assertEqual(row['member'],'source\\one.txt')
     def test_native_dependency_is_optional_and_options_are_validated(self):
         with patch('archive_options.sevenzip',return_value=None),self.assertRaisesRegex(OSError,'7-Zip'):create_archive([self.source],self.root/'x.7z',format='7Z')
         with self.assertRaises(ValueError):create_archive([self.source],self.root/'x.tar.gz',format='TAR.GZ',password='Secret')

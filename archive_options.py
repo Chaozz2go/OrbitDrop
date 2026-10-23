@@ -150,7 +150,7 @@ def list_archive(source,password=''):
                     fields[key]=value
             if 'Path' not in fields:continue
             if any(k in fields for k in ('Symbolic Link','Hard Link')):raise ValueError('Links im Archiv werden nicht unterstützt.')
-            rows.append(dict(name=fields['Path'],size=int(fields.get('Size') or 0),directory=fields.get('Folder')=='+' or fields.get('Attributes','').startswith('D')))
+            rows.append(dict(name='/'.join(_safe_parts(fields['Path'])),member=fields['Path'],size=int(fields.get('Size') or 0),directory=fields.get('Folder')=='+' or fields.get('Attributes','').startswith('D')))
     else:
         with _opened(source,password) as (kind,archive):
             if kind=='SINGLE_GZIP':rows=[dict(name=source.stem,size=0,directory=False)]
@@ -202,7 +202,7 @@ def extract_options(source,destination,password='',selected=None,conflict='error
             for index,row in enumerate(rows):
                 if row['directory']:continue
                 raw=Path(temporary)/('member-'+str(index))
-                _seven(['x','-so','-spd','-bso0','-bsp0','-p'+password,'--',str(source),row['name']],stdout_path=raw,limit=MAX_BYTES-total)
+                _seven(['x','-so','-spd','-bso0','-bsp0','-p'+password,'--',str(source),row.get('member',row['name'])],stdout_path=raw,limit=MAX_BYTES-total)
                 with raw.open('rb') as stream:store(row,stream)
                 raw.unlink()
         else:
