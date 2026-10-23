@@ -37,7 +37,7 @@ class SetupTests(unittest.TestCase):
             with self.assertRaisesRegex(OSError,'Downloadseite'):winget_command('pandoc')
     def test_install_ocr_uses_user_state_and_failures_are_reported(self):
         with patch('ocr_data.install_languages',return_value=Path('/state/tessdata')) as install:
-            self.assertEqual(install_tool('ocr','/state'),'/state/tessdata');install.assert_called_once_with(Path('/state/tessdata'))
+            self.assertEqual(install_tool('ocr','/state'),str(Path('/state/tessdata')));install.assert_called_once_with(Path('/state/tessdata'))
         with patch('setup_tools.winget_command',return_value=['winget']),patch('setup_tools.run',return_value=SimpleNamespace(returncode=1,stderr='Denied',stdout='')):
             with self.assertRaisesRegex(OSError,'Denied'):install_tool('office','/state')
 
@@ -91,10 +91,10 @@ class DashboardTests(unittest.TestCase):
         # Freeze the release sources: this feature must not restyle or reposition the wheel.
         hashes={'direct_wheel.py':'072bf7f90bc831e3f623538fb79042dcbaafe65e','wheel_render.py':'7a34d74fb70d149d3d05d4ce2b6b62c0a31b2d70','radial_style.py':'fca5ca825c5a6ac7e9dd8d5a4ab3ac7df7ea6ae7'}
         for name,expected in hashes.items():
-            b=(ROOT/name).read_bytes();actual=hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest();self.assertEqual(actual,expected,name)
+            b=(ROOT/name).read_text(encoding='utf-8').encode('utf-8');actual=hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest();self.assertEqual(actual,expected,name)
 
     def test_wheel_and_native_polling_are_unchanged_from_v20(self):
-        tree=ast.parse((ROOT/'orbitdrop.py').read_text());classes={x.name:x for x in tree.body if isinstance(x,ast.ClassDef)}
+        tree=ast.parse((ROOT/'orbitdrop.py').read_text(encoding='utf-8'));classes={x.name:x for x in tree.body if isinstance(x,ast.ClassDef)}
         wheel=hashlib.sha256(ast.dump(classes['Wheel']).encode()).hexdigest()
         poll=next(x for x in classes['Controller'].body if isinstance(x,ast.FunctionDef) and x.name=='poll')
         self.assertEqual(wheel,'ea5e94bc0369906fef49c3bcc13a2dfe16df4827eac5737598b8180ae4028b2c')
