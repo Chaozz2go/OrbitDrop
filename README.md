@@ -20,13 +20,13 @@ OrbitDrop erkennt den Dateiinhalt und zeigt passende Aktionen für deine Auswahl
 
 ## Installation · Quick Install
 
-**[Windows-Downloads & Releases](https://github.com/Chaozz2go/OrbitDrop/releases)** · **[Quellcode als ZIP](https://github.com/Chaozz2go/OrbitDrop/archive/refs/heads/main.zip)**
+**[Windows-Setup 0.25.0 herunterladen](https://github.com/Chaozz2go/OrbitDrop/releases/download/v0.25.0/OrbitDrop-0.25.0-Windows-x64-Setup.exe)** · **[Windows-Downloads & Releases](https://github.com/Chaozz2go/OrbitDrop/releases)** · **[Quellcode als ZIP](https://github.com/Chaozz2go/OrbitDrop/archive/refs/heads/main.zip)**
 
-> **Aktuelle veröffentlichte Windows-Version: 0.24.0.** Das neue Dashboard auf Grundlage von 0.20.0 wird als 0.25.0 veröffentlicht, sobald Windows-Tests und Setup-Prüfung erfolgreich sind.
+> **Aktuelle Windows-Version: 0.25.0.** Öffentlich veröffentlicht und unter Windows geprüft. Basis ist Version 0.20.0 mit unverändertem Radialmenü und neuem Dashboard. Bestehende Installationen erhalten 0.25.0 über die Updateprüfung.
 
 ### Windows-App ohne Python
 
-Sobald ein Windows-Release veröffentlicht ist:
+So installierst oder aktualisierst du OrbitDrop:
 
 1. [Releases öffnen](https://github.com/Chaozz2go/OrbitDrop/releases) und beim aktuellen Release **Assets** aufklappen.
 2. **`OrbitDrop-<Version>-Windows-x64-Setup.exe`** herunterladen und starten.
