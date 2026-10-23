@@ -42,7 +42,7 @@ class WaveformTests(unittest.TestCase):
         from PIL import Image
         editor=AudioEditor(self.audio,lambda *args:None);editor.show();self.wait(lambda:editor.model is not None)
         player=editor.player;editor.reject();QCoreApplication.sendPostedEvents(None,QEvent.Type.DeferredDelete);self.assertFalse(isValid(player))
-        source=self.root/'next.png';Image.new('RGB',(60,40),'red').save(source);photo=ImageEditor(source,lambda *args:None);self.addCleanup(photo.close);photo.show();self.app.processEvents();self.assertIsNotNone(photo.canvas.pixmap)
+        source=self.root/'next.png';Image.new('RGB',(60,40),'red').save(source);photo=ImageEditor(source,lambda *args:None);self.addCleanup(photo.close);photo.show();self.wait(lambda:photo.canvas.pixmap is not None)
 
     @unittest.skipUnless(shutil.which('ffmpeg'),'FFmpeg missing')
     def test_video_waveform_is_time_aligned_and_delete_keeps_cuts(self):

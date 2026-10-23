@@ -41,7 +41,7 @@ class EditingTests(unittest.TestCase):
         for x in range(100,200):
             for y in range(100):image.putpixel((x,y),(0,0,255))
         image.save(path);before=path.read_bytes();calls=[]
-        editor=ImageEditor(path,lambda *args:calls.append(args));self.addCleanup(editor.close);editor.show();self.app.processEvents()
+        editor=ImageEditor(path,lambda *args:calls.append(args));self.addCleanup(editor.close);editor.show();self.wait(lambda:editor.canvas.pixmap is not None)
         rect=editor.canvas.image_rect()
         left=QPointF(rect.left(),rect.top()).toPoint()+QPointF(2,2).toPoint()
         right=QPointF(rect.center().x(),rect.bottom()-2).toPoint()
@@ -83,6 +83,13 @@ class EditingTests(unittest.TestCase):
         result=subprocess.run(['ffprobe','-v','error','-select_streams','v:0','-show_entries','frame=best_effort_timestamp_time','-of','json',str(video)],capture_output=True,text=True,check=True)
         times=[float(frame['best_effort_timestamp_time']) for frame in json.loads(result.stdout)['frames']]
         self.assertGreater(len(set(round(times[i+1]-times[i],3) for i in range(len(times)-1))),1)
+        from edit_models import FrameReader
+        with FrameReader(video) as reader:
+            self.assertAlmostEqual(reader.read(0)[1],times[0],places=5)
+            for index in range(1,len(times)):
+                self.assertAlmostEqual(reader.read(times[index-1],1)[1],times[index],places=5)
+            for index in range(len(times)-2,-1,-1):
+                self.assertAlmostEqual(reader.read(times[index+1],-1)[1],times[index],places=5)
         for index,position in enumerate(times):
             if index+1<len(times):self.assertAlmostEqual(read_frame(video,position,1)[1],times[index+1],places=5)
             if index:self.assertAlmostEqual(read_frame(video,position,-1)[1],times[index-1],places=5)

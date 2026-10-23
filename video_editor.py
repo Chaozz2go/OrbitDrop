@@ -8,7 +8,9 @@ from editor_chrome import EDITOR_STYLE,heading,toolbar,action_button
 from ui_theme import CANVAS,BACKGROUND,icon
 from waveform import Waveform
 from timeline_view import TimelineView
-from edit_models import CutModel,read_frame
+from edit_models import CutModel,FrameReader
+from preview_runtime import preview_pool
+from loading_ui import LoadingIndicator
 from image_editor import pil_qimage
 from filetypes import backend
 from filmstrip import Filmstrip
@@ -44,21 +46,25 @@ class Timeline(QSlider):
 
 class FrameSignals(QObject):done=Signal(object,object)
 class FrameJob(QRunnable):
-    def __init__(self,path,position,steps,stopped):
-        super().__init__();self.path,self.position,self.steps,self.stopped=path,position,steps,stopped;self.signals=FrameSignals()
+    def __init__(self,reader,position,steps,stopped):
+        super().__init__();self.reader,self.position,self.steps,self.stopped=reader,position,steps,stopped;self.signals=FrameSignals()
     def run(self):
         try:
-            image,position,duration=read_frame(self.path,self.position,self.steps,self.stopped)
+            image,position,duration=self.reader.read(self.position,self.steps,self.stopped)
             self.signals.done.emit((pil_qimage(image),position,duration),None)
         except Exception as error:self.signals.done.emit(None,str(error))
+        finally:
+            if self.stopped.is_set():self.reader.close()
 
 class VideoEditor(QDialog):
     def __init__(self,path,submit,parent=None):
         super().__init__(parent);self.path=str(path);self.submit=submit;self.position=0.;self.model=None;self.angle=0;self.manual=True
+        self.reader=FrameReader(path);self.wave_finished=False;self.wave_percent=None
         self.frame_job=None;self.pending_steps=0;self.pending_seek=None;self.stopped=threading.Event();self.add_when_ready=False;self.shortcuts=[];self.updating_lists=False
         self.setWindowTitle('OrbitDrop · Videoschnitt · '+Path(path).name);self.resize(1180,900);self.setStyleSheet(EDITOR_STYLE)
         layout=QVBoxLayout(self);heading(layout,'Videoschnitt',Path(path).name+' · Leertaste: Start/Pause · C: Schnitt · Entf: Entfernen')
         self.canvas=VideoCanvas();layout.addWidget(self.canvas,1)
+        self.loading=LoadingIndicator();self.loading.busy('Video wird geöffnet …');layout.addWidget(self.loading)
         bar,controls=toolbar();layout.addWidget(bar)
         self.play=action_button('', 'play',True,'Start / Pause · Leertaste');self.play.setFixedWidth(48);self.play.clicked.connect(self.toggle_play);controls.addWidget(self.play)
         for kind,label,step in [('previous','Einzelbild zurück · ←',-1),('next','Einzelbild vor · →',1)]:
@@ -68,7 +74,7 @@ class VideoEditor(QDialog):
         self.restore_segment_button=action_button('Wiederherstellen','undo',tooltip='Entfernten Abschnitt wiederherstellen');self.restore_segment_button.setEnabled(False);self.restore_segment_button.clicked.connect(lambda:self.set_selected_keep(True));controls.addWidget(self.restore_segment_button)
         controls.addStretch();self.time_label=QLabel('Video wird geöffnet …');self.time_label.setObjectName('timeReadout');controls.addWidget(self.time_label)
         self.timeline=Filmstrip(self);self.timeline.seekRequested.connect(self.seek);self.timeline.segmentSelected.connect(self.select_segment)
-        self.waveform=Waveform(self);self.timeline_view=TimelineView([self.timeline,self.waveform]);layout.addWidget(self.timeline_view);self.waveform.seekRequested.connect(self.seek);self.waveform.segmentSelected.connect(self.select_segment)
+        self.waveform=Waveform(self);self.timeline.loadingChanged.connect(self.update_loading);self.waveform.loadingProgress.connect(self.wave_progress);self.waveform.finished.connect(self.wave_ready);self.timeline_view=TimelineView([self.timeline,self.waveform]);layout.addWidget(self.timeline_view);self.waveform.seekRequested.connect(self.seek);self.waveform.segmentSelected.connect(self.select_segment)
         segment_row=QHBoxLayout();layout.addLayout(segment_row)
         self.undo_button=action_button('','undo',tooltip='Schnittschritt rückgängig · Strg+Z');self.undo_button.clicked.connect(lambda:self.history_step(False));self.timeline_view.controls.addWidget(self.undo_button)
         self.redo_button=action_button('','rotate_right',tooltip='Schnittschritt wiederholen · Strg+Y');self.redo_button.clicked.connect(lambda:self.history_step(True));self.timeline_view.controls.addWidget(self.redo_button)
@@ -91,13 +97,15 @@ class VideoEditor(QDialog):
         self.export=action_button('Als MP4 speichern','save',True);self.export.clicked.connect(self.save);bottom.addWidget(self.export)
         self.player=QMediaPlayer(self);self.audio=QAudioOutput(self);self.player.setAudioOutput(self.audio);self.sink=QVideoSink(self);self.player.setVideoSink(self.sink)
         self.sink.videoFrameChanged.connect(self.video_frame);self.player.errorOccurred.connect(lambda error,message:self.status.setText('Wiedergabe: '+message+' · Einzelbildvorschau ist unabhängig davon verfügbar.'))
-        self.player.setSource(QUrl.fromLocalFile(self.path))
         self._shortcut('Ctrl+Z',lambda:self.history_step(False));self._shortcut('Ctrl+Y',lambda:self.history_step(True));self._shortcut('Space',self.toggle_play);self._shortcut('Left',lambda:self.step(-1));self._shortcut('Right',lambda:self.step(1));self._shortcut('C',self.add_cut);self._shortcut('Delete',lambda:self.set_selected_keep(False));self._shortcut('Shift+Delete',self.remove_cut)
         self.export.setEnabled(False);self.cut_button.setEnabled(False)
-        self.seek(0)
+        QTimer.singleShot(0,self.start_load)
         area=self.screen().availableGeometry();self.fit_toolbar(min(1180,area.width()-40));self.resize(min(1180,area.width()-40),min(900,area.height()-50))
+    def start_load(self):
+        if self.stopped.is_set():return
+        self.player.setSource(QUrl.fromLocalFile(self.path));self.seek(0)
     def fit_toolbar(self,width):
-        wide=width>=1000;self.time_label.setVisible(wide);self.compact_time.setVisible(not wide);self.restore_segment_button.setText('Wiederherstellen' if width>=850 else '')
+        wide=width>=1280;self.time_label.setVisible(wide);self.compact_time.setVisible(not wide);self.restore_segment_button.setText('Wiederherstellen' if width>=850 else '')
     def resizeEvent(self,event):
         super().resizeEvent(event)
         if hasattr(self,'compact_time'):self.fit_toolbar(self.width())
@@ -109,16 +117,17 @@ class VideoEditor(QDialog):
             if steps:self.pending_steps+=steps
             else:self.pending_seek=position;self.pending_steps=0
             return
-        job=FrameJob(self.path,position,steps,self.stopped);self.frame_job=job
-        self.status.setText('Einzelbild wird dekodiert …');job.signals.done.connect(self.decoded);QThreadPool.globalInstance().start(job)
+        job=FrameJob(self.reader,position,steps,self.stopped);self.frame_job=job
+        self.status.setText('Einzelbild wird dekodiert …');job.signals.done.connect(self.decoded);preview_pool().start(job)
     def decoded(self,result,error):
         self.frame_job=None
         if self.stopped.is_set():return
         if error:
             self.status.setText('Vorschau: '+error);self.add_when_ready=False
+            if self.model is None:self.loading.finish()
         elif result:
             image,position,duration=result;self.canvas.image=image;self.canvas.update();self.position=position
-            if self.model is None:self.model=CutModel(duration);self.refresh_lists();self.timeline.load(self.path,duration,self.stopped);self.waveform.load(self.path,self.stopped,duration)
+            if self.model is None:self.model=CutModel(duration);self.refresh_lists();self.timeline.load(self.path,duration,self.stopped);self.waveform.load(self.path,self.stopped,duration);self.update_loading()
             self.player.setPosition(round(position*1000));self.cut_button.setEnabled(True)
             self.export.setEnabled(bool(backend('ffmpeg') and backend('ffprobe')))
             self.status.setText('Einzelbild bereit.' if self.export.isEnabled() else 'Export benötigt FFmpeg/FFprobe. Im Kreis: Alt → Konverter.')
@@ -128,6 +137,20 @@ class VideoEditor(QDialog):
         if self.pending_steps:
             steps=self.pending_steps;self.pending_steps=0;self.decode(self.position,steps);return
         if self.add_when_ready and not error:self.add_when_ready=False;self.add_cut()
+    def wave_progress(self,percent):self.wave_percent=percent;self.update_loading()
+    def wave_ready(self):self.wave_finished=True;self.update_loading()
+    def update_loading(self):
+        if self.stopped.is_set() or self.model is None:return
+        strip=self.timeline;count=len(strip.thumbnails)
+        if strip.finished and self.wave_finished:
+            self.loading.finish()
+            if strip.error:self.status.setText('Videoleiste nicht vollständig: '+strip.error)
+            return
+        text=('Videoleiste nicht verfügbar' if strip.error else f'Videoleiste: {count} von {strip.count} Bildern · {round(count/strip.count*100)} %')
+        text+=' · Audiospur: '+('bereit' if self.wave_finished else f'{self.wave_percent} %' if self.wave_percent is not None else 'wird geöffnet …')
+        if not strip.finished:self.loading.progress(count/strip.count*100,text)
+        elif self.wave_percent is not None:self.loading.progress(self.wave_percent,text)
+        else:self.loading.busy(text)
     def seek(self,position):
         self.player.pause();self.manual=True;self.decode(position)
     def step(self,steps):
@@ -224,6 +247,7 @@ class VideoEditor(QDialog):
     def done(self,result):
         if not self.stopped.is_set():
             self.stopped.set();self.waveform.close_waveform()
+            if self.frame_job is None:self.reader.close()
             self.player.stop();self.player.setVideoSink(None);self.player.setAudioOutput(None)
             try:self.sink.videoFrameChanged.disconnect(self.video_frame)
             except (RuntimeError,TypeError):pass

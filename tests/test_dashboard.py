@@ -52,6 +52,15 @@ class DashboardTests(unittest.TestCase):
     def cleanup(self):
         self.c.timer.stop();self.c.tray.hide();self.c.wheel.close();self.c.shelf.close();self.c.tasks.close()
         if self.c.dashboard:self.c.dashboard.close()
+    def test_hidden_dashboard_pages_are_built_only_when_requested(self):
+        self.c.show_dashboard();d=self.c.dashboard
+        self.assertIsNone(d._guide);self.assertIsNone(d._settings_panel);self.assertIsNone(d._updates_panel)
+        self.c.update_checked({'notes':'Background notes','version':'99.0.0','newer':False},'')
+        self.assertIsNone(d._updates_panel)
+        d.open_page('Updates');self.assertEqual(d.updates_panel.notes.toPlainText(),'Background notes')
+        d.open_page('Einstellungen');self.assertIsNotNone(d._settings_panel);self.assertIsNone(d._guide)
+        settings=d.settings_panel;d.open_page('Willkommen');d.open_page('Einstellungen');self.assertIs(d.settings_panel,settings)
+        d.open_page('Anleitung');self.assertIsNotNone(d._guide)
     def test_modeless_persistent_dashboard_reopens_and_callbacks_do_not_close_it(self):
         self.c.show_dashboard();d=self.c.dashboard
         self.assertTrue(d.isVisible());self.assertIsNone(self.app.activeModalWidget())

@@ -1,5 +1,7 @@
 from pathlib import Path
-import math
+import math,threading
+from preview_runtime import preview_pool
+from loading_ui import LoadingIndicator
 from PIL import Image,ImageOps
 from PySide6.QtCore import Qt,QRectF,QPointF,Signal,QObject,QRunnable,QThreadPool,QTimer
 from PySide6.QtGui import QImage,QPixmap,QPainter,QColor,QPen,QPainterPath
@@ -19,8 +21,10 @@ class CropCanvas(QWidget):
     def __init__(self):
         super().__init__();self.setMinimumSize(420,300);self.setMouseTracking(True)
         self.image=None;self.pixmap=None;self.selection=None;self.mode=None;self.anchor=None;self.ratio=0
-    def set_image(self,image):
-        self.image=image;preview=image.copy();preview.thumbnail((1800,1200));self.pixmap=QPixmap.fromImage(pil_qimage(preview));self.selection=None;self.update();self.changed.emit()
+    def set_image(self,image,preview=None):
+        self.image=image
+        if preview is None:preview=image.copy();preview.thumbnail((1800,1200))
+        self.pixmap=QPixmap.fromImage(pil_qimage(preview));self.selection=None;self.update();self.changed.emit()
     def image_rect(self):
         if not self.image:return QRectF()
         scale=min((self.width()-24)/self.image.width,(self.height()-24)/self.image.height)
@@ -79,15 +83,30 @@ class PhotoPreviewJob(QRunnable):
         try:self.signals.done.emit(pil_qimage(adjust_photo(self.image,self.options)),'')
         except Exception as error:self.signals.done.emit(None,str(error))
 
+class PhotoLoadSignals(QObject):done=Signal(object,str);phase=Signal(str)
+
+class PhotoLoadJob(QRunnable):
+    def __init__(self,path,stopped):super().__init__();self.path=path;self.stopped=stopped;self.signals=PhotoLoadSignals()
+    def run(self):
+        try:
+            if self.stopped.is_set():return
+            self.signals.phase.emit('Bild wird geladen …')
+            with Image.open(self.path) as source:
+                if getattr(source,'n_frames',1)>1:raise ValueError('Bitte ein Einzelbild wählen.')
+                if source.width*source.height>80_000_000:raise ValueError('Bild überschreitet 80 Megapixel.')
+                image=ImageOps.exif_transpose(source).convert('RGBA')
+            if self.stopped.is_set():return
+            self.signals.phase.emit('Vorschau wird vorbereitet …')
+            preview=image.copy();preview.thumbnail((1600,1100))
+            if not self.stopped.is_set():self.signals.done.emit((image,preview),'')
+        except Exception as error:
+            if not self.stopped.is_set():self.signals.done.emit(None,str(error))
+
 class ImageEditor(QDialog):
     def __init__(self,path,submit,parent=None):
-        super().__init__(parent);self.path=str(path);self.submit=submit;self.angle=0;self.closed=False;self.job=None;self.preview_revision=0;self.original_held=False
+        super().__init__(parent);self.path=str(path);self.submit=submit;self.angle=0;self.closed=False;self.job=None;self.preview_revision=0;self.original_held=False;self.stopped=threading.Event();self.load_job=None
         self.setWindowTitle('OrbitDrop · Bild bearbeiten · '+Path(path).name);self.resize(1140,780);self.setStyleSheet(EDITOR_STYLE)
-        with Image.open(path) as original:
-            if getattr(original,'n_frames',1)>1:raise ValueError('Bitte ein Einzelbild wählen.')
-            if original.width*original.height>80_000_000:raise ValueError('Bild überschreitet 80 Megapixel.')
-            self.original=ImageOps.exif_transpose(original).convert('RGBA')
-        self.image=self.original;self.processed=None;self.preview_source=self.image.copy();self.preview_source.thumbnail((1600,1100))
+        self.original=None;self.image=None;self.processed=None;self.preview_source=None
         layout=QVBoxLayout(self);layout.setContentsMargins(22,18,22,18);layout.setSpacing(12)
         heading(layout,'Bild bearbeiten',Path(path).name+' · Ausschnitt, Farben und Größe · neue PNG-Kopie')
         body=QHBoxLayout();body.setSpacing(18);layout.addLayout(body,1)
@@ -95,6 +114,7 @@ class ImageEditor(QDialog):
         bar,row=toolbar();left.addWidget(bar)
         self.compare=action_button('Original halten','compare',tooltip='Gedrückt halten: unbearbeitetes Original vergleichen');self.compare.setObjectName('originalPreview');self.compare.pressed.connect(lambda:self.compare_original(True));self.compare.released.connect(lambda:self.compare_original(False));row.addWidget(self.compare)
         self.status=QLabel();self.status.setWordWrap(True);left.addWidget(self.status)
+        self.loading=LoadingIndicator();self.loading.busy('Bild wird geladen …');left.addWidget(self.loading)
         controls=QWidget();controls.setObjectName('editorControls');controls.setMinimumWidth(285);controls.setMaximumWidth(330)
         form=QFormLayout(controls);form.setContentsMargins(16,16,16,16);form.setSpacing(12);form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
         scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(controls);scroll.setMinimumWidth(305);scroll.setMaximumWidth(350);body.addWidget(scroll)
@@ -125,15 +145,33 @@ class ImageEditor(QDialog):
         self.gray.toggled.connect(self.changed)
         for field in (self.width,self.height):field.valueChanged.connect(self.update_status)
         self.keep_ratio.toggled.connect(self.update_status)
-        self.canvas.changed.connect(self.update_status);self.canvas.set_image(self.image);self.update_status()
+        self.canvas.changed.connect(self.update_status);self.update_status()
+        self.load_controls=(self.canvas,bar,scroll,reset);self.set_loaded_controls(False)
+        QTimer.singleShot(0,self.start_load)
         area=self.screen().availableGeometry();self.resize(min(1140,area.width()-40),min(780,area.height()-50))
+    def set_loaded_controls(self,enabled):
+        for widget in self.load_controls:widget.setEnabled(enabled)
+        self.save_button.setEnabled(enabled)
+    def start_load(self):
+        if self.closed:return
+        job=PhotoLoadJob(self.path,self.stopped);self.load_job=job
+        job.signals.phase.connect(self.loading.busy);job.signals.done.connect(self.loaded);preview_pool().start(job)
+    def loaded(self,result,error):
+        self.load_job=None
+        if self.closed:return
+        self.loading.finish()
+        if error:self.status.setText('Bild konnte nicht geöffnet werden: '+error);return
+        if result is None:return
+        self.original,self.preview_source=result;self.image=self.original
+        self.canvas.set_image(self.image,self.preview_source);self.set_loaded_controls(True);self.update_status()
     def options(self):return photo_settings({**{key:field.value() for key,field in self.fields.items()},'grayscale':self.gray.isChecked()})
     def changed(self,*unused):
+        if self.image is None:return
         self.preview_revision+=1;self.save_button.setEnabled(False);self.timer.start(120)
     def refresh(self):
-        if self.closed or self.job:return
+        if self.closed or self.job or self.image is None:return
         preview=self.preview_source.copy();revision=self.preview_revision
-        job=PhotoPreviewJob(preview,self.options());self.job=job;job.signals.done.connect(lambda result,error:self.ready(job,revision,result,error));QThreadPool.globalInstance().start(job)
+        job=PhotoPreviewJob(preview,self.options());self.job=job;job.signals.done.connect(lambda result,error:self.ready(job,revision,result,error));preview_pool().start(job)
     def ready(self,job,revision,result,error):
         self.job=None
         if self.closed:return
@@ -143,21 +181,25 @@ class ImageEditor(QDialog):
         if not self.original_held:self.canvas.pixmap=QPixmap.fromImage(result);self.canvas.update()
         self.save_button.setEnabled(True);self.update_status()
     def compare_original(self,held):
+        if self.image is None:return
         self.original_held=held
         if held:
             preview=self.preview_source;self.canvas.pixmap=QPixmap.fromImage(pil_qimage(preview))
         elif self.processed is not None:self.canvas.pixmap=QPixmap.fromImage(self.processed)
         self.canvas.update()
     def rotate(self,angle):
+        if self.image is None:return
         self.angle=(self.angle+angle)%360;self.image=self.image.rotate(-angle,expand=True);self.canvas.set_image(self.image);self.preview_source=self.image.copy();self.preview_source.thumbnail((1600,1100));self.processed=None;self.changed()
     def reset_crop(self):self.canvas.selection=None;self.canvas.update();self.update_status()
     def reset(self):
+        if self.image is None:return
         self.angle=0;self.image=self.original;self.canvas.set_image(self.image);self.preview_source=self.image.copy();self.preview_source.thumbnail((1600,1100));self.processed=None
         for key,field in self.fields.items():field.setValue(DEFAULTS[key])
         self.gray.setChecked(False);self.width.setValue(0);self.height.setValue(0);self.keep_ratio.setChecked(True);self.ratio.setCurrentIndex(0);self.changed()
     def set_ratio(self,ratio):self.canvas.ratio=ratio;self.reset_crop()
     def resize_options(self):return {'width':self.width.value(),'height':self.height.value(),'keep_ratio':self.keep_ratio.isChecked()}
     def update_status(self,*unused):
+        if self.image is None:self.status.setText('Das Bild lädt im Hintergrund. Schließen bricht den Vorgang ab.');return
         box=self.canvas.crop_box();width,height=(box[2]-box[0],box[3]-box[1]) if box else self.image.size
         values=self.resize_options();w,h=values['width'],values['height']
         if w or h:
@@ -166,6 +208,7 @@ class ImageEditor(QDialog):
             else:width,height=w or width,h or height
         self.status.setText(f'Ausgabe: {width} × {height} Pixel · Drehung: {self.angle}° · Ausschnitt ziehen, Ecken ändern oder Auswahl verschieben')
     def save(self):
+        if self.image is None or self.job or self.closed:return
         self.submit('Bild bearbeiten',[self.path],{'angle':self.angle,'crop':self.canvas.crop_box(),'adjustments':self.options(),'resize':self.resize_options()});self.accept()
     def done(self,result):
-        self.closed=True;self.timer.stop();super().done(result)
+        self.closed=True;self.stopped.set();self.timer.stop();super().done(result)

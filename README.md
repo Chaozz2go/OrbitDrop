@@ -258,6 +258,8 @@ Mehrdeutige Belegungen wie Shift und Shift+F9 werden abgewiesen. Strg+Alt bleibt
 
 Ausblendungen gelten im Kreis und in der Aktionssuche, auch für Favoriten. Falls du Einstellungen oder alle Menüpunkte ausgeblendet hast: **Rechtsklick auf das OrbitDrop-Symbol im Windows-Infobereich → Dashboard → Einstellungen → Alle Menüpunkte wieder anzeigen.** Änderungen gelten beim nächsten Öffnen des Kreises.
 
+Bilder laden im Editor im Hintergrund. Die Ladeanzeige nennt die aktuelle Phase; Videoleiste und Audiospur zeigen messbaren Fortschritt. Sobald die Vorschau bereit ist, kannst du bereits arbeiten, während weitere Spuren laden. Schließen bricht laufende Vorschauarbeiten ab. Videoleisten und Wellenformen werden innerhalb der Sitzung begrenzt zwischengespeichert und bei Dateiänderungen neu berechnet.
+
 ### 13. Aufträge, Fehler und Updates
 
 **Alt → Aufträge** zeigt Fortschritt, fertige Ergebnisse und Fehler. Auftrag auswählen, **Ergebnis öffnen**, **Ordner anzeigen**, **Details** oder **Abbrechen** verwenden. **Verlauf leeren** entfernt nur Einträge, keine Ergebnisdateien.

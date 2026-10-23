@@ -34,7 +34,9 @@ def self_test(report):
             pdf=root/'source.pdf'
             with pymupdf.open() as doc:doc.new_page().insert_text((20,40),'OrbitDrop');doc.save(pdf)
             with pymupdf.open(pdf) as doc:results['pdf']='OrbitDrop' in doc[0].get_text()
-            editor=ImageEditor(source,lambda *args:None);editor.show();QApplication.processEvents();results['qt']=editor.canvas.pixmap is not None;editor.close()
+            editor=ImageEditor(source,lambda *args:None);editor.show();deadline=time.monotonic()+15
+            while editor.canvas.pixmap is None and time.monotonic()<deadline:QApplication.processEvents();time.sleep(.01)
+            results['qt']=editor.canvas.pixmap is not None;editor.close()
             if not backend('ffmpeg') or not backend('ffprobe'):raise RuntimeError('FFmpeg/FFprobe fehlen im Windows-Paket.')
             video=root/'video.mp4';command=[backend('ffmpeg'),'-v','error','-f','lavfi','-i','color=c=blue:s=96x64:r=10:d=1','-f','lavfi','-i','sine=frequency=440:duration=1','-c:v','libx264','-c:a','aac','-shortest',str(video)]
             result=run(command,timeout=30)

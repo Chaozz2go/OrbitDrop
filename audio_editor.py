@@ -1,7 +1,8 @@
 """Waveform-based audio cutting with the shared cut model."""
 from pathlib import Path
 import threading
-from PySide6.QtCore import Qt,QUrl
+from PySide6.QtCore import Qt,QUrl,QTimer
+from loading_ui import LoadingIndicator
 from PySide6.QtGui import QShortcut,QKeySequence
 from PySide6.QtMultimedia import QMediaPlayer,QAudioOutput
 from PySide6.QtWidgets import QDialog,QWidget,QVBoxLayout,QHBoxLayout,QLabel,QPushButton,QListWidget,QListWidgetItem,QCheckBox,QMessageBox,QSplitter
@@ -18,6 +19,8 @@ class AudioEditor(QDialog):
         self.setWindowTitle('OrbitDrop · Audioschnitt · '+Path(path).name);self.resize(1050,780);self.setStyleSheet(EDITOR_STYLE)
         layout=QVBoxLayout(self);layout.setSpacing(10);heading(layout,'Audioschnitt',Path(path).name+' · Leertaste: Start/Pause · C: Schnitt · Entf: Abschnitt entfernen')
         self.timeline=Waveform(self,large=True);self.waveform=self.timeline;self.timeline_view=TimelineView([self.timeline]);layout.addWidget(self.timeline_view,2);self.timeline.seekRequested.connect(self.seek);self.timeline.segmentSelected.connect(self.select_segment);self.timeline.loaded.connect(self.waveform_loaded)
+        self.loading=LoadingIndicator();self.loading.busy('Audio wird geöffnet …');layout.addWidget(self.loading)
+        self.timeline.loadingProgress.connect(lambda value:self.loading.progress(value,f'Audiospur wird berechnet · {value} %'));self.timeline.finished.connect(self.loading.finish)
         self.undo_button=action_button('','undo',tooltip='Schnittschritt rückgängig · Strg+Z');self.undo_button.clicked.connect(lambda:self.history_step(False));self.timeline_view.controls.addWidget(self.undo_button)
         self.redo_button=action_button('','rotate_right',tooltip='Schnittschritt wiederholen · Strg+Y');self.redo_button.clicked.connect(lambda:self.history_step(True));self.timeline_view.controls.addWidget(self.redo_button)
         bar,controls=toolbar();layout.addWidget(bar)
@@ -46,8 +49,11 @@ class AudioEditor(QDialog):
         self.player.durationChanged.connect(self.duration_changed);self.player.positionChanged.connect(self.update_time);self.player.errorOccurred.connect(lambda error,message:self.status.setText('Wiedergabe: '+message) if not self.stopped.is_set() else None)
         for key,callback in [('Ctrl+Z',lambda:self.history_step(False)),('Ctrl+Y',lambda:self.history_step(True)),('Space',self.toggle_play),('Left',lambda:self.step(-.1)),('Right',lambda:self.step(.1)),('C',self.add_cut),('Delete',lambda:self.set_selected_keep(False)),('Shift+Delete',self.remove_cut)]:
             shortcut=QShortcut(QKeySequence(key),self);shortcut.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut);shortcut.setAutoRepeat(key in ('Left','Right'));shortcut.activated.connect(callback);self.shortcuts.append(shortcut)
-        self.player.setSource(QUrl.fromLocalFile(self.path));self.timeline.load(self.path,self.stopped)
+        QTimer.singleShot(0,self.start_load)
         area=self.screen().availableGeometry();self.resize(min(1050,area.width()-40),min(780,area.height()-50))
+    def start_load(self):
+        if self.stopped.is_set():return
+        self.player.setSource(QUrl.fromLocalFile(self.path));self.timeline.load(self.path,self.stopped)
     def waveform_loaded(self,result):
         if not self.model and result['duration']>0:self.duration_changed(round(result['duration']*1000))
     def duration_changed(self,milliseconds):

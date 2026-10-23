@@ -40,12 +40,12 @@ class Dashboard(QWidget):
         self.pages=QStackedWidget();row.addWidget(self.pages,1)
         self.home=self.home_page();self.pages.addWidget(self.home)
         self.setup=self.setup_page();self.pages.addWidget(self.setup)
-        self.guide=GuidePanel(self.prefs,self);self.guide.back_requested.connect(lambda:self.open_page(0));self.pages.addWidget(self.guide)
-        self.settings_container=QWidget();self.settings_layout=QVBoxLayout(self.settings_container);self.settings_layout.setContentsMargins(0,0,0,0);self.pages.addWidget(self.settings_container);self.load_settings()
-        self.updates_panel=UpdatePanel(self.prefs,controller.install_update,self);self.updates_panel.back_requested.connect(lambda:self.open_page(0));self.pages.addWidget(self.updates_panel)
-        self.updates_panel.auto.toggled.connect(lambda enabled:self.settings_panel.updates.setChecked(self.prefs.values['check_updates']))
+        self._guide=None;self._settings_panel=None;self._updates_panel=None;self._update_result=getattr(controller,'last_update',None)
+        self.guide_container=QWidget();self.guide_layout=QVBoxLayout(self.guide_container);self.guide_layout.setContentsMargins(0,0,0,0);self.pages.addWidget(self.guide_container)
+        self.settings_container=QWidget();self.settings_layout=QVBoxLayout(self.settings_container);self.settings_layout.setContentsMargins(0,0,0,0);self.pages.addWidget(self.settings_container)
+        self.updates_container=QWidget();self.updates_layout=QVBoxLayout(self.updates_container);self.updates_layout.setContentsMargins(0,0,0,0);self.pages.addWidget(self.updates_container)
         self.pages.addWidget(self.management_page())
-        self.nav.currentRowChanged.connect(self.pages.setCurrentIndex);self.nav.setCurrentRow(0)
+        self.nav.currentRowChanged.connect(self.page_changed);self.nav.setCurrentRow(0)
         self.progress=QProgressBar();self.progress.setRange(0,100);self.progress.setValue(0);self.progress.hide();layout.addWidget(self.progress)
         self.status=QLabel('OrbitDrop bleibt aktiv, wenn du das Dashboard schließt.');self.status.setWordWrap(True);layout.addWidget(self.status)
         bottom=QHBoxLayout();layout.addLayout(bottom)
@@ -53,6 +53,33 @@ class Dashboard(QWidget):
         bottom.addStretch();self.cancel=action_button('Einrichtung abbrechen');self.cancel.clicked.connect(controller.cancel_setup);self.cancel.hide();bottom.addWidget(self.cancel)
         close=action_button('Dashboard schließen');close.clicked.connect(self.close);bottom.addWidget(close)
         self.refresh_bindings();self.update_results(controller.backend_status)
+    @property
+    def guide(self):
+        if self._guide is None:
+            self._guide=GuidePanel(self.prefs,self);self._guide.back_requested.connect(lambda:self.open_page(0));self.guide_layout.addWidget(self._guide)
+        return self._guide
+    @property
+    def settings_panel(self):
+        if self._settings_panel is None:self.load_settings()
+        return self._settings_panel
+    @property
+    def updates_panel(self):
+        if self._updates_panel is None:
+            panel=UpdatePanel(self.prefs,self.controller.install_update,self);self._updates_panel=panel
+            panel.back_requested.connect(lambda:self.open_page(0));panel.auto.toggled.connect(self.update_auto_changed);self.updates_layout.addWidget(panel)
+            if self._update_result is not None:panel.ready(*self._update_result)
+        return self._updates_panel
+    def receive_update_result(self,info,error):
+        self._update_result=(info,error);panel=self._updates_panel
+        if panel is not None and panel.job is None and panel.installer is None:
+            panel.downloading=False;panel.ready(info,error)
+    def update_auto_changed(self,*unused):
+        if self._settings_panel is not None:self._settings_panel.updates.setChecked(self.prefs.values['check_updates'])
+    def page_changed(self,index):
+        if index==2:self.guide
+        elif index==3:self.settings_panel
+        elif index==4:self.updates_panel
+        self.pages.setCurrentIndex(index)
     def scroll_page(self):
         scroll=QScrollArea();scroll.setWidgetResizable(True);body=QWidget();layout=QVBoxLayout(body);scroll.setWidget(body);return scroll,layout
     def label(self,layout,text):
@@ -106,14 +133,16 @@ class Dashboard(QWidget):
         if isinstance(page,str):page=self.PAGES.index(page)
         self.nav.setCurrentRow(page)
     def load_settings(self):
-        old=getattr(self,'settings_panel',None)
+        old=self._settings_panel
         if old:self.settings_layout.removeWidget(old);old.hide();old.deleteLater()
-        self.settings_panel=SettingsPanel(self.prefs,self);self.settings_panel.saved.connect(self.settings_saved)
+        self._settings_panel=SettingsPanel(self.prefs,self);self._settings_panel.saved.connect(self.settings_saved)
         self.settings_panel.reset_requested.connect(lambda:QTimer.singleShot(0,self.load_settings));self.settings_layout.addWidget(self.settings_panel)
     def settings_saved(self):
         self.controller.refresh_settings();self.refresh_bindings();self.at_start.blockSignals(True);self.at_start.setChecked(self.prefs.values['show_dashboard']);self.at_start.blockSignals(False)
-        self.updates_panel.auto.blockSignals(True);self.updates_panel.auto.setChecked(self.prefs.values['check_updates']);self.updates_panel.auto.blockSignals(False)
+        if self._updates_panel is not None:
+            self._updates_panel.auto.blockSignals(True);self._updates_panel.auto.setChecked(self.prefs.values['check_updates']);self._updates_panel.auto.blockSignals(False)
         self.status.setText('Einstellungen gespeichert. Das Dashboard bleibt geöffnet.')
+        if self._guide is None:return
         index=self.guide.topics.currentRow();query=self.guide.query.text()
         from help_ui import handbook
         self.guide.sections=handbook(self.prefs.values,self.prefs.root);self.guide.show_section(index);self.guide.filter(query)
@@ -121,7 +150,9 @@ class Dashboard(QWidget):
         v=self.prefs.values
         self.keys.setText('<span style="color:#8ce8c9"><b>'+html.escape(v['convert_key'])+' · Konvertieren</b></span> &nbsp; <span style="color:#ffbe8a"><b>'+html.escape(v['edit_key'])+' · Bearbeiten</b></span> &nbsp; <span style="color:#83baff"><b>'+html.escape(v['files_key'])+' · Tools</b></span>')
     def save_start(self,enabled):
-        try:self.prefs.update(dict(self.prefs.values,show_dashboard=enabled));self.settings_panel.dashboard_start.setChecked(enabled)
+        try:
+            self.prefs.update(dict(self.prefs.values,show_dashboard=enabled))
+            if self._settings_panel is not None:self._settings_panel.dashboard_start.setChecked(enabled)
         except (OSError,ValueError) as error:
             self.at_start.blockSignals(True);self.at_start.setChecked(self.prefs.values['show_dashboard']);self.at_start.blockSignals(False);self.status.setText('Einstellung konnte nicht gespeichert werden: '+str(error))
     def set_checking(self):

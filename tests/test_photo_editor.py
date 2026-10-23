@@ -34,6 +34,7 @@ class PhotoEditorTests(unittest.TestCase):
         self.assertEqual(set(self.root.iterdir()),before)
     def test_preview_preserves_crop_and_reset_clears_changes(self):
         calls=[];editor=ImageEditor(self.source,lambda *args:calls.append(args));self.addCleanup(editor.close)
+        self.wait(lambda:editor.image is not None)
         editor.canvas.selection=QRectF(2,2,30,20);editor.fields['saturation'].setValue(0);editor.fields['brightness'].setValue(1.3)
         self.wait(lambda:editor.processed is not None and editor.save_button.isEnabled())
         self.assertEqual(editor.canvas.crop_box(),(2,2,32,22));color=editor.processed.pixelColor(10,10);self.assertEqual(color.red(),color.green());self.assertEqual(color.alpha(),96)

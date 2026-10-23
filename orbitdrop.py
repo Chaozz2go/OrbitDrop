@@ -698,7 +698,8 @@ class Controller:
         from updater import verify_installer
         if sys.platform!='win32':raise OSError('Setup kann nur unter Windows gestartet werden.')
         if self.downloader_window and self.downloader_window.has_pending():raise ValueError('Bitte zuerst die Downloads abschließen oder die Warteschlange abbrechen.')
-        if self.setup_job or self.jobs or self.tasks.has_running() or self.pool.activeThreadCount():raise ValueError('Noch Hintergrundaufträge aktiv. Bitte kurz warten oder laufende Aufträge beenden.')
+        from preview_runtime import previews_running
+        if self.setup_job or self.jobs or self.tasks.has_running() or self.pool.activeThreadCount() or previews_running():raise ValueError('Noch Hintergrundaufträge aktiv. Bitte kurz warten oder laufende Aufträge beenden.')
         path=verify_installer(installer,self.prefs.root);subprocess.Popen([str(path)]);QTimer.singleShot(100,self.app.quit)
     def auto_update_check(self):
         if self.update_job or not self.prefs.values.get('check_updates',True):return
@@ -706,10 +707,9 @@ class Controller:
         from updater import latest_release
         self.update_job=UpdateJob(lambda progress:latest_release());self.update_job.signals.done.connect(self.update_checked);self.pool.start(self.update_job)
     def update_checked(self,info,error):
-        self.update_job=None
+        self.update_job=None;self.last_update=(info,error)
         dashboard=getattr(self,'dashboard',None)
-        if dashboard is not None and dashboard.updates_panel.job is None and dashboard.updates_panel.installer is None:
-            dashboard.updates_panel.downloading=False;dashboard.updates_panel.ready(info,error)
+        if dashboard is not None:dashboard.receive_update_result(info,error)
         if info and info['newer']:self.tray.showMessage('OrbitDrop-Update',info['version']+' verfügbar. Dashboard → Updates.')
     def search_actions(self,files=None,kind=None):
         from action_search import ActionSearchDialog
@@ -741,7 +741,7 @@ class Controller:
         if self.backend_check:self.dashboard.set_checking()
 
     def quit(self):
-        if self.dashboard:self.dashboard.updates_panel.stopped.set()
+        if self.dashboard and self.dashboard._updates_panel is not None:self.dashboard._updates_panel.stopped.set()
         if self.downloader_window:self.downloader_window.stop_for_exit()
         if self.setup_job:self.setup_job.control.cancel()
         if self.tasks.has_running():

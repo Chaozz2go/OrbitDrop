@@ -1,4 +1,5 @@
 """Bounded-memory audio peaks and shared, interactive waveform timeline."""
+from preview_runtime import preview_pool,preview_cache,source_key
 from array import array
 import math,threading
 from PySide6.QtCore import Qt,QObject,Signal,QRunnable,QThreadPool,QRectF
@@ -61,29 +62,35 @@ class WaveJob(QRunnable):
     def __init__(self,path,duration,stopped):super().__init__();self.path,self.duration,self.stopped=path,duration,stopped;self.signals=WaveSignals()
     def run(self):
         try:
-            result=extract_waveform(self.path,self.duration,stopped=self.stopped,progress=self.signals.progress.emit)
+            key=source_key('waveform',self.path,self.duration)
+            result=preview_cache.get(key)
+            if result is None:
+                result=extract_waveform(self.path,self.duration,stopped=self.stopped,progress=self.signals.progress.emit)
+                if not self.stopped.is_set() and source_key('waveform',self.path,self.duration)==key:
+                    preview_cache.put(key,result,512+sum(len(lane)*40 for lane in result['peaks']))
+            if not self.stopped.is_set():self.signals.progress.emit(100)
             if not self.stopped.is_set():self.signals.done.emit(result,'')
         except WaveformCancelled:pass
         except Exception as error:
             if not self.stopped.is_set():self.signals.done.emit(None,str(error))
 
 class Waveform(QWidget):
-    seekRequested=Signal(float);segmentSelected=Signal(int);loaded=Signal(object)
+    seekRequested=Signal(float);segmentSelected=Signal(int);loaded=Signal(object);loadingProgress=Signal(int);finished=Signal()
     def __init__(self,owner,large=False):
         super().__init__();self.owner=owner;self.position=0.;self.selected_segment=-1;self.dragging=False;self.peaks=[];self.job=None;self.closed=False;self.message='Audiospur wird geladen …';self.stopped=None;self.large=large;self.display_gain=1.
         self.setMinimumHeight(190 if large else 88);self.setMouseTracking(True);self.setFocusPolicy(Qt.FocusPolicy.ClickFocus);self.setToolTip('Abschnitt anklicken · Position ziehen · Entf: ausgewählten Abschnitt entfernen')
         if not large:self.setMaximumHeight(100)
     def load(self,path,stopped,duration=None):
         if self.job or self.closed:return
-        self.stopped=stopped;self.job=WaveJob(path,duration,stopped);self.job.signals.done.connect(self.ready);self.job.signals.progress.connect(self.progress);QThreadPool.globalInstance().start(self.job)
+        self.stopped=stopped;self.job=WaveJob(path,duration,stopped);self.job.signals.done.connect(self.ready);self.job.signals.progress.connect(self.progress);preview_pool(True).start(self.job)
     def progress(self,percent):
         if self.closed:return
-        self.message=f'Audiospur wird berechnet … {percent} %';self.update()
+        self.message=f'Audiospur wird berechnet … {percent} %';self.loadingProgress.emit(percent);self.update()
     def ready(self,result,error):
         self.job=None
         if self.closed or self.stopped and self.stopped.is_set():return
-        if error:self.message='Wellenform nicht verfügbar: '+error;self.update();return
-        self.peaks=result['peaks'];peak=max((max(lane,default=0.) for lane in self.peaks),default=0.);self.display_gain=min(16.,.9/peak) if peak>1e-6 else 1.;self.message='Keine Audiospur vorhanden' if not self.peaks else 'Audiospur · L / R' if len(self.peaks)==2 else 'Audiospur';self.message+=(' · Anzeige skaliert' if self.peaks and self.display_gain>1.05 else '');self.loaded.emit(result);self.update()
+        if error:self.message='Wellenform nicht verfügbar: '+error;self.finished.emit();self.update();return
+        self.peaks=result['peaks'];peak=max((max(lane,default=0.) for lane in self.peaks),default=0.);self.display_gain=min(16.,.9/peak) if peak>1e-6 else 1.;self.message='Keine Audiospur vorhanden' if not self.peaks else 'Audiospur · L / R' if len(self.peaks)==2 else 'Audiospur';self.message+=(' · Anzeige skaliert' if self.peaks and self.display_gain>1.05 else '');self.loaded.emit(result);self.finished.emit();self.update()
     def close_waveform(self):self.closed=True
     def setValue(self,value):
         if not self.dragging:self.position=max(0,min(1,value/100000));self.update()
