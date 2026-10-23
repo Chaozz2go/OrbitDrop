@@ -21,11 +21,11 @@ class DownloadWindowTests(unittest.TestCase):
         controller=Controller.__new__(Controller);controller.prefs=Preferences(self.root/'prefs');controller.submit=Mock();folder=self.root/'downloads';folder.mkdir()
         controller.submit_download('https://example.org/v','audio',str(folder),0)
         prefs=Preferences(controller.prefs.root);self.assertEqual(prefs.values['download_dir'],str(folder.resolve()));self.assertEqual(prefs.values['output_dir'],'');controller.submit.assert_called_once()
-        controller.tasks=QWidget();self.addCleanup(controller.tasks.close);controller.show_tasks=Mock()
-        with patch('download_ui.DownloadDialog') as dialog:
-            dialog.return_value.result.return_value=0;controller.download_dialog()
-            self.assertEqual(dialog.call_args.args[2],str(folder.resolve()));self.assertEqual(dialog.call_args.kwargs['parent'],controller.tasks)
-        self.app.processEvents()
+        controller.downloader_window=None
+        with patch('download_manager.DownloadManager') as manager,patch('orbitdrop.present') as show:
+            controller.download_dialog()
+            manager.assert_called_once_with(controller);manager.return_value.open_link.assert_called_once_with(None,'audio');show.assert_called_once_with(manager.return_value)
+            controller.download_dialog();manager.assert_called_once()
     def test_new_task_restores_minimized_history(self):
         window=TasksWindow(Preferences(self.root/'prefs'));self.addCleanup(window.close);window.showMinimized();self.app.processEvents();self.assertTrue(window.isMinimized())
         job=Mock();job.control.cancelled.is_set.return_value=False;window.add(job,'Neuer Download');self.app.processEvents();self.assertFalse(window.isMinimized());self.assertEqual(window.tree.currentItem().text(0),'Neuer Download')

@@ -93,6 +93,11 @@ class Dashboard(QWidget):
             box=self.card(layout,title,text);row=QHBoxLayout();box.addLayout(row)
             for name,callback in actions:
                 button=action_button(name);button.clicked.connect(lambda checked=False,cb=callback:cb());row.addWidget(button)
+        box=self.card(layout,'Bedienung & weitere Werkzeuge','Kreis und Dateiablage öffnen oder die Tastenzugänge vorübergehend pausieren. Im Tray bleiben nur Dashboard, Downloader und Beenden.')
+        row=QHBoxLayout();box.addLayout(row)
+        for name,callback in [('Aktionskreis',lambda:self.controller.wheel.open()),('Dateiablage',lambda:self.controller.shelf.open()),('Werkzeuge',self.controller.tools)]:
+            button=action_button(name);button.clicked.connect(lambda checked=False,cb=callback:cb());row.addWidget(button)
+        self.pause_keys=QCheckBox('Tastenzugänge pausieren');self.pause_keys.setChecked(getattr(self.controller,'shortcuts_paused',False));self.pause_keys.toggled.connect(self.controller.pause_shortcuts);box.addWidget(self.pause_keys)
         layout.addStretch();return page
     def open_page(self,page=0):
         if isinstance(page,str):page=self.PAGES.index(page)

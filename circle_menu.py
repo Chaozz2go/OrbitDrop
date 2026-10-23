@@ -49,7 +49,8 @@ def direct_actions(files,kind,formats,hidden=(),files_only=False,presets=(),work
     if files:actions+=['tool:'+action for action in available_file_actions(files)]
     from menu_visibility import APP_IDS
     actions+=['app:'+key for key in APP_IDS]
-    return actions
+    from menu_visibility import REMOVED_RADIAL
+    return [key for key in actions if key not in REMOVED_RADIAL]
 
 
 def direct_color(key):

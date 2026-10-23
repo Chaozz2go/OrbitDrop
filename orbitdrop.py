@@ -494,7 +494,7 @@ class Controller:
         self.selection_job=None;self.selection_pending=False;self.selection_revision=0;self.selection_origin=None
         from activation_guard import ActivationGuard
         self.activation_guard=ActivationGuard();self.shortcuts_paused=False;self.update_job=None
-        self.dashboard=None;self.setup_job=None
+        self.dashboard=None;self.setup_job=None;self.downloader_window=None
         self.backend_check=None
         self.backend_status=[]
         self.backend_missing=[]
@@ -516,21 +516,9 @@ class Controller:
         self.tray.setToolTip('OrbitDrop · Tastenzugänge pausiert' if self.shortcuts_paused else 'OrbitDrop · '+shortcut_hint(self.prefs.values))
         menu = QMenu()
         for label, callback in [('Dashboard',lambda:self.show_dashboard()),
-                                ('Aktionskreis', lambda: self.wheel.open()),
-                                ('Konvertieren', lambda: self.wheel.open(mode='convert')),
-                                ('Bearbeiten', lambda: self.wheel.open(mode='edit')),
-                                ('Tools / Dateiaktionen', lambda: self.wheel.open(mode='files')),
-                                ('Dateiablage öffnen', lambda: self.shelf.open()),
-                                ('Aufträge & Verlauf', self.show_tasks),
-                                ('Einstellungen', self.settings),
-                                ('Updates', self.updates),
-                                ('Werkzeuge: Bilder / PDF / Video', self.tools),
-                                ('Konverter prüfen / einrichten', self.media_status),
-                                ('Anleitung', self.help), ('Beenden', self.quit)]:
-            action = QAction(label, menu)
-            action.triggered.connect(callback)
-            menu.addAction(action)
-        pause=QAction('Tastenzugänge pausieren',menu);pause.setCheckable(True);pause.toggled.connect(self.pause_shortcuts);menu.insertAction(menu.actions()[-1],pause)
+                                ('Audio/Video-Downloader',lambda:self.download_dialog()),
+                                ('Beenden',self.quit)]:
+            action=QAction(label,menu);action.triggered.connect(callback);menu.addAction(action)
         self.tray.setContextMenu(menu)
         self.tray.activated.connect(self.activated)
         self.tray.show()
@@ -546,7 +534,7 @@ class Controller:
 
     def activated(self, reason):
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
-            self.wheel.open()
+            self.show_dashboard()
 
     def pause_shortcuts(self,paused):
         self.shortcuts_paused=paused;self.selection_pending=False;self.selection_revision+=1
@@ -599,20 +587,22 @@ class Controller:
         if not context.selection or context.token!=self.selection_origin:return
         if url:self.wheel.open_link(url)
     def download_dialog(self,url=None,mode='audio'):
-        from download_ui import DownloadDialog
-        if self.tasks.isMinimized():present(self.tasks)
-        folder=self.prefs.values.get('download_dir') or self.prefs.values.get('output_dir','')
-        if folder and not Path(folder).is_dir():folder=''
-        dialog=DownloadDialog(url,mode,folder,self.submit_download,parent=self.tasks)
-        QTimer.singleShot(0,lambda:present(dialog))
-        dialog.exec()
-        if dialog.result():QTimer.singleShot(0,self.show_tasks)
-    def submit_download(self,url,mode,folder,height,entries=None):
+        if getattr(self,'downloader_window',None) is None:
+            from download_manager import DownloadManager
+            self.downloader_window=DownloadManager(self)
+            area=(QApplication.screenAt(QCursor.pos()) or QApplication.primaryScreen()).availableGeometry()
+            self.downloader_window.resize(min(1130,area.width()-30),min(800,area.height()-45))
+        self.downloader_window.open_link(url,mode);present(self.downloader_window)
+    def submit_download(self,url,mode,folder,height,entries=None,show_tasks=True,observer=None):
         if entries is not None:
             if not entries or len(entries)>10000 or any(not media_link(entry.get('url')) or not entry.get('available') for entry in entries):raise ValueError('Bitte verfügbare Playlist-Titel auswählen.')
             entries=[dict(entry) for entry in entries]
+        if not media_link(url) or mode not in ('audio','video') or not Path(folder).is_dir():raise ValueError('Bitte einen gültigen Link, Audio/Video und einen vorhandenen Ordner wählen.')
         self.prefs.update(dict(self.prefs.values,download_dir=str(Path(folder).resolve())))
-        self.submit(DownloadJob(url,mode,folder,height,entries),'Download · '+('Audio' if mode=='audio' else 'Video')+(f' · {len(entries)} Titel' if entries is not None else ''))
+        job=DownloadJob(url,mode,folder,height,entries)
+        if observer:observer(job)
+        self.submit(job,'Download · '+('Audio' if mode=='audio' else 'Video')+(f' · {len(entries)} Titel' if entries is not None else ''),show=show_tasks)
+        return job
 
     def show_tasks(self):present(self.tasks)
     def tools(self,files=None,action=None):
@@ -699,6 +689,7 @@ class Controller:
         import subprocess
         from updater import verify_installer
         if sys.platform!='win32':raise OSError('Setup kann nur unter Windows gestartet werden.')
+        if self.downloader_window and self.downloader_window.has_pending():raise ValueError('Bitte zuerst die Downloads abschließen oder die Warteschlange abbrechen.')
         if self.setup_job or self.jobs or self.tasks.has_running() or self.pool.activeThreadCount():raise ValueError('Noch Hintergrundaufträge aktiv. Bitte kurz warten oder laufende Aufträge beenden.')
         path=verify_installer(installer,self.prefs.root);subprocess.Popen([str(path)]);QTimer.singleShot(100,self.app.quit)
     def auto_update_check(self):
@@ -739,14 +730,16 @@ class Controller:
         if self.backend_check:self.dashboard.set_checking()
 
     def quit(self):
+        if self.downloader_window:self.downloader_window.stop_for_exit()
         if self.setup_job:self.setup_job.control.cancel()
         if self.tasks.has_running():
             self.tasks.cancel_all();self.show_tasks()
             self.tray.showMessage('Abbruch angefordert','OrbitDrop beendet sich, sobald die laufenden Aufträge gestoppt sind.')
             self.quit_timer=QTimer();self.quit_timer.timeout.connect(lambda:self.app.quit() if not self.tasks.has_running() else None);self.quit_timer.start(200)
         else:self.app.quit()
-    def submit(self,job,title):
-        key=self.tasks.add(job,title);self.jobs.add(job)
+    def submit(self,job,title,show=True):
+        key=self.tasks.add(job,title) if show else self.tasks.add(job,title,show=False)
+        self.jobs.add(job)
         job.signals.progress.connect(lambda percent,message:self.tasks.progress(key,percent,message))
         job.signals.done.connect(lambda outputs,errors:self.job_done(job,key,outputs,errors))
         self.pool.start(job)

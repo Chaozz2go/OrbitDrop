@@ -22,10 +22,12 @@ def self_test(report):
             from types import SimpleNamespace
             prefs=Preferences(root/'prefs')
             c=SimpleNamespace(prefs=prefs,setup_job=None,backend_check=None,backend_status=[])
-            for name in ('cancel_setup','check_backends','setup_tool','refresh_settings','updates','show_tasks','circle_action','download_dialog'):setattr(c,name,lambda *args:None)
+            for name in ('cancel_setup','check_backends','setup_tool','refresh_settings','updates','show_tasks','circle_action','download_dialog','tools','pause_shortcuts'):setattr(c,name,lambda *args:None)
             dashboard=Dashboard(c);dashboard.show();QApplication.processEvents()
             results['dashboard']=dashboard.isVisible() and QApplication.activeModalWidget() is None
             dashboard.open_page(3);results['dashboard_settings']=dashboard.settings_panel.isVisible();dashboard.close()
+            from download_manager import DownloadManager
+            manager=DownloadManager(c);manager.show();QApplication.processEvents();results['download_manager']=manager.isVisible() and manager.composer is not None;manager.close()
             source=root/'image.png';Image.new('RGB',(160,100),'#447788').save(source)
             image=convert(source,'WEBP');results['image']=image.stat().st_size>0
             pdf=root/'source.pdf'

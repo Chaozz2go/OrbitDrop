@@ -68,7 +68,13 @@ Beim Start öffnet sich das Dashboard. Es bleibt offen, bis du es selbst schlie�
 
 Im Windows-Paket sind Python, Python-Pakete, FFmpeg/FFprobe und OCR-Sprachdaten bereits enthalten. LibreOffice und Pandoc sind optional für zusätzliche Dokumentformate. Deno, Node oder QuickJS ermöglicht das Lesen vieler YouTube-Player; „Einrichten“ installiert Deno. Die Prüfung lädt nichts herunter. **Einrichten** startet nur nach deinem Klick eine Installation: FFmpeg/OCR direkt, weitere Programme über den Windows-Paketmanager winget. Dabei gelten die Paket- und Quellenbedingungen; Windows kann Administratorrechte anfragen. Fehlt winget oder schlägt die Installation fehl, öffne die offizielle Downloadseite und prüfe danach erneut. Fortschritt, Abbruch und Fehler bleiben im Dashboard sichtbar.
 
-Das Radialmenü und seine Bedienung entsprechen weiterhin Version 0.20.0.
+Die Radialoptik und Tastenerkennung entsprechen Version 0.20.0. Im Alt-Menü entfallen Link einfügen, Anleitung, Debugging, Konverter und Kopieren. Das Tray enthält nur Dashboard, Audio/Video-Downloader und Beenden. Alle Verwaltungsfunktionen bleiben im Dashboard erreichbar, einschließlich Dateiablage, Werkzeuge und Tastenzugänge pausieren.
+
+## Audio/Video-Downloader · Links und Warteschlange
+
+Über **Tray → Audio/Video-Downloader** oder das Dashboard öffnest du die Download-Verwaltung. Mehrere Links links zeilenweise sammeln; einen Link auswählen und rechts prüfen. Audio/Video, Qualität, Speicherort und bei Playlists die gewünschten Titel festlegen, dann **zur Warteschlange hinzufügen**.
+
+Unter **Warteschlange & Verlauf** kannst du Fortschritt ansehen, wartende Aufträge umsortieren, abbrechen, erneut einreihen und Ergebnisse oder Zielordner öffnen. Downloads laufen nacheinander. Pausieren stoppt das Starten weiterer Aufträge; Schließen des Fensters lässt sie weiterlaufen. Die Warteschlange gilt für die laufende Sitzung. Abgeschlossene Aufträge bleiben im gespeicherten Verlauf; die App startet nach einem Neustart keine alten Downloads automatisch. Ein Entfernen aus der Liste löscht keine heruntergeladenen Dateien.
 
 ## Anleitung
 
@@ -80,7 +86,7 @@ Das Radialmenü und seine Bedienung entsprechen weiterhin Version 0.20.0.
 4. Auf das gewünschte Format oder Werkzeug ziehen und dort die Maustaste loslassen.
 5. Falls ein Einstellungsfenster erscheint, die Vorschau prüfen und die Aktion starten. Fortschritt und Ergebnisse stehen unter **Aufträge**.
 
-Du kannst während des Ziehens zwischen den drei Bereichen wechseln. Alternativ das OrbitDrop-Symbol neben der Uhr anklicken und eine Datei in den geöffneten Kreis ziehen. In der Startansicht wählst du zuerst Konvertieren, Bearbeiten oder Tools. **Esc** schließt den Kreis. **Zurück** führt zur Bereichsauswahl.
+Du kannst während des Ziehens zwischen den drei Bereichen wechseln. Alternativ das Dashboard öffnen, unter Verwaltung den Aktionskreis öffnen und eine Datei hineinziehen. In der Startansicht wählst du zuerst Konvertieren, Bearbeiten oder Tools. **Esc** schließt den Kreis. **Zurück** führt zur Bereichsauswahl.
 
 **Rechtsklick im Kreis** öffnet die Aktionssuche. Suche beispielsweise nach „schneiden“ oder „komprimieren“ und öffne die passende Aktion mit Enter. Über **Favorit setzen** stehen häufig genutzte Aktionen im jeweiligen Bereich zuerst und erhalten einen Stern.
 
@@ -214,7 +220,6 @@ Neue Downloads bringen die Auftragsansicht wieder nach vorn, auch wenn sie berei
 
 | Werkzeug | Funktion |
 | --- | --- |
-| Kopieren | Dateien/Ordner in die Windows-Zwischenablage legen und anschließend beispielsweise im Explorer einfügen |
 | Pfad | Vollständige Pfade als Text kopieren |
 | Explorer | Datei markieren oder zugehörigen Ordner öffnen |
 | Terminal | Terminal im ausgewählten bzw. enthaltenden Ordner öffnen |
@@ -240,7 +245,7 @@ Benennen gehört an das Ende. Gespeicherte Abläufe erscheinen für Bilder direk
 
 ### 12. Tasten und Menüs personalisieren
 
-**Alt → Einstellungen** oder Rechtsklick auf das Symbol neben der Uhr → **Einstellungen**.
+**Alt → Einstellungen** oder **Dashboard → Einstellungen**.
 
 - **Allgemein:** Die drei Bereichstasten frei auf unterstützte Einzeltasten oder Kombinationen legen, etwa F8, Strg+E und F9. Taste eingeben oder im Aufnahmefeld drücken, anschließend speichern. **Standardtasten wiederherstellen** setzt Shift / Strg / Alt zurück.
 - **Menüpunkte:** Formate, Bearbeitungen, Dateiaktionen, Programmfunktionen und eigene Abläufe per Checkbox ein-/ausblenden. Die Suche hilft beim Finden; Gruppen-Checkboxen schalten die gesamte Gruppe. SVG Schnell und SVG Erweitert sind einzeln steuerbar.
@@ -248,9 +253,9 @@ Benennen gehört an das Ende. Gespeicherte Abläufe erscheinen für Bilder direk
 
 Mehrdeutige Belegungen wie Shift und Shift+F9 werden abgewiesen. Strg+Alt bleibt für AltGr reserviert; Esc, Win-Kombinationen und Alt+F4 sind nicht belegbar. Die ursprünglichen Windows-Funktionen gewählter Tasten bleiben aktiv. Die Tastatursteuerung innerhalb der Editoren wird dadurch nicht geändert.
 
-**Spielschutz:** Automatische Datei-Tastenzugänge reagieren nur im Explorer, auf dem Desktop, in OrbitDrop und in unterstützten Dateimanagern (Total Commander, Double Commander, Directory Opus, FreeCommander und Files). In anderen Apps – auch Spielen im Fenstermodus – öffnet Shift/Strg/Alt plus Mausklick keinen automatischen Kreis. Dort kannst du den Kreis über das OrbitDrop-Symbol öffnen und anschließend eine Datei hineinziehen. Markierte Links lassen sich ohne gedrückte Maustaste aus Edge, Chrome, Firefox, Brave, Vivaldi, Opera, LibreWolf, Waterfox und Floorp übernehmen; im Browser-Vollbild ist das gesperrt. Für Browser-Spiele kannst du zusätzlich im Tray **Tastenzugänge pausieren** aktivieren. Die Pause gilt bis zum erneuten Abschalten oder Programmneustart. Die manuelle Bedienung bleibt möglich.
+**Spielschutz:** Automatische Datei-Tastenzugänge reagieren nur im Explorer, auf dem Desktop, in OrbitDrop und in unterstützten Dateimanagern (Total Commander, Double Commander, Directory Opus, FreeCommander und Files). In anderen Apps – auch Spielen im Fenstermodus – öffnet Shift/Strg/Alt plus Mausklick keinen automatischen Kreis. Dort kannst du den Kreis über Dashboard → Verwaltung → Aktionskreis öffnen und anschließend eine Datei hineinziehen. Markierte Links lassen sich ohne gedrückte Maustaste aus Edge, Chrome, Firefox, Brave, Vivaldi, Opera, LibreWolf, Waterfox und Floorp übernehmen; im Browser-Vollbild ist das gesperrt. Für Browser-Spiele kannst du zusätzlich im Dashboard unter Verwaltung **Tastenzugänge pausieren** aktivieren. Die Pause gilt bis zum erneuten Abschalten oder Programmneustart. Die manuelle Bedienung bleibt möglich.
 
-Ausblendungen gelten im Kreis und in der Aktionssuche, auch für Favoriten. Falls du Einstellungen oder alle Menüpunkte ausgeblendet hast: **Rechtsklick auf das OrbitDrop-Symbol im Windows-Infobereich → Einstellungen → Alle Menüpunkte wieder anzeigen.** Änderungen gelten beim nächsten Öffnen des Kreises.
+Ausblendungen gelten im Kreis und in der Aktionssuche, auch für Favoriten. Falls du Einstellungen oder alle Menüpunkte ausgeblendet hast: **Rechtsklick auf das OrbitDrop-Symbol im Windows-Infobereich → Dashboard → Einstellungen → Alle Menüpunkte wieder anzeigen.** Änderungen gelten beim nächsten Öffnen des Kreises.
 
 ### 13. Aufträge, Fehler und Updates
 
@@ -262,7 +267,7 @@ Normale Konvertierungen und Bearbeitungen erstellen neue Dateien; vorhandene Nam
 
 **Alt → Updates** sucht nach veröffentlichten stabilen GitHub-Releases. Bei jedem Programmstart wird standardmäßig nach Updates gesucht. Das lässt sich unter **Einstellungen** oder **Updates** ausschalten. Bei bestehenden Installationen wird die neue Startprüfung einmalig aktiviert; eine anschließend gespeicherte Abwahl bleibt erhalten. Release-Entwürfe werden nicht angeboten. Download-Prüfsummen werden geprüft; die Installation startest du ausdrücklich, sobald keine Hintergrundaufträge mehr laufen.
 
-Die vollständige Hilfe findest du jederzeit direkt im Programm unter **Alt → Anleitung & Info**. Sie zeigt auch deine aktuelle Tastenbelegung.
+Die vollständige Hilfe findest du jederzeit direkt im Programm unter **Dashboard → Anleitung**. Sie zeigt auch deine aktuelle Tastenbelegung.
 
 ---
 

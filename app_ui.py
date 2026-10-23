@@ -35,7 +35,7 @@ class SettingsDialog(QDialog):
         self.dashboard_start=QCheckBox('Dashboard beim Start anzeigen');self.dashboard_start.setChecked(v['show_dashboard']);form.addRow(self.dashboard_start)
         self.backends=QCheckBox('Konverter beim Start prüfen');self.backends.setChecked(v['check_backends']);form.addRow(self.backends)
         self.updates=QCheckBox('Bei jedem Programmstart auf GitHub nach Updates suchen');self.updates.setChecked(v['check_updates']);form.addRow(self.updates)
-        guard_hint=QLabel('Spielschutz: Automatische Datei-Tastenzugänge gelten nur im Explorer, auf dem Desktop, in OrbitDrop und unterstützten Dateimanagern. Markierte Links: unterstützte Browser außerhalb des Vollbilds. Andere Apps: Kreis über das Tray öffnen. Im Tray lassen sich alle Tastenzugänge vorübergehend pausieren.');guard_hint.setWordWrap(True);form.addRow(guard_hint)
+        guard_hint=QLabel('Spielschutz: Automatische Datei-Tastenzugänge gelten nur im Explorer, auf dem Desktop, in OrbitDrop und unterstützten Dateimanagern. Markierte Links: unterstützte Browser außerhalb des Vollbilds. Andere Apps: Kreis über das Tray öffnen. Im Dashboard unter Verwaltung lassen sich alle Tastenzugänge vorübergehend pausieren.');guard_hint.setWordWrap(True);form.addRow(guard_hint)
         menus=QWidget();tabs.addTab(menus,'Menüpunkte');menu_layout=QVBoxLayout(menus)
         notice_menu=QLabel('Haken = anzeigen. Gruppen schalten alle enthaltenen Punkte. Gilt für Kreis und Aktionssuche; die Tray-Einstellungen bleiben immer erreichbar. Auch ausgeblendete Funktionen bleiben grundsätzlich ausführbar.');notice_menu.setWordWrap(True);menu_layout.addWidget(notice_menu)
         self.menu_search=QLineEdit();self.menu_search.setPlaceholderText('Menüpunkt suchen …');menu_layout.addWidget(self.menu_search)
@@ -93,11 +93,12 @@ class TasksWindow(QWidget):
     def _history_row(self,record):
         key=uuid.uuid4().hex;item=QTreeWidgetItem([record.get('title','Auftrag'),record.get('status',''),record.get('time','')]);item.setData(0,Qt.ItemDataRole.UserRole,key);self.tree.insertTopLevelItem(0,item)
         self.rows[key]={'item':item,'record':record,'job':None,'bar':None}
-    def add(self,job,title):
+    def add(self,job,title,show=True):
         key=uuid.uuid4().hex;item=QTreeWidgetItem([title,'Wird gestartet …','']);item.setData(0,Qt.ItemDataRole.UserRole,key);self.tree.insertTopLevelItem(0,item)
         bar=QProgressBar();bar.setRange(0,0);self.tree.setItemWidget(item,2,bar)
         self.rows[key]={'item':item,'job':job,'bar':bar,'record':{'title':title,'outputs':[],'errors':[],'status':'Läuft'}}
-        self.tree.setCurrentItem(item);present(self)
+        self.tree.setCurrentItem(item)
+        if show:present(self)
         return key
     def progress(self,key,percent,message):
         data=self.rows.get(key)

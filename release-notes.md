@@ -1,11 +1,9 @@
-OrbitDrop 0.25.0 · Dashboard auf Basis von 0.20.0
+OrbitDrop 0.26.0 · Aufgeräumtes Tray und Download-Verwaltung
 
-- Grundlage ist wieder Version 0.20.0. Radialmenü, Zeichenstil, Anordnung, Menüeinträge und Tastenerkennung bleiben auf diesem Stand.
-- Neues dauerhaftes Dashboard mit Willkommen, Einrichtung, Anleitung, Einstellungen und Verwaltung. Startet standardmäßig beim Programmstart und bleibt offen, bis du es selbst schließt. Im Tray jederzeit über „Dashboard“ erreichbar.
-- Kurzanleitung mit deiner aktuellen Tastenbelegung: Datei zuerst greifen und ziehen, danach die Bereichstaste drücken.
-- Einrichtung erklärt FFmpeg/FFprobe, LibreOffice, Pandoc, JavaScript-Laufzeit für YouTube und OCR-Sprachdaten. Status, Downloads, Einrichtung und technische Details direkt im Dashboard.
-- FFmpeg und OCR-Daten direkt einrichten; optionale Programme über den Windows-Paketmanager installieren oder offizielle Downloadseite öffnen. Installation nur nach deinem Klick. Paket-/Quellenbedingungen werden beim Windows-Setup akzeptiert; Windows kann Administratorrechte anfragen.
-- Konverterprüfung ohne störendes CMD-Fenster: LibreOffice verwendet bevorzugt den Konsolenstarter, die GUI-Versionsabfrage wird sonst ausgelassen. Prüfung und Installationen laufen im Hintergrund mit Status und Abbruchmöglichkeit.
-- Anleitung und Einstellungen sind im Dashboard eingebettet. Speichern, Prüfen oder das Öffnen weiterer Werkzeuge schließt das Dashboard nicht.
-- „Dashboard beim Start öffnen“ ist abschaltbar; OrbitDrop bleibt nach Schließen des Dashboards im Tray aktiv.
-- Neue Versionsnummer oberhalb von 0.24.0, damit bestehende Installationen das Release über die Updateprüfung erkennen.
+- Das Tray enthält nur Dashboard, Audio/Video-Downloader und Beenden. Ein Klick auf das Tray-Symbol öffnet das Dashboard.
+- Alle bisherigen Verwaltungsfunktionen bleiben im Dashboard erreichbar. Dateiablage, Werkzeuge, Aktionskreis und Tastenzugänge pausieren sind dort ergänzt.
+- Eigenes dauerhaftes Downloader-Fenster mit Linkliste, vorhandener Audio-/Video- und Playlist-Auswahl sowie Warteschlange und Verlauf.
+- Mehrere Links sammeln, nacheinander herunterladen, Fortschritt verfolgen, wartende Aufträge pausieren und umsortieren, abbrechen, erneut einreihen sowie Ergebnisse und Ordner öffnen.
+- Neue Links und Downloads sind hinzufügbar, während das Fenster offen ist. Die letzte Ordnerwahl bleibt gespeichert. Schließen des Fensters stoppt Downloads nicht; die Warteschlange gilt für die laufende OrbitDrop-Sitzung.
+- Aus dem Alt-Menü entfernt: Link einfügen, Anleitung, Debugging, Konverter und Kopieren. Entfernte Verwaltungsfunktionen bleiben im Dashboard verfügbar.
+- Radialoptik und Tastenerkennung bleiben auf dem Stand von 0.20.0.

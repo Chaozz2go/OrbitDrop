@@ -54,9 +54,9 @@ class PersonalizationTests(unittest.TestCase):
         dialog=SettingsDialog(self.prefs);self.addCleanup(dialog.close);self.assertEqual(dialog.menu_items['format:JPG'].checkState(0),Qt.CheckState.Unchecked)
         self.assertEqual(dialog.menu_items['format:SVG SCHNELL'].checkState(0),Qt.CheckState.Unchecked)
         dialog.menu_items['format:SVG SCHNELL'].setCheckState(0,Qt.CheckState.Checked)
-        for key in ('edit:SCHNEIDEN','tool:TERMINAL','app:HILFE','download:VIDEO LADEN','nav:ZURÜCK','home:TOOLS'):dialog.menu_items[key].setCheckState(0,Qt.CheckState.Unchecked)
+        for key in ('edit:SCHNEIDEN','tool:TERMINAL','app:AUFTRÄGE','download:VIDEO LADEN','nav:ZURÜCK','home:TOOLS'):dialog.menu_items[key].setCheckState(0,Qt.CheckState.Unchecked)
         dialog.save();values=Preferences(self.prefs.root).values;self.assertNotIn('SVG',values['hidden_formats']);self.assertIn('format:SVG ERWEITERT',values['hidden_actions']);self.assertIn('tool:TERMINAL',values['hidden_actions'])
-        actions=['format:SVG SCHNELL','format:SVG ERWEITERT','edit:SCHNEIDEN','tool:TERMINAL','app:HILFE','download:VIDEO LADEN','app:ZURÜCK','TOOLS']
+        actions=['format:SVG SCHNELL','format:SVG ERWEITERT','edit:SCHNEIDEN','tool:TERMINAL','app:AUFTRÄGE','download:VIDEO LADEN','app:ZURÜCK','TOOLS']
         self.assertEqual(visible_actions(actions,values),['format:SVG SCHNELL'])
     def test_hidden_favorites_do_not_reappear_in_wheel_or_search(self):
         self.prefs.update(dict(self.prefs.values,hidden_actions=['edit:BITMAP','tool:TERMINAL','app:HILFE','download:VIDEO LADEN'],favorite_actions=['edit:BITMAP']))

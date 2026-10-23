@@ -84,7 +84,7 @@ class DashboardTests(unittest.TestCase):
         d.setup_finished('Installer error: '+('technical details '*300))
         self.assertLess(len(d.status.text()),160);self.assertIn('technical details',d.tool_rows['office']['detail'].toPlainText());self.assertTrue(d.isVisible())
     def test_tray_dashboard_and_start_scheduling_and_polling_remain_v20(self):
-        self.assertIn('Dashboard',[a.text() for a in self.c.tray.contextMenu().actions()]);self.assertEqual(self.c.timer.interval(),25)
+        self.assertEqual([a.text() for a in self.c.tray.contextMenu().actions()],['Dashboard','Audio/Video-Downloader','Beenden']);self.assertEqual(self.c.timer.interval(),25)
         for enabled in (True,False):
             self.prefs.update(dict(self.prefs.values,show_dashboard=enabled))
             with patch('orbitdrop.QTimer.singleShot') as timer:
