@@ -64,11 +64,12 @@ Beim Start öffnet sich das Dashboard. Es bleibt offen, bis du es selbst schlie�
 - **Einrichtung:** verständliche Statusanzeige, Zweck der Programme, Prüfen, Einrichten, offizielle Downloadseiten und Fehlerdetails.
 - **Anleitung:** lokal durchsuchbare Hilfe direkt im Dashboard.
 - **Einstellungen:** Tasten, Menüpunkte, Qualität, Ordner, Autostart und Startverhalten anpassen und speichern.
-- **Verwaltung:** Updates, Verlauf, eigene Abläufe, Schnellaktionen, Downloader und Debugging öffnen.
+- **Updates:** Version prüfen, Versionshinweise lesen, Updates herunterladen und installieren.
+- **Verwaltung:** Verlauf, eigene Abläufe, Schnellaktionen, Downloader und Debugging öffnen.
 
 Im Windows-Paket sind Python, Python-Pakete, FFmpeg/FFprobe und OCR-Sprachdaten bereits enthalten. LibreOffice und Pandoc sind optional für zusätzliche Dokumentformate. Deno, Node oder QuickJS ermöglicht das Lesen vieler YouTube-Player; „Einrichten“ installiert Deno. Die Prüfung lädt nichts herunter. **Einrichten** startet nur nach deinem Klick eine Installation: FFmpeg/OCR direkt, weitere Programme über den Windows-Paketmanager winget. Dabei gelten die Paket- und Quellenbedingungen; Windows kann Administratorrechte anfragen. Fehlt winget oder schlägt die Installation fehl, öffne die offizielle Downloadseite und prüfe danach erneut. Fortschritt, Abbruch und Fehler bleiben im Dashboard sichtbar.
 
-Die Radialoptik und Tastenerkennung entsprechen Version 0.20.0. Im Alt-Menü entfallen Link einfügen, Anleitung, Debugging, Konverter und Kopieren. Das Tray enthält nur Dashboard, Audio/Video-Downloader und Beenden. Alle Verwaltungsfunktionen bleiben im Dashboard erreichbar, einschließlich Dateiablage, Werkzeuge und Tastenzugänge pausieren.
+Die Radialoptik entspricht Version 0.20.0. Beim Greifen einer Desktop-Datei wird das Fenster unter der Maus berücksichtigt, auch wenn vorher ein anderes Programm aktiv war. Im Alt-Menü entfallen Link einfügen, Anleitung, Debugging, Konverter und Kopieren. Das Tray enthält Dashboard, Audio/Video-Downloader, OrbitDrop pausieren und Beenden. Alle Verwaltungsfunktionen bleiben im Dashboard erreichbar, einschließlich Dateiablage, Werkzeuge und Tastenzugänge pausieren.
 
 ## Audio/Video-Downloader · Links und Warteschlange
 
@@ -265,7 +266,7 @@ Normale Konvertierungen und Bearbeitungen erstellen neue Dateien; vorhandene Nam
 
 **Datei nicht erkannt?** Unter **Alt → Konverter** prüfen, ob benötigte Programme gefunden werden. Dateien aus Cloud- oder Netzlaufwerken gegebenenfalls erst vollständig lokal speichern. Nicht erkannte Typen erscheinen unter **Debugging** und können für die Fehlersuche exportiert werden. Vor dem Weitergeben persönliche Dateipfade und Fehlermeldungen prüfen.
 
-**Alt → Updates** sucht nach veröffentlichten stabilen GitHub-Releases. Bei jedem Programmstart wird standardmäßig nach Updates gesucht. Das lässt sich unter **Einstellungen** oder **Updates** ausschalten. Bei bestehenden Installationen wird die neue Startprüfung einmalig aktiviert; eine anschließend gespeicherte Abwahl bleibt erhalten. Release-Entwürfe werden nicht angeboten. Download-Prüfsummen werden geprüft; die Installation startest du ausdrücklich, sobald keine Hintergrundaufträge mehr laufen.
+**Dashboard → Updates** sucht nach veröffentlichten stabilen GitHub-Releases. Bei jedem Programmstart wird standardmäßig nach Updates gesucht. Das lässt sich unter **Einstellungen** oder **Updates** ausschalten. Bei bestehenden Installationen wird die neue Startprüfung einmalig aktiviert; eine anschließend gespeicherte Abwahl bleibt erhalten. Release-Entwürfe werden nicht angeboten. Download-Prüfsummen werden geprüft; die Installation startest du ausdrücklich, sobald keine Hintergrundaufträge mehr laufen.
 
 Die vollständige Hilfe findest du jederzeit direkt im Programm unter **Dashboard → Anleitung**. Sie zeigt auch deine aktuelle Tastenbelegung.
 

@@ -6,6 +6,7 @@ from PySide6.QtGui import QDesktopServices
 from PySide6.QtCore import QUrl
 from app_ui import SettingsDialog
 from help_ui import HelpDialog
+from update_ui import UpdatePanel
 from editor_chrome import heading
 from ui_theme import STYLE,action_button
 from setup_tools import TOOLS
@@ -30,7 +31,7 @@ class GuidePanel(HelpDialog):
 
 
 class Dashboard(QWidget):
-    PAGES=('Willkommen','Einrichtung','Anleitung','Einstellungen','Verwaltung')
+    PAGES=('Willkommen','Einrichtung','Anleitung','Einstellungen','Updates','Verwaltung')
     def __init__(self,controller):
         super().__init__();self.controller=controller;self.prefs=controller.prefs;self.install_key=None
         self.setWindowTitle('OrbitDrop · Dashboard');self.setStyleSheet(STYLE);self.resize(1140,800);self.setMinimumSize(820,540)
@@ -41,6 +42,8 @@ class Dashboard(QWidget):
         self.setup=self.setup_page();self.pages.addWidget(self.setup)
         self.guide=GuidePanel(self.prefs,self);self.guide.back_requested.connect(lambda:self.open_page(0));self.pages.addWidget(self.guide)
         self.settings_container=QWidget();self.settings_layout=QVBoxLayout(self.settings_container);self.settings_layout.setContentsMargins(0,0,0,0);self.pages.addWidget(self.settings_container);self.load_settings()
+        self.updates_panel=UpdatePanel(self.prefs,controller.install_update,self);self.updates_panel.back_requested.connect(lambda:self.open_page(0));self.pages.addWidget(self.updates_panel)
+        self.updates_panel.auto.toggled.connect(lambda enabled:self.settings_panel.updates.setChecked(self.prefs.values['check_updates']))
         self.pages.addWidget(self.management_page())
         self.nav.currentRowChanged.connect(self.pages.setCurrentIndex);self.nav.setCurrentRow(0)
         self.progress=QProgressBar();self.progress.setRange(0,100);self.progress.setValue(0);self.progress.hide();layout.addWidget(self.progress)
@@ -93,7 +96,7 @@ class Dashboard(QWidget):
             box=self.card(layout,title,text);row=QHBoxLayout();box.addLayout(row)
             for name,callback in actions:
                 button=action_button(name);button.clicked.connect(lambda checked=False,cb=callback:cb());row.addWidget(button)
-        box=self.card(layout,'Bedienung & weitere Werkzeuge','Kreis und Dateiablage öffnen oder die Tastenzugänge vorübergehend pausieren. Im Tray bleiben nur Dashboard, Downloader und Beenden.')
+        box=self.card(layout,'Bedienung & weitere Werkzeuge','Kreis und Dateiablage öffnen oder die Tastenzugänge vorübergehend pausieren. Im Tray findest du Dashboard, Downloader, OrbitDrop pausieren und Beenden.')
         row=QHBoxLayout();box.addLayout(row)
         for name,callback in [('Aktionskreis',lambda:self.controller.wheel.open()),('Dateiablage',lambda:self.controller.shelf.open()),('Werkzeuge',self.controller.tools)]:
             button=action_button(name);button.clicked.connect(lambda checked=False,cb=callback:cb());row.addWidget(button)
@@ -109,6 +112,7 @@ class Dashboard(QWidget):
         self.settings_panel.reset_requested.connect(lambda:QTimer.singleShot(0,self.load_settings));self.settings_layout.addWidget(self.settings_panel)
     def settings_saved(self):
         self.controller.refresh_settings();self.refresh_bindings();self.at_start.blockSignals(True);self.at_start.setChecked(self.prefs.values['show_dashboard']);self.at_start.blockSignals(False)
+        self.updates_panel.auto.blockSignals(True);self.updates_panel.auto.setChecked(self.prefs.values['check_updates']);self.updates_panel.auto.blockSignals(False)
         self.status.setText('Einstellungen gespeichert. Das Dashboard bleibt geöffnet.')
         index=self.guide.topics.currentRow();query=self.guide.query.text()
         from help_ui import handbook

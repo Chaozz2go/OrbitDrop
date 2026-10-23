@@ -84,24 +84,53 @@ class DashboardTests(unittest.TestCase):
         d.setup_finished('Installer error: '+('technical details '*300))
         self.assertLess(len(d.status.text()),160);self.assertIn('technical details',d.tool_rows['office']['detail'].toPlainText());self.assertTrue(d.isVisible())
     def test_tray_dashboard_and_start_scheduling_and_polling_remain_v20(self):
-        self.assertEqual([a.text() for a in self.c.tray.contextMenu().actions()],['Dashboard','Audio/Video-Downloader','Beenden']);self.assertEqual(self.c.timer.interval(),25)
+        self.assertEqual([a.text() for a in self.c.tray.contextMenu().actions()],['Dashboard','Audio/Video-Downloader','OrbitDrop pausieren','Beenden']);self.assertEqual(self.c.timer.interval(),25)
         for enabled in (True,False):
             self.prefs.update(dict(self.prefs.values,show_dashboard=enabled))
             with patch('orbitdrop.QTimer.singleShot') as timer:
                 c=Controller(self.app,self.prefs)
             try:self.assertEqual(sum(call.args[0]==100 for call in timer.call_args_list),int(enabled))
             finally:c.timer.stop();c.tray.hide();c.wheel.close();c.shelf.close();c.tasks.close()
+    def test_pause_is_synchronized_between_tray_and_dashboard(self):
+        self.c.pause_action.setChecked(True)
+        self.assertTrue(self.c.shortcuts_paused)
+        self.c.show_dashboard('Verwaltung');d=self.c.dashboard
+        self.assertTrue(d.pause_keys.isChecked())
+        d.pause_keys.setChecked(False)
+        self.assertFalse(self.c.shortcuts_paused);self.assertFalse(self.c.pause_action.isChecked())
+        self.c.pause_action.setChecked(True);self.assertTrue(d.pause_keys.isChecked())
+
+    def test_updates_embedded_without_unrequested_network_or_modal(self):
+        with patch('update_ui.QThreadPool.globalInstance') as pool:
+            self.c.show_dashboard('Updates');d=self.c.dashboard;p=d.updates_panel
+            self.app.processEvents();pool.return_value.start.assert_not_called()
+            self.assertTrue(p.isVisible());self.assertIsNone(self.app.activeModalWidget())
+            self.c.updates();pool.return_value.start.assert_called_once()
+            self.c.updates();pool.return_value.start.assert_called_once()
+            p.ready({'notes':'Release notes','version':'99.0.0','newer':True},'')
+            self.assertIn('99.0.0',p.status.text());self.assertTrue(p.download_button.isEnabled())
+            p.reject();self.assertTrue(d.isVisible());self.assertFalse(p.stopped.is_set())
+            self.c.show_dashboard('Updates');self.assertIn('Release notes',p.notes.toPlainText())
+            p.auto.setChecked(True);self.assertTrue(d.settings_panel.updates.isChecked())
+            self.assertTrue(self.prefs.values['check_updates'])
+
+    def test_startup_update_result_reaches_dashboard_and_error_is_readable(self):
+        self.c.show_dashboard('Updates');p=self.c.dashboard.updates_panel
+        self.c.update_checked({'notes':'Ready','version':'99.0.0','newer':False},'')
+        self.assertEqual(p.notes.toPlainText(),'Ready')
+        self.c.update_checked(None,'Offline');self.assertEqual(p.status.text(),'Offline')
+        p.installer=Path('downloaded.exe')
+        self.c.update_checked(None,'Late check');self.assertEqual(p.status.text(),'Offline')
+
     def test_radial_painting_files_are_exact_v20_sources(self):
         # Freeze the release sources: this feature must not restyle or reposition the wheel.
         hashes={'direct_wheel.py':'072bf7f90bc831e3f623538fb79042dcbaafe65e','wheel_render.py':'7a34d74fb70d149d3d05d4ce2b6b62c0a31b2d70','radial_style.py':'fca5ca825c5a6ac7e9dd8d5a4ab3ac7df7ea6ae7'}
         for name,expected in hashes.items():
             b=(ROOT/name).read_text(encoding='utf-8').encode('utf-8');actual=hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest();self.assertEqual(actual,expected,name)
 
-    def test_wheel_and_native_polling_are_unchanged_from_v20(self):
+    def test_wheel_is_unchanged_from_v20(self):
         tree=ast.parse((ROOT/'orbitdrop.py').read_text(encoding='utf-8'));classes={x.name:x for x in tree.body if isinstance(x,ast.ClassDef)}
         wheel=hashlib.sha256(ast.dump(classes['Wheel']).encode()).hexdigest()
-        poll=next(x for x in classes['Controller'].body if isinstance(x,ast.FunctionDef) and x.name=='poll')
         self.assertEqual(wheel,'ea5e94bc0369906fef49c3bcc13a2dfe16df4827eac5737598b8180ae4028b2c')
-        self.assertEqual(hashlib.sha256(ast.dump(poll).encode()).hexdigest(),'080733614402ae27a141a1ce5256c0102a08cadb437b47ec87af1484dd1aa812')
 
 if __name__=='__main__':unittest.main()

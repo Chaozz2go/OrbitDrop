@@ -128,6 +128,71 @@ class ActivationGuardTests(unittest.TestCase):
                     finally:
                         c.timer.stop(); c.tray.hide(); c.wheel.close(); c.shelf.close(); c.tasks.close()
 
+    def test_desktop_mouse_down_is_trusted_despite_other_foreground(self):
+        guard=ActivationGuard();desktop=ActivationContext((11,22),True,False)
+        with patch('activation_guard.sys.platform','win32'),patch.object(guard,'_foreground_context',return_value=ActivationContext((33,44),False,True)),patch.object(guard,'_pointer_context',return_value=desktop) as pointer,patch.object(guard,'_origin_alive',return_value=True):
+            self.assertEqual(guard.context(mouse_down=True),desktop)
+            # Moving over an unrelated window during the same drag keeps its source.
+            pointer.return_value=ActivationContext((77,88))
+            self.assertEqual(guard.context(mouse_down=True),desktop);pointer.assert_called_once()
+            self.assertTrue(guard.context(mouse_down=False).selection)
+            self.assertFalse(guard.context(mouse_down=True).drag)
+            self.assertEqual(pointer.call_count,2)
+
+    def test_game_click_cannot_become_desktop_drag_and_pause_drops_origin(self):
+        guard=ActivationGuard();desktop=ActivationContext((11,22),True,False)
+        with patch('activation_guard.sys.platform','win32'),patch.object(guard,'_foreground_context',return_value=ActivationContext((33,44))),patch.object(guard,'_pointer_context',return_value=ActivationContext()) as pointer,patch.object(guard,'_origin_alive',return_value=True):
+            self.assertFalse(guard.context(mouse_down=True).drag)
+            pointer.return_value=desktop
+            self.assertFalse(guard.context(mouse_down=True).drag);pointer.assert_called_once()
+            guard.context(mouse_down=False);self.assertTrue(guard.context(mouse_down=True).drag)
+            guard.reset_drag(True);self.assertFalse(guard.context(mouse_down=True).drag)
+            guard.context(mouse_down=False);self.assertTrue(guard.context(mouse_down=True).drag)
+
+    def test_dead_or_reused_source_window_is_no_longer_trusted(self):
+        guard=ActivationGuard()
+        with patch('activation_guard.sys.platform','win32'),patch.object(guard,'_foreground_context',return_value=ActivationContext()),patch.object(guard,'_pointer_context',return_value=ActivationContext((1,2),True)),patch.object(guard,'_origin_alive',return_value=False):
+            self.assertFalse(guard.context(mouse_down=True).drag);self.assertIsNone(guard._drag_origin)
+
+    def test_desktop_child_classes_require_explorer_process(self):
+        for cls in ('SysListView32','SHELLDLL_DefView'):
+            self.assertTrue(classify_window(11,22,'explorer.exe',cls,own_pid=99).drag)
+            self.assertFalse(classify_window(11,22,'game.exe',cls,own_pid=99).drag)
+
+    def test_untrusted_mouse_origin_is_blocked_even_with_stale_explorer_focus(self):
+        guard=ActivationGuard()
+        with patch('activation_guard.sys.platform','win32'),patch.object(guard,'_foreground_context',return_value=ActivationContext((11,22),True)),patch.object(guard,'_pointer_context',return_value=ActivationContext((33,44))):
+            self.assertFalse(guard.context(mouse_down=True).drag)
+            self.assertTrue(guard.context(mouse_down=False).drag)
+
+    def test_pointer_resolves_only_actual_containing_root(self):
+        guard=ActivationGuard();user=Mock();guard._api=(user,Mock())
+        user.GetCursorPos.return_value=True;user.WindowFromPoint.return_value=11;user.GetAncestor.return_value=22
+        desktop=ActivationContext((22,33),True)
+        with patch.object(guard,'_window_context',side_effect=lambda hwnd:desktop if hwnd==22 else ActivationContext()) as window:
+            self.assertEqual(guard._pointer_context(),desktop)
+            self.assertEqual([c.args[0] for c in window.call_args_list],[11,22]);user.GetAncestor.assert_called_once_with(11,2)
+        user.GetAncestor.return_value=11
+        with patch.object(guard,'_window_context',return_value=ActivationContext()) as window:
+            self.assertFalse(guard._pointer_context().drag);window.assert_called_once_with(11)
+
+    def test_native_origin_validation_rejects_pid_reuse(self):
+        guard=ActivationGuard();user=Mock();guard._api=(user,Mock());guard._drag_origin=ActivationContext((11,22),True)
+        user.IsWindow.return_value=True
+        def pid(hwnd,pointer):pointer._obj.value=22;return 1
+        user.GetWindowThreadProcessId.side_effect=pid
+        self.assertTrue(guard._origin_alive())
+        user.GetWindowThreadProcessId.side_effect=lambda hwnd,pointer:1
+        self.assertFalse(guard._origin_alive())
+        user.IsWindow.return_value=False;self.assertFalse(guard._origin_alive())
+
+    def test_controller_tracks_mouse_source_even_before_shortcut(self):
+        c=self.controller(ActivationContext((11,22),True))
+        self.poll(c,{1});c.activation_guard.context.assert_called_with(mouse_down=True)
+        self.poll(c,{1,KEY_CODES['Shift']});c.wheel.open.assert_called_once()
+        self.poll(c,set());c.activation_guard.context.assert_called_with(mouse_down=False)
+        c.shortcuts_paused=True;self.poll(c,{1});c.activation_guard.reset_drag.assert_called_with(True)
+
     @unittest.skipUnless(sys.platform == 'win32', 'Win32 ABI smoke test')
     def test_native_api_queries_current_process_and_foreground_safely(self):
         import ctypes
@@ -141,6 +206,12 @@ class ActivationGuardTests(unittest.TestCase):
         finally:
             kernel.CloseHandle(handle)
         self.assertIsInstance(guard.context(), ActivationContext)
+        point=wintypes.POINT();self.assertTrue(user.GetCursorPos(ctypes.byref(point)))
+        hwnd=user.WindowFromPoint(point)
+        if hwnd:self.assertTrue(user.IsWindow(hwnd));user.GetAncestor(hwnd,2)
+        self.assertIsInstance(guard._pointer_context(),ActivationContext)
+        self.assertIsInstance(guard.context(mouse_down=True),ActivationContext)
+        guard.context(mouse_down=False)
 
 
 if __name__ == '__main__':

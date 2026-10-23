@@ -519,6 +519,7 @@ class Controller:
                                 ('Audio/Video-Downloader',lambda:self.download_dialog()),
                                 ('Beenden',self.quit)]:
             action=QAction(label,menu);action.triggered.connect(callback);menu.addAction(action)
+        self.pause_action=QAction('OrbitDrop pausieren',menu);self.pause_action.setCheckable(True);self.pause_action.toggled.connect(self.pause_shortcuts);menu.insertAction(menu.actions()[-1],self.pause_action)
         self.tray.setContextMenu(menu)
         self.tray.activated.connect(self.activated)
         self.tray.show()
@@ -539,7 +540,13 @@ class Controller:
     def pause_shortcuts(self,paused):
         self.shortcuts_paused=paused;self.selection_pending=False;self.selection_revision+=1
         if paused and self.wheel.automatic:self.wheel.hide()
-        self.tray.setToolTip('OrbitDrop · Tastenzugänge pausiert' if paused else 'OrbitDrop · '+shortcut_hint(self.prefs.values))
+        self.tray.setToolTip('OrbitDrop · pausiert' if paused else 'OrbitDrop · '+shortcut_hint(self.prefs.values))
+        action=getattr(self,'pause_action',None)
+        if action is not None:
+            action.blockSignals(True);action.setChecked(paused);action.blockSignals(False)
+        dashboard=getattr(self,'dashboard',None)
+        if dashboard is not None:
+            dashboard.pause_keys.blockSignals(True);dashboard.pause_keys.setChecked(paused);dashboard.pause_keys.blockSignals(False)
 
     def poll(self):
         if sys.platform != 'win32':
@@ -548,12 +555,14 @@ class Controller:
         states={name:bool(key(code)&0x8000) for name,code in polling_keys(self.prefs.values).items()}
         left,escape=bool(key(0x01)&0x8000),bool(key(0x1B)&0x8000)
         if self.shortcuts_paused:
+            self.activation_guard.reset_drag(left)
             if escape:self.wheel.hide()
             self.was_keys=states;self.selection_pending=False;return
         if QApplication.activeModalWidget() is not None:
+            self.activation_guard.reset_drag(left)
             self.was_keys=states;self.selection_pending=False;return
         mode=pressed_mode(self.prefs.values,states,self.was_keys)
-        context=self.activation_guard.context()
+        context=self.activation_guard.context(mouse_down=left)
         if mode and left and context.drag:
             if self.wheel.isVisible():self.wheel.switch_mode(mode)
             else:self.wheel.open(automatic=True,mode=mode)
@@ -683,8 +692,7 @@ class Controller:
             elif action=='PDF VERBINDEN':self.tools(files,'PDFs zusammenfügen')
         except Exception as error:QMessageBox.warning(None,'OrbitDrop · Bearbeiten',str(error))
     def updates(self):
-        from update_ui import UpdateDialog
-        UpdateDialog(self.prefs,self.install_update).exec()
+        self.show_dashboard('Updates');self.dashboard.updates_panel.check()
     def install_update(self,installer):
         import subprocess
         from updater import verify_installer
@@ -699,7 +707,10 @@ class Controller:
         self.update_job=UpdateJob(lambda progress:latest_release());self.update_job.signals.done.connect(self.update_checked);self.pool.start(self.update_job)
     def update_checked(self,info,error):
         self.update_job=None
-        if info and info['newer']:self.tray.showMessage('OrbitDrop-Update',info['version']+' verfügbar. Im Kreis: Alt → Updates.')
+        dashboard=getattr(self,'dashboard',None)
+        if dashboard is not None and dashboard.updates_panel.job is None and dashboard.updates_panel.installer is None:
+            dashboard.updates_panel.downloading=False;dashboard.updates_panel.ready(info,error)
+        if info and info['newer']:self.tray.showMessage('OrbitDrop-Update',info['version']+' verfügbar. Dashboard → Updates.')
     def search_actions(self,files=None,kind=None):
         from action_search import ActionSearchDialog
         files=list(files or []);actions=self.wheel.context_actions()
@@ -730,6 +741,7 @@ class Controller:
         if self.backend_check:self.dashboard.set_checking()
 
     def quit(self):
+        if self.dashboard:self.dashboard.updates_panel.stopped.set()
         if self.downloader_window:self.downloader_window.stop_for_exit()
         if self.setup_job:self.setup_job.control.cancel()
         if self.tasks.has_running():
