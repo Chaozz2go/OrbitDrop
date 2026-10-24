@@ -529,6 +529,7 @@ class Controller:
         menu = QMenu()
         for label, callback in [('Dashboard',lambda:self.show_dashboard()),
                                 ('Audio/Video-Downloader',lambda:self.download_dialog()),
+                                ('Nach Updates suchen',lambda:self.updates()),
                                 ('Beenden',self.quit)]:
             action=QAction(label,menu);action.triggered.connect(callback);menu.addAction(action)
         self.pause_action=QAction('OrbitDrop pausieren',menu);self.pause_action.setCheckable(True);self.pause_action.toggled.connect(self.pause_shortcuts);menu.insertAction(menu.actions()[-1],self.pause_action)

@@ -69,7 +69,7 @@ Beim Start öffnet sich das Dashboard. Es bleibt offen, bis du es selbst schlie�
 
 Im Windows-Paket sind Python, Python-Pakete, FFmpeg/FFprobe und OCR-Sprachdaten bereits enthalten. LibreOffice und Pandoc sind optional für zusätzliche Dokumentformate. Deno, Node oder QuickJS ermöglicht das Lesen vieler YouTube-Player; „Einrichten“ installiert Deno. Die Prüfung lädt nichts herunter. **Einrichten** startet nur nach deinem Klick eine Installation: FFmpeg/OCR direkt, weitere Programme über den Windows-Paketmanager winget. Dabei gelten die Paket- und Quellenbedingungen; Windows kann Administratorrechte anfragen. Fehlt winget oder schlägt die Installation fehl, öffne die offizielle Downloadseite und prüfe danach erneut. Fortschritt, Abbruch und Fehler bleiben im Dashboard sichtbar.
 
-Die Radialoptik entspricht Version 0.20.0. Beim Greifen einer Desktop-Datei wird das Fenster unter der Maus berücksichtigt, auch wenn vorher ein anderes Programm aktiv war. Im Alt-Menü entfallen Link einfügen, Anleitung, Debugging, Konverter und Kopieren. Das Tray enthält Dashboard, Audio/Video-Downloader, OrbitDrop pausieren und Beenden. Alle Verwaltungsfunktionen bleiben im Dashboard erreichbar, einschließlich Dateiablage, Werkzeuge und Tastenzugänge pausieren.
+Die Radialoptik entspricht Version 0.20.0. Beim Greifen einer Desktop-Datei wird das Fenster unter der Maus berücksichtigt, auch wenn vorher ein anderes Programm aktiv war. Im Alt-Menü entfallen Link einfügen, Anleitung, Debugging, Konverter und Kopieren. Das Tray enthält Dashboard, Audio/Video-Downloader, Nach Updates suchen, OrbitDrop pausieren und Beenden. Alle Verwaltungsfunktionen bleiben im Dashboard erreichbar, einschließlich Dateiablage, Werkzeuge und Tastenzugänge pausieren.
 
 ## Audio/Video-Downloader · Links und Warteschlange
 
@@ -311,3 +311,5 @@ Gültige Daten erscheinen daneben als aufklappbarer Baum. Suche durchsucht den T
 **PEM/CRT/CER/DER/PFX/P12 → Alt → Zertifikat:** Inhaber, Aussteller, SANs, Seriennummer, Gültigkeitszeit, CA-Kennzeichen und SHA-256-Fingerabdruck anzeigen. PFX fragt im Fenster nach dem Passwort; es wird nicht gespeichert. Export nach PEM oder DER enthält ausschließlich öffentliche Zertifikate. DER-Ausgabe hier nur für ein einzelnes Zertifikat, Ketten als PEM. Keine Prüfung der Vertrauenskette, des Hostnamens oder von Sperrlisten. Zertifikatsdateien maximal 4 MiB.
 
 Alle genannten Daten- und Admin-Werkzeuge arbeiten lokal. Die bestehenden Medienwerkzeuge und die Radialoptik bleiben erhalten. Neue Menüpunkte lassen sich wie gewohnt in den Einstellungen ausblenden.
+
+**Updateprüfung im Tray:** Rechtsklick auf das OrbitDrop-Symbol → **Nach Updates suchen** öffnet die Updates-Seite im Dashboard und startet die Prüfung. Dort lassen sich verfügbare Updates herunterladen und installieren.
