@@ -26,8 +26,8 @@ class DownloadManagerTests(unittest.TestCase):
     def pump(self):
         for i in range(3):self.app.processEvents()
     def queue(self,url='https://example.org/one',**kwargs):return self.m.enqueue(url,'audio',str(self.root),0,**kwargs)
-    def test_tray_has_only_four_entries_and_removed_alt_items_stay_out(self):
-        self.assertEqual([a.text() for a in self.c.tray.contextMenu().actions()],['Dashboard','Audio/Video-Downloader','OrbitDrop pausieren','Beenden'])
+    def test_tray_includes_update_check_and_removed_alt_items_stay_out(self):
+        self.assertEqual([a.text() for a in self.c.tray.contextMenu().actions()],['Dashboard','Audio/Video-Downloader','Nach Updates suchen','OrbitDrop pausieren','Beenden'])
         actions=direct_actions(['file.mp4'],'Video',['MP4'],files_only=True)
         self.assertTrue(set(actions).isdisjoint(REMOVED_RADIAL));self.assertIn('tool:TERMINAL',actions);self.assertIn('app:EINSTELLUNGEN',actions)
         self.assertTrue(set(visible_actions(list(REMOVED_RADIAL),{})).isdisjoint(REMOVED_RADIAL))
