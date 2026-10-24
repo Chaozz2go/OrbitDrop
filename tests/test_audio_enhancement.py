@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from PySide6.QtWidgets import QApplication,QInputDialog,QMessageBox
 from PySide6.QtCore import QTimer,QUrl
 from audio_tools import audio_settings,improve_audio
-from audio_dsp import effect_filters,require_filters
+from audio_dsp import effect_filters,require_filters,parse_filter_names
 from audio_profiles import FACTORY,factory_profile,AudioProfileStore
 from audio_preview import build_preview,matched_gains,pcm_stats,preview_settings,preview_key
 from audio_tools_ui import AudioToolsDialog
@@ -50,6 +50,15 @@ class AudioEnhancementTests(unittest.TestCase):
         again.path.write_text('{broken',encoding='utf-8');before=again.path.read_bytes();broken=AudioProfileStore(store.root)
         with self.assertRaises(ValueError):broken.add('Another',factory_profile('music'))
         self.assertEqual(broken.path.read_bytes(),before)
+    def test_filter_lists_accept_build_flag_variations_and_both_streams(self):
+        text='Filters:\n T.. equalizer A->A Equalize\n TS.C acompressor A->A Compress\n .. loudnorm A->A Normalize\n aresample A->A Resample\n ... anullsrc |->A Source\n'
+        expected={'equalizer','acompressor','loudnorm','aresample','anullsrc'};self.assertEqual(parse_filter_names(text),expected)
+        from audio_dsp import _filter_names
+        _filter_names.cache_clear()
+        try:
+            with patch('audio_dsp.run',return_value=SimpleNamespace(returncode=0,stdout='',stderr=text)):
+                self.assertEqual(_filter_names('filter-list-test',0,0),expected)
+        finally:_filter_names.cache_clear()
     def test_missing_filter_is_explained_before_any_output(self):
         p=audio_settings({**factory_profile('radio'),'protect':True})
         with patch('audio_dsp._filter_names',return_value={'asetpts','aresample','atrim','loudnorm'}),self.assertRaisesRegex(ValueError,'acompressor'):require_filters(p)

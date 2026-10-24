@@ -1,8 +1,9 @@
 """Validated numeric audio controls shared by previews and exports."""
-import math
+import math,re
 from functools import lru_cache
 from pathlib import Path
 from filetypes import backend,run
+from task_runtime import checkpoint
 
 EQ_FREQUENCIES=(31,63,125,250,500,1000,2000,4000,8000,16000)
 FX_DEFAULTS={'strength':100.,'eq_enabled':False,'eq':[0.]*10,'highpass':0.,'compressor':False,'comp_threshold':-20.,'comp_ratio':2.,'comp_attack':15.,'comp_release':180.,'comp_makeup':0.,'comp_knee':2.828,'deesser':False,'deess_intensity':.25,'deess_amount':.35,'deess_focus':.55}
@@ -41,13 +42,23 @@ def effect_filters(p):
         filters.append(f"deesser=i={p['deess_intensity']*s:.6f}:m={p['deess_amount']}:f={p['deess_focus']}:s=o")
     return filters
 
+def parse_filter_names(text):
+    # FFmpeg builds differ in status flags and in stdout/stderr routing.
+    text=re.sub(r'\x1b\[[0-9;]*m','',text);names=set()
+    for line in text.splitlines():
+        parts=line.split()
+        for i,part in enumerate(parts):
+            if '->' in part and i and re.fullmatch(r'[a-z][a-z0-9_]*',parts[i-1]):names.add(parts[i-1])
+    return names
+
 @lru_cache(maxsize=4)
 def _filter_names(executable,size,modified):
     result=run([executable,'-hide_banner','-filters'],timeout=30)
     if result.returncode:raise ValueError('FFmpeg-Filter konnten nicht geprüft werden.')
-    return {parts[1] for line in result.stdout.splitlines() if len(parts:=line.split())>=3 and len(parts[0])==3}
+    return parse_filter_names(result.stdout+'\n'+result.stderr)
 
 def require_filters(p):
+    checkpoint()
     executable=backend('ffmpeg')
     if not executable:raise ValueError('FFmpeg fehlt. Im Dashboard unter Einrichtung prüfen.')
     stamp=Path(executable).stat();available=_filter_names(executable,stamp.st_size,stamp.st_mtime_ns)
