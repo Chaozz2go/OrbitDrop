@@ -6,6 +6,13 @@ def home_actions(files,kind,formats):return list(HOME)
 
 def edit_actions(files,kind):
     actions=[]
+    from data_formats import kind_for,STRUCTURED
+    if len(files)==1:
+        data_kind=kind_for(files[0])
+        if data_kind in STRUCTURED|{'CSV','TSV'}:actions.append('DATEN PRÜFEN')
+        if data_kind and data_kind!='Zertifikat':actions.append('TEXTWERKZEUGE')
+        if data_kind in ('CSV','TSV'):actions.append('TABELLE')
+        if data_kind in ('LOG','JSONL'):actions.append('LOG ANSEHEN')
     if kind in ('Bild','PDF') and len(files)==1:actions.append('TEXT ERKENNEN')
     if kind=='Audio':
         from filetypes import backend

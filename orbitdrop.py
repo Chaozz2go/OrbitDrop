@@ -637,7 +637,16 @@ class Controller:
             else:self.submit(ToolJob(action,files,parameters,self.prefs.values),action)
     def circle_action(self,files,action,kind):
         try:
-            if action=='WEBCAM / MIKRO':
+            if action in ('DATEN PRÜFEN','TEXTWERKZEUGE','TABELLE','LOG ANSEHEN','SHA-256','VERGLEICHEN','ZERTIFIKAT'):
+                from data_formats import kind_for
+                if action=='DATEN PRÜFEN':
+                    from data_editor_ui import DataEditor
+                    DataEditor(files[0],kind_for(files[0]),self.prefs.values.get('output_dir') or None).exec()
+                else:
+                    from admin_tools_ui import AdminToolsDialog
+                    mode={'TEXTWERKZEUGE':'text','TABELLE':'table','LOG ANSEHEN':'log','SHA-256':'hash','VERGLEICHEN':'compare','ZERTIFIKAT':'certificate'}[action]
+                    AdminToolsDialog(files,mode,self.prefs.values.get('output_dir') or None).exec()
+            elif action=='WEBCAM / MIKRO':
                 from device_test_ui import DeviceTestDialog
                 DeviceTestDialog().exec()
             elif action=='VERGRÖSSERN':
@@ -816,6 +825,8 @@ class Controller:
 
 
     def file_action(self,files,action):
+        if action in ('SHA-256','VERGLEICHEN','ZERTIFIKAT','DATEN PRÜFEN'):
+            self.circle_action(files,action,None);return
         try:
             validate_paths(files)
             if action=='UMBENENNEN':
@@ -849,6 +860,13 @@ class Controller:
             QMessageBox.warning(None,'OrbitDrop · Dateiaktion',str(error))
 
     def convert_files(self,files,target):
+        from data_formats import kind_for,STRUCTURED
+        if len(files)==1 and kind_for(files[0]) in STRUCTURED|{'CSV','TSV'} and target in ('JSON','YAML','TOML','XML','JSONL','CSV','TSV'):
+            from data_editor_ui import DataEditor
+            DataEditor(files[0],kind_for(files[0]),self.prefs.values.get('output_dir') or None,target=target).exec();return
+        if len(files)==1 and kind_for(files[0])=='Zertifikat':
+            from admin_tools_ui import AdminToolsDialog
+            dialog=AdminToolsDialog(files,'certificate',self.prefs.values.get('output_dir') or None);dialog.cert_target.setCurrentText(target);dialog.exec();return
         title=Path(files[0]).name+f' → {target}'+(f' (+{len(files)-1})' if len(files)>1 else '')
         self.submit(Conversion(files,target,self.prefs.values),title)
 

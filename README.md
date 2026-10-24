@@ -2,7 +2,7 @@
 
 **Dateien umwandeln, bearbeiten und organisieren – direkt dort, wo du sie gerade ziehst.**
 
-OrbitDrop ist ein Windows-Dateiwerkzeug mit einem radialen Drag-and-drop-Menü. Ziehe eine Datei, tippe eine Taste an und lege sie auf der gewünschten Aktion im Kreis ab. Statt für jede kleine Aufgabe ein eigenes Programm zu öffnen, erreichst du Konverter, Bildeditor, Audio-/Videoschnitt, Downloads und Dateiaktionen über dieselbe Oberfläche.
+OrbitDrop ist ein Windows-Dateiwerkzeug mit einem radialen Drag-and-drop-Menü. Ziehe eine Datei, tippe eine Taste an und lege sie auf der gewünschten Aktion im Kreis ab. Statt für jede kleine Aufgabe ein eigenes Programm zu öffnen, erreichst du Konverter, Bildeditor, Audio-/Videoschnitt, Downloads, Datenprüfung und Admin-Werkzeuge über dieselbe Oberfläche.
 
 OrbitDrop erkennt den Dateiinhalt und zeigt passende Aktionen für deine Auswahl. Du kannst mehrere Dateien gemeinsam verarbeiten, häufige Aktionen als Favoriten speichern und unbenutzte Menüpunkte ausblenden. Konvertierung, Bearbeitung und Texterkennung laufen lokal auf deinem Rechner.
 
@@ -14,9 +14,9 @@ OrbitDrop erkennt den Dateiinhalt und zeigt passende Aktionen für deine Auswahl
 
 | Bereich | Standardtaste | Beispiele |
 | --- | --- | --- |
-| 🟢 Konvertieren | **Shift** | Bilder, Audio, Video, Dokumente und Untertitel umwandeln |
-| 🟠 Bearbeiten | **Strg** | Schneiden, zuschneiden, drehen, komprimieren, Text erkennen |
-| 🔵 Tools | **Alt** | ZIP, Ablage, Terminal, Umbenennen, Downloads und Einstellungen |
+| 🟢 Konvertieren | **Shift** | Bilder, Audio, Video, Dokumente, Untertitel und strukturierte Daten umwandeln |
+| 🟠 Bearbeiten | **Strg** | Schneiden, Bildbearbeitung, Daten prüfen, Text und Tabellen bearbeiten |
+| 🔵 Tools | **Alt** | ZIP, Ablage, Terminal, Umbenennen, SHA-256, Dateivergleich und Zertifikate |
 
 ## Installation · Quick Install
 
@@ -285,3 +285,29 @@ Dateiverarbeitung und OCR erfolgen lokal. Internet wird für gestartete Download
 ### Webcam & Mikrofon prüfen
 
 **Tray-Symbol anklicken → Tools → Webcam / Mikro**. Gerät wählen und Kamera bzw. Mikrofon ausdrücklich starten. Livebild und Mikrofonpegel zeigen, ob Signale ankommen. Es wird nichts aufgezeichnet oder gespeichert. Stoppen oder Schließen gibt die Geräte frei. Bei Problemen Windows-Zugriff prüfen und andere Kamera-Apps schließen.
+
+### Daten prüfen und reparieren · JSON, YAML, TOML, XML und JSONL
+
+**Datei greifen → Strg → Daten prüfen** öffnet den Editor auch bei ungültiger Syntax. Alternativ **Alt → Daten prüfen**. Im Text bearbeiten; nach einer kurzen Pause wird erneut geprüft. Die Anzeige nennt Zeile und Spalte, markiert die Fehlerzeile und zeigt den umliegenden Ausschnitt. **Zur Fehlerstelle** springt direkt dorthin. Die tatsächliche Ursache kann unmittelbar davor liegen, etwa ein fehlendes Komma hinter dem vorherigen Wert.
+
+**Korrektur ansehen** bietet bei einfachen JSON-Satzzeichenfehlern einen Vorschlag: fehlendes Komma, Doppelpunkt, schließende Klammer oder ein überflüssiges letztes Komma. Nur Vorschläge, die danach die Syntaxprüfung bestehen, werden angeboten. Vorher-/Nachher-Vorschau prüfen und bewusst übernehmen. Werte werden nicht geraten. Doppelte JSON-/YAML-Schlüssel müssen ausdrücklich geändert oder entfernt werden.
+
+Gültige Daten erscheinen daneben als aufklappbarer Baum. Suche durchsucht den Text; Baumwerte und ihre JSON-Pointer lassen sich kopieren. **Lesbar formatieren**, **Kompakt** (JSON/JSONL) und **Schlüssel sortieren** zeigen ebenfalls eine Vorschau. **Neue Datei speichern** erhält die Quelldatei und verwendet einen freien Ausgabenamen. Beim Schließen mit ungespeicherten Änderungen wird nachgefragt. Der Editor prüft die Syntax, kein JSON-Schema oder XSD.
+
+**Shift → Zielformat** bietet passende Umwandlungen nach JSON, YAML, TOML, XML, CSV, TSV oder JSONL. Bei einer einzelnen Datei öffnet sich der Prüfeditor mit Umwandlungsvorschau. XML verwendet die explizite Struktur `tag`, `attributes`, `text`, `tail`, `children`; aus beliebigen JSON-Objekten werden keine XML-Elementnamen erfunden. CSV benötigt eine Liste gleich aufgebauter Objekte mit einfachen Werten; im Editor lässt sich ein Unterbereich über einen JSON-Pointer wie `/daten` auswählen. Datums-/Zeittypen und TOML-inkompatible Werte wie `null` werden nicht stillschweigend umgedeutet.
+
+**Grenzen:** höchstens 8 MiB pro Editor-Datei, 64 Struktur-Ebenen und 100000 Werte. YAML-Anker, Aliase und Sondertags sowie XML-DTDs/Entities werden nicht umgewandelt. Neuformatierung/Formatwechsel kann Kommentare, XML-Präfixe und Schreibweisen ändern; die Vorschau zeigt das Ergebnis. Dezimalzahlen werden mit Dezimalarithmetik eingelesen.
+
+### Text, Tabellen und Logs
+
+- **Strg → Textwerkzeuge:** Eingangskodierung auswählen (automatisch UTF-8 oder BOM), nach UTF-8/UTF-16/Windows-1252/Latin-1 exportieren, LF/CRLF umstellen, wörtlich suchen/ersetzen, Zeilen nummerieren, sortieren oder Duplikate entfernen. Vorschau vor dem Export. Auch Konfigurationsdateien und Skripte, ohne deren Ausführung.
+- **CSV/TSV → Strg → Tabelle:** Trennzeichen und Kodierung ändern, Spalten auswählen, eine Spalte alphabetisch sortieren, doppelte Ergebniszeilen entfernen und als CSV/TSV/JSON exportieren. Die erste Zeile muss eindeutige Spaltennamen enthalten; Tabellenwerte bleiben Text. Hierfür ist kein LibreOffice nötig.
+- **LOG/JSONL → Strg → Log ansehen:** nach Text und optional ISO-Zeitstempeln filtern oder letzte Zeilen anzeigen. Zeiten ohne Zeitzone gelten als UTC; bei aktivem Zeitfilter entfallen Zeilen ohne Zeitstempel. Vollständiges Filtern maximal 512 MiB; letzte Zeilen werden aus den letzten 4 MiB gelesen. Vorschau höchstens 5000 Treffer/2 MiB, Export bis 100 MiB.
+
+### Prüfsummen, Dateivergleich und Zertifikate
+
+**Dateien → Alt → SHA-256:** Prüfsummen berechnen und optional gegen einen erwarteten Hex-Wert vergleichen. **Zwei Dateien → Alt → Vergleichen:** Textunterschiede mit Minus-/Plus-Markierungen; bei Binärdateien Größen, Prüfsummen und bytegenauer Vergleich. Textvergleich höchstens 8 MiB pro Datei und 50000 Zeilen insgesamt.
+
+**PEM/CRT/CER/DER/PFX/P12 → Alt → Zertifikat:** Inhaber, Aussteller, SANs, Seriennummer, Gültigkeitszeit, CA-Kennzeichen und SHA-256-Fingerabdruck anzeigen. PFX fragt im Fenster nach dem Passwort; es wird nicht gespeichert. Export nach PEM oder DER enthält ausschließlich öffentliche Zertifikate. DER-Ausgabe hier nur für ein einzelnes Zertifikat, Ketten als PEM. Keine Prüfung der Vertrauenskette, des Hostnamens oder von Sperrlisten. Zertifikatsdateien maximal 4 MiB.
+
+Alle genannten Daten- und Admin-Werkzeuge arbeiten lokal. Die bestehenden Medienwerkzeuge und die Radialoptik bleiben erhalten. Neue Menüpunkte lassen sich wie gewohnt in den Einstellungen ausblenden.

@@ -48,6 +48,29 @@ def self_test(report):
             upscale=UpscaleDialog(source,lambda *args:None);upscale.show();deadline=time.monotonic()+15
             while not upscale.save_button.isEnabled() and time.monotonic()<deadline:QApplication.processEvents();time.sleep(.01)
             results['upscale_dialog']=upscale.save_button.isEnabled();upscale.close()
+            from data_formats import parse,serialize
+            from data_editor_ui import DataEditor
+            broken=root/'broken.json';broken.write_text('{"server":"local"\n"port":80}',encoding='utf-8')
+            data_editor=DataEditor(broken,'JSON');data_editor.show();deadline=time.monotonic()+10
+            while data_editor.issue is None and time.monotonic()<deadline:QApplication.processEvents();time.sleep(.01)
+            results['data_editor']=data_editor.issue is not None and data_editor.fix.isEnabled();data_editor.close()
+            config=root/'config.json';config.write_text('{"name":"OrbitDrop","value":1.234567890123456789}',encoding='utf-8')
+            yaml=convert(config,'YAML');toml=convert(yaml,'TOML')
+            results['data_formats']=parse(toml.read_text(encoding='utf-8'),'TOML')==parse(config.read_text(encoding='utf-8'),'JSON')
+            from admin_tools import certificate_report,certificate_bytes,file_hashes,log_lines
+            from admin_tools_ui import AdminToolsDialog
+            from cryptography import x509
+            from cryptography.x509.oid import NameOID
+            from cryptography.hazmat.primitives import hashes
+            from cryptography.hazmat.primitives.asymmetric import rsa
+            from cryptography.hazmat.primitives.serialization import Encoding
+            from datetime import datetime,timedelta,timezone
+            key=rsa.generate_private_key(65537,2048);subject=x509.Name([x509.NameAttribute(NameOID.COMMON_NAME,'orbitdrop.local')]);now=datetime.now(timezone.utc)
+            certificate=x509.CertificateBuilder().subject_name(subject).issuer_name(subject).public_key(key.public_key()).serial_number(1).not_valid_before(now-timedelta(days=1)).not_valid_after(now+timedelta(days=1)).sign(key,hashes.SHA256())
+            certpath=root/'cert.pem';certpath.write_bytes(certificate.public_bytes(Encoding.PEM));results['certificates']='orbitdrop.local' in certificate_report(certpath) and bool(certificate_bytes(certpath,'DER'))
+            admin=AdminToolsDialog([config],'hash');admin.show();QApplication.processEvents();results['admin_dialog']=admin.isVisible() and 'hash' in admin.pages;admin.close()
+            results['hashes']='SHA-256:' in file_hashes([config])
+            log=root/'app.log';log.write_text('INFO ready\nERROR test\n',encoding='utf-8');results['logs']=''.join(log_lines(log,needle='ERROR'))=='ERROR test\n'
             pdf=root/'source.pdf'
             with pymupdf.open() as doc:doc.new_page().insert_text((20,40),'OrbitDrop');doc.save(pdf)
             with pymupdf.open(pdf) as doc:results['pdf']='OrbitDrop' in doc[0].get_text()

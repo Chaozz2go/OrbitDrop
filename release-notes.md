@@ -1,10 +1,16 @@
-OrbitDrop 0.29.0 · Bilder, Archive und direkter Zugriff
+OrbitDrop 0.30.0 · Daten- und Admin-Werkzeuge
 
-- Bilder ohne KI vergrößern: Lanczos, bikubisch, Pixel-Art, eigene Größe, Vorschau, optional Entrauschen/Nachschärfen. Auch aus dem Bildeditor.
-- Archivdialog für ZIP/7z/TAR.GZ, Kompressionsstufen, AES-ZIP-Passwort, Prüfung, Inhaltsauswahl und Konfliktbehandlung. 7z, verschlüsselte Dateinamen und Teilarchive optional mit 7-Zip (Dashboard → Einrichtung).
-- Bilder nach EXIF-Datum, Uhrzeit und Kameramodell umbenennen. Ordner inklusive optionaler Unterordner, Vorschau und Rücknahme über Neustarts hinweg.
-- Linksklick auf das Tray-Symbol öffnet den ursprünglichen Startkreis. Tools-Kreis bleibt nach Loslassen offen, auch beim Öffnen ohne Datei auf einer freien Explorer-/Desktop-Stelle. Esc schließt.
-- Webcam / Mikro im Tools-Kreis: Geräte wählen, Livebild und Signalpegel nach explizitem Start; keine Aufnahme oder Speicherung.
-- Anleitung und Einrichtung aktualisiert. Radialoptik bleibt unverändert auf Basis 0.20.
+- Prüfen & Bearbeiten für JSON, YAML, TOML, XML und JSONL, auch bei kaputter Syntax. Zeile/Spalte, markierte Fehlerzeile, Ausschnitt und Sprung zur Fehlerstelle.
+- Einfache JSON-Korrekturvorschläge mit Vorher-/Nachher-Vorschau: fehlende Kommas/Doppelpunkte/Klammern und überflüssiges letztes Komma. Keine automatische Übernahme und kein Erraten von Werten. Doppelte Schlüssel werden gemeldet.
+- Baumansicht, Suche, Pfad/Wert kopieren, formatieren, JSON kompakt und Schlüssel sortieren. Speichern als neue Datei; Originale bleiben erhalten.
+- Passende Konvertierungen zwischen JSON/YAML/TOML/XML/CSV/TSV/JSONL mit Vorschau bei einzelnen Dateien. XML verwendet eine explizite Knotenstruktur; unpassende Umwandlungen werden abgewiesen.
+- Textwerkzeuge: Zeichenkodierungen, Windows-/Linux-Zeilenumbrüche, Suchen/Ersetzen, Zeilennummern, Sortieren und Duplikate.
+- CSV/TSV: Trennzeichen, Kodierung, Spaltenauswahl, Sortieren, Duplikate und JSON-Export ohne LibreOffice.
+- Logs/JSONL: Streaming-Text-/ISO-Zeitfilter, letzte Zeilen, Vorschau und Export.
+- SHA-256 für Dateien sowie Vergleich von zwei Text-/Binärdateien.
+- X.509-Zertifikatsanzeige für PEM/CRT/CER/DER/PFX/P12: Details, SANs, Ablaufdatum und Fingerabdruck; Export öffentlicher Zertifikate als PEM/DER. Private Schlüssel werden nicht exportiert. Keine Vertrauens-/Sperrlistenprüfung.
+- Alles lokal, neue Menüpunkte ausblendbar. Radialoptik und bestehende Medienfunktionen bleiben erhalten.
 
-Windows-Setup und Portable benötigen kein installiertes Python. FFmpeg/FFprobe und OCR-Sprachdaten sind enthalten. Die optionale 7-Zip-Installation wird nur für die genannten Zusatzfunktionen benötigt. Kamera/Mikrofon hängen von vorhandenen Geräten und Windows-Zugriffsrechten ab.
+Syntaxprüfung ohne JSON-Schema/XSD. Editor maximal 8 MiB, 64 Ebenen/100000 Werte; Logs vollständig filtern bis 512 MiB oder letzte Zeilen aus 4 MiB. Kommentare und Schreibweisen können sich bei Formatwechseln ändern; Vorschau prüfen. YAML-Anker/Aliase/Sondertags und XML-DTDs/Entities werden nicht umgewandelt.
+
+Windows-Paket enthält alle neuen Abhängigkeiten. Keine separate Python- oder OpenSSL-Installation nötig.

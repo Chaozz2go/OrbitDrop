@@ -9,8 +9,12 @@ import sys
 from PySide6.QtCore import QMimeData, QUrl
 from task_runtime import checkpoint,copy_stream
 
-FILE_ACTIONS = ('ZIP', 'ABLAGE', 'KOPIEREN', 'VERSCHIEBEN', 'ENTPACKEN', 'PFAD', 'TERMINAL', 'EXPLORER','UMBENENNEN')
+FILE_ACTIONS = ('SHA-256','VERGLEICHEN','ZERTIFIKAT','DATEN PRÜFEN','ZIP', 'ABLAGE', 'KOPIEREN', 'VERSCHIEBEN', 'ENTPACKEN', 'PFAD', 'TERMINAL', 'EXPLORER','UMBENENNEN')
 DESCRIPTIONS = {
+    'SHA-256':'Prüfsumme lokal berechnen und mit einem erwarteten Wert vergleichen.',
+    'VERGLEICHEN':'Genau zwei Dateien auf Unterschiede prüfen.',
+    'ZERTIFIKAT':'X.509-Details und Gültigkeit anzeigen; öffentliche Zertifikate exportieren.',
+    'DATEN PRÜFEN':'JSON, YAML, TOML, XML oder JSONL prüfen; Fehler verständlich anzeigen.',
     'UMBENENNEN': 'Dateinamen mit Vorschau und Konfliktprüfung ändern.',
     'ZIP': 'Archiv erstellen: ZIP, 7z oder TAR.GZ mit Kompression, Passwort und Zielwahl.',
     'ENTPACKEN': 'Archivinhalt ansehen, auswählen, prüfen und am gewählten Ort entpacken.',
@@ -28,7 +32,11 @@ def available_file_actions(files=None):
         can_unpack=bool(files) and all(archive_kind(file) for file in files)
     except OSError:
         can_unpack=False
-    return tuple(action for action in FILE_ACTIONS if (action!='ENTPACKEN' or can_unpack) and (action!='UMBENENNEN' or bool(files) and all((Path(file).is_file() or Path(file).is_dir()) and not Path(file).is_symlink() for file in files)))
+    from data_formats import kind_for,STRUCTURED
+    regular=bool(files) and all(Path(f).is_file() for f in files)
+    one_kind=kind_for(files[0]) if regular and len(files)==1 else None
+    contextual={'SHA-256':regular,'VERGLEICHEN':regular and len(files)==2,'ZERTIFIKAT':one_kind=='Zertifikat','DATEN PRÜFEN':one_kind in STRUCTURED|{'CSV','TSV'}}
+    return tuple(action for action in FILE_ACTIONS if contextual.get(action,True) and (action!='ENTPACKEN' or can_unpack) and (action!='UMBENENNEN' or bool(files) and all((Path(file).is_file() or Path(file).is_dir()) and not Path(file).is_symlink() for file in files)))
 
 def paths_from_urls(urls):
     if not urls or not all(url.isLocalFile() for url in urls):
