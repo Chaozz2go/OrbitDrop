@@ -80,6 +80,10 @@ class DataToolTests(unittest.TestCase):
         self.assertEqual(records(value,'/data/')[0],[{'x':1}]);self.assertEqual(records(value,'/a~1b')[0],[{'x':2}])
         for pointer in ('data','/missing','/a~2b'):
             with self.assertRaises(ValueError):records(value,pointer)
+    def test_large_csv_is_bounded_before_building_records(self):
+        header=','.join('column'+str(n) for n in range(1000))
+        text=header+'\n'+((','*999+'\n')*101)
+        with self.assertRaisesRegex(ValueError,'100000 Zellen'):read_table(text)
     def test_jsonl_reports_actual_line_and_converts_back(self):
         value=parse('{"x":1}\n\n{"x":2}\n','JSONL');self.assertEqual(parse(serialize(value,'JSONL'),'JSONL'),value)
         with self.assertRaises(DataProblem) as c:parse('{"x":1}\n\n{"x":}\n','JSONL')
@@ -107,6 +111,7 @@ class DataToolTests(unittest.TestCase):
     def test_log_stream_filter_time_and_tail(self):
         source=self.source('app.log','2026-10-24T07:00:00Z INFO first\n2026-10-24T08:00:00Z ERROR second\nno timestamp\n2026-10-24T09:00:00Z ERROR last\n')
         result=''.join(log_lines(source,needle='error',start='2026-10-24T08:00:00Z',end='2026-10-24T08:30:00Z'));self.assertIn('second',result);self.assertNotIn('last',result)
+        crlf=self.source('windows.log','INFO ready\r\nERROR test\r\n');self.assertEqual(''.join(log_lines(crlf,needle='ERROR')),'ERROR test\r\n')
         self.assertIn('last',''.join(log_lines(source,tail=1)));self.assertNotIn('first',''.join(log_lines(source,tail=1)))
         large=self.source('large.log','ä'*250+'\n');large.write_bytes(large.read_bytes()*10000)
         self.assertEqual(len(''.join(log_lines(large,tail=3)).splitlines()),3)

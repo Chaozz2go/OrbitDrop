@@ -40,7 +40,8 @@ def build(onefile=False):
     app=root/'dist'/'OrbitDrop';report=output/'windows-smoke.json'
     process=subprocess.Popen([str(app/'OrbitDrop.exe'),'--self-test',str(report)],cwd=app)
     code=process.wait(timeout=180)
-    if code or not report.is_file() or not json.loads(report.read_text()).get('ok'):raise RuntimeError('Test der gebündelten EXE fehlgeschlagen. windows-smoke.json prüfen.')
+    payload=json.loads(report.read_text(encoding='utf-8')) if report.is_file() else {'error':'Kein Testbericht erzeugt.'}
+    if code or not payload.get('ok'):raise RuntimeError('Test der gebündelten EXE fehlgeschlagen: '+json.dumps(payload,ensure_ascii=True))
     with zipfile.ZipFile(output/f'OrbitDrop-{version}-Windows-x64-Portable.zip','w',zipfile.ZIP_DEFLATED) as archive:
         for path in app.rglob('*'):
             if path.is_file():archive.write(path,'OrbitDrop/'+path.relative_to(app).as_posix())

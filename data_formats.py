@@ -186,13 +186,15 @@ def read_table(text,kind='CSV',delimiter=None):
         try:delimiter=csv.Sniffer().sniff(text[:8192],delimiters=',;\t|').delimiter
         except csv.Error:delimiter=','
     if delimiter not in (',',';','\t','|'):raise ValueError('Ungültiges Trennzeichen.')
-    rows=[];positions=[];reader=csv.reader(io.StringIO(text,newline=''),delimiter=delimiter,strict=True)
+    rows=[];positions=[];cells=0;reader=csv.reader(io.StringIO(text,newline=''),delimiter=delimiter,strict=True)
     try:
         while True:
             start_line=reader.line_num
             try:row=next(reader)
             except StopIteration:break
-            checkpoint(message='Tabellenzeilen werden geprüft …');rows.append(row);positions.append(start_line)
+            checkpoint(message='Tabellenzeilen werden geprüft …');cells+=len(row)
+            if cells>100000:raise ValueError('Tabelle zu groß (max. 100000 Zellen). Für große Exporte zuerst einen Ausschnitt verwenden.')
+            rows.append(row);positions.append(start_line)
             if len(rows)>100000 or len(row)>1000:raise ValueError('Tabelle zu groß.')
     except csv.Error as e:
         offset=sum(len(line) for line in text.splitlines(keepends=True)[:max(0,reader.line_num-1)])

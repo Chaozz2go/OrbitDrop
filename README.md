@@ -301,7 +301,7 @@ Gültige Daten erscheinen daneben als aufklappbarer Baum. Suche durchsucht den T
 ### Text, Tabellen und Logs
 
 - **Strg → Textwerkzeuge:** Eingangskodierung auswählen (automatisch UTF-8 oder BOM), nach UTF-8/UTF-16/Windows-1252/Latin-1 exportieren, LF/CRLF umstellen, wörtlich suchen/ersetzen, Zeilen nummerieren, sortieren oder Duplikate entfernen. Vorschau vor dem Export. Auch Konfigurationsdateien und Skripte, ohne deren Ausführung.
-- **CSV/TSV → Strg → Tabelle:** Trennzeichen und Kodierung ändern, Spalten auswählen, eine Spalte alphabetisch sortieren, doppelte Ergebniszeilen entfernen und als CSV/TSV/JSON exportieren. Die erste Zeile muss eindeutige Spaltennamen enthalten; Tabellenwerte bleiben Text. Hierfür ist kein LibreOffice nötig.
+- **CSV/TSV → Strg → Tabelle:** Trennzeichen und Kodierung ändern, Spalten auswählen, eine Spalte alphabetisch sortieren, doppelte Ergebniszeilen entfernen und als CSV/TSV/JSON exportieren. Die erste Zeile muss eindeutige Spaltennamen enthalten; Tabellenwerte bleiben Text. Hierfür ist kein LibreOffice nötig. Maximal 100000 Zellen pro Tabelle.
 - **LOG/JSONL → Strg → Log ansehen:** nach Text und optional ISO-Zeitstempeln filtern oder letzte Zeilen anzeigen. Zeiten ohne Zeitzone gelten als UTC; bei aktivem Zeitfilter entfallen Zeilen ohne Zeitstempel. Vollständiges Filtern maximal 512 MiB; letzte Zeilen werden aus den letzten 4 MiB gelesen. Vorschau höchstens 5000 Treffer/2 MiB, Export bis 100 MiB.
 
 ### Prüfsummen, Dateivergleich und Zertifikate

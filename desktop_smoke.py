@@ -70,7 +70,7 @@ def self_test(report):
             certpath=root/'cert.pem';certpath.write_bytes(certificate.public_bytes(Encoding.PEM));results['certificates']='orbitdrop.local' in certificate_report(certpath) and bool(certificate_bytes(certpath,'DER'))
             admin=AdminToolsDialog([config],'hash');admin.show();QApplication.processEvents();results['admin_dialog']=admin.isVisible() and 'hash' in admin.pages;admin.close()
             results['hashes']='SHA-256:' in file_hashes([config])
-            log=root/'app.log';log.write_text('INFO ready\nERROR test\n',encoding='utf-8');results['logs']=''.join(log_lines(log,needle='ERROR'))=='ERROR test\n'
+            log=root/'app.log';log.write_text('INFO ready\nERROR test\n',encoding='utf-8',newline='');results['logs']=''.join(log_lines(log,needle='ERROR'))=='ERROR test\n'
             pdf=root/'source.pdf'
             with pymupdf.open() as doc:doc.new_page().insert_text((20,40),'OrbitDrop');doc.save(pdf)
             with pymupdf.open(pdf) as doc:results['pdf']='OrbitDrop' in doc[0].get_text()
