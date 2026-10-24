@@ -179,5 +179,5 @@ class DataEditor(QDialog):
             if QMessageBox.question(self,'Änderungen verwerfen?','Nicht gespeicherte Änderungen verwerfen?',QMessageBox.StandardButton.Discard|QMessageBox.StandardButton.Cancel,QMessageBox.StandardButton.Cancel)!=QMessageBox.StandardButton.Discard:event.ignore();return
         self.closed=True;self.timer.stop()
         for job in self.jobs:job.control.cancel()
-        super().closeEvent(event)
+        self.done(QDialog.DialogCode.Rejected);event.accept()
     def reject(self):self.close()

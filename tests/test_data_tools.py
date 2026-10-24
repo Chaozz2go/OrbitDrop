@@ -6,6 +6,7 @@ from decimal import Decimal
 from datetime import datetime,timezone,timedelta
 from unittest.mock import patch
 from PySide6.QtWidgets import QApplication,QMessageBox
+from PySide6.QtCore import QTimer
 from data_formats import parse,serialize,json_repair,DataProblem,read_text,available_targets,records,read_table
 from admin_tools import text_transform,table_transform,log_lines,file_hashes,compare_files,certificate_report,certificate_bytes
 from filetypes import inspect_file
@@ -147,6 +148,13 @@ class DataToolTests(unittest.TestCase):
         self.wait(lambda:d.save.isEnabled());self.assertEqual(source.read_bytes(),before);self.assertEqual(d.tree.topLevelItemCount(),1)
         item=d.tree.topLevelItem(0).child(1);d.tree.setCurrentItem(item);d.copy_tree_path();self.assertEqual(self.app.clipboard().text(),'/port')
         d.save_current();self.wait(lambda:'gespeichert:' in d.status.text());self.assertEqual(source.read_bytes(),before);self.assertFalse(d.editor.document().isModified())
+    def test_modal_editors_reject_exits_the_dialog_loop(self):
+        source=self.source('config.json','{"x":1}')
+        for dialog in (DataEditor(source,'JSON'),AdminToolsDialog([source],'hash')):
+            timeout=[];guard=QTimer();guard.setSingleShot(True)
+            guard.timeout.connect(lambda d=dialog:(timeout.append(True),d.done(0)));guard.start(1500)
+            QTimer.singleShot(100,dialog.reject);result=dialog.exec();guard.stop()
+            self.assertFalse(timeout);self.assertFalse(dialog.isVisible());self.assertEqual(result,0)
     def test_admin_ui_tabs_are_contextual_and_hash_is_async(self):
         source=self.source('app.log','hello\n');d=AdminToolsDialog([source],'log');self.addCleanup(d.close);self.assertIn('log',d.pages);self.assertNotIn('certificate',d.pages);d.hash_files();self.wait(lambda:d.job is None);self.assertIn(hashlib.sha256(source.read_bytes()).hexdigest(),d.view.toPlainText())
         csv=self.source('data.csv','x\n1');e=AdminToolsDialog([csv],'table');self.addCleanup(e.close);self.assertIn('table',e.pages)

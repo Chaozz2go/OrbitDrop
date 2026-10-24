@@ -142,5 +142,5 @@ class AdminToolsDialog(QDialog):
             QMessageBox.information(self,'Auftrag läuft','Bitte den Auftrag abschließen oder abbrechen und danach schließen.');event.ignore();return
         self.closed=True
         if hasattr(self,'password'):self.password.clear()
-        super().closeEvent(event)
+        self.done(QDialog.DialogCode.Rejected);event.accept()
     def reject(self):self.close()
