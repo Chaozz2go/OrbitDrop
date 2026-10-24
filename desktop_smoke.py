@@ -89,7 +89,17 @@ def self_test(report):
                 results['ocr']='12345' in recognize_text(scan,'eng',200,tess)
             if importlib.util.find_spec('audio_tools'):
                 from audio_tools import improve_audio
-                output=improve_audio([convert(video,'WAV')],{'normalize':True,'format':'FLAC'},{});results['audio']=Path(output[0]).stat().st_size>0
+                from audio_profiles import factory_profile
+                from audio_tools_ui import AudioToolsDialog
+                audio_source=convert(video,'WAV');output=improve_audio([audio_source],{**factory_profile('radio'),'normalize':True,'protect':True,'format':'FLAC'},{});results['audio']=Path(output[0]).stat().st_size>0
+                audio_dialog=AudioToolsDialog([audio_source],lambda *args:None,prefs);audio_dialog.show();deadline=time.monotonic()+15
+                while audio_dialog.probe_job is not None and time.monotonic()<deadline:QApplication.processEvents();time.sleep(.01)
+                audio_dialog.request_preview();deadline=time.monotonic()+20
+                while audio_dialog.preview_job is not None and time.monotonic()<deadline:QApplication.processEvents();time.sleep(.01)
+                results['audio_preview']=audio_dialog.preview is not None and audio_dialog.play.isEnabled()
+                preview_root=audio_dialog.preview.root if audio_dialog.preview else None;audio_dialog.reject();deadline=time.monotonic()+4
+                while preview_root and preview_root.exists() and time.monotonic()<deadline:QApplication.processEvents();time.sleep(.01)
+                results['audio_preview_cleanup']=audio_dialog.closed and preview_root is not None and not preview_root.exists()
         ok=bool(results) and all(results.values())
     except Exception as error:ok=False;results['error']=str(error)
     Path(report).write_text(json.dumps({'ok':ok,'checks':results},ensure_ascii=False,indent=2),encoding='utf-8')

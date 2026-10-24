@@ -660,7 +660,7 @@ class Controller:
                 OcrDialog(files[0],self.prefs,self.submit_editor).exec()
             elif action=='AUDIO VERBESSERN':
                 from audio_tools_ui import AudioToolsDialog
-                AudioToolsDialog(files,self.submit_editor).exec()
+                AudioToolsDialog(files,self.submit_editor,self.prefs).exec()
             elif action=='UPDATES':self.updates()
             elif action=='AKTIONSSUCHE':self.search_actions(files,kind)
             elif action=='BILDABLÄUFE':

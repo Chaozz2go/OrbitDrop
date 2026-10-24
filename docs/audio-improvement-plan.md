@@ -1,5 +1,5 @@
 # Audio verbessern · Ausbauvorschlag
-Stand: 24. Oktober 2026. **Recherche und Vorschlag, noch nicht implementiert.**
+Stand: 24. Oktober 2026. **Erste Etappe in Version 0.31.0 umgesetzt:** Profile (ohne Telefon-Effekt), einfacher und zehnbandiger EQ, Kompressor, De-Esser, kurze A/B-Vorschau und eigene Profile. Die übrigen Punkte bleiben Vorschläge für weitere Etappen.
 
 ## Bedienung
 Ein Fenster mit Profilwahl, kurzer Erklärung, Stärke-Regler und Hörvorschau. Erweiterte Einstellungen bleiben aufklappbar. Effekte einzeln deaktivieren, zurücksetzen und eigene Profile speichern. Profile sind veränderbare Ausgangspunkte für die jeweilige Aufnahme.
@@ -15,7 +15,7 @@ Vorher/Nachher am selben gewählten Ausschnitt (z. B. 10–30 Sekunden), mit opt
 | Interview / Besprechung | Verständlichkeit, gleichmäßige Pegel, optionale dezente Rauschminderung |
 | Hörbuch / Vorlesen | Natürlicher, wenig ermüdender Sprachklang |
 | Musik · sanft | Breite Klangkorrekturen; Sprachfilter und Gate standardmäßig aus |
-| Telefon / altes Radio · Effekt | Bewusst eingeschränktes Frequenzband als Kreativeffekt |
+| Telefon / altes Radio · Effekt · später | Bewusst eingeschränktes Frequenzband als Kreativeffekt |
 
 Radio-Klang und Rundfunk-Lautheit getrennt einstellen. Ein Lautheitswert alleine erzeugt keinen Moderationsklang. Keine pauschale Sender-/Plattformkonformität versprechen.
 

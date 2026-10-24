@@ -165,13 +165,17 @@ Mit **100–1600 % Zoom**, horizontalem Scrollen und **Einpassen** navigierst du
 
 ### 6. Audio verbessern
 
-**Audiodatei ziehen → Strg → Audio verbessern.**
+**Audiodatei ziehen → Strg → Audio verbessern.** Profil auswählen: **Podcast · natürlich**, **Stimme · warm**, **Radio · Moderation**, **Interview/Besprechung**, **Hörbuch/Vorlesen** oder **Musik · sanft**. Neutral setzt die Klangbearbeitung zurück. Lautheitsziel, Ausgabe und Fades bleiben beim Profilwechsel erhalten. Der Stärke-Regler dosiert die Klangbearbeitung; Lautheitsnormalisierung und Spitzenschutz sind davon unabhängig.
 
-1. Bei Bedarf Lautheit normalisieren und ein Ziel wie −16 oder −23 LUFS wählen.
-2. Optional Stille am Anfang und Ende entfernen. Der Schwellwert-Regler legt fest, was als Stille zählt; innere Pausen bleiben erhalten.
-3. Ein-/Ausblenden in Sekunden einstellen und als neue FLAC-, WAV- oder MP3-Datei ausgeben.
+Bass, Wärme, Klarheit und Höhen sind sofort erreichbar. Unter **Erweitert** stehen zehn EQ-Bänder mit Kurve, Hochpass gegen Rumpeln, Kompressor (Threshold, Ratio, Attack, Release, Make-up, weicher Übergang) und De-Esser gegen S-Laute bereit. Effekte einzeln ausschalten, EQ neutral setzen oder die aktuellen Klangwerte als **eigenes Profil** speichern. Eigene Profile bleiben nach einem Neustart erhalten und können einzeln gelöscht werden. Die Profile sind anpassbare Ausgangspunkte, keine Garantie für eine bestimmte Stimme oder Senderkonformität.
 
-Zu hohe Stille-Schwellen können sehr leise Anfänge oder Enden abschneiden. Die Normalisierung misst in zwei Durchläufen; FFmpeg und FFprobe werden benötigt.
+**Hörvorschau:** Bei mehreren Dateien eine auswählen; Start und Länge (maximal 30 Sekunden) einstellen, dann **Hörvorschau berechnen**. Mit Original/Bearbeitet an derselben Position umschalten, mit Leertaste starten/pausieren und über den Positionsregler springen. Die optionale RMS-Pegelangleichung schwächt die lautere Fassung nur für die Wiedergabe ab. Das erleichtert den Klangvergleich; sie verändert den Exportpegel nicht. Automatische Aktualisierung berechnet nach Regleränderungen nur den kurzen Ausschnitt neu. Die letzten drei Vorschauen werden während des offenen Fensters wiederverwendet; temporäre Dateien werden beim Schließen entfernt.
+
+Die Vorschau verwendet dieselbe Klangbearbeitung wie der Export. Randstille und Fades beziehen sich auf die **ganze Datei** und werden erst beim Export angewendet; die endgültige Lautheit wird über die gesamte bearbeitete Datei gemessen und kann vom Ausschnitt abweichen. Mehrkanalquellen werden in der Hörvorschau auf Stereo gemischt.
+
+Lautheit wird in zwei Durchläufen angeglichen; Zielwert und Spitzenreserve lassen sich unter Erweitert einstellen. Der optionale Spitzenschutz arbeitet mit Oversampling. Das ist keine vollständige Rundfunk-Konformitätsprüfung. Randstille entfernen lässt innere Sprechpausen erhalten. Schwelle, Randzugabe und Fades sind weiterhin einstellbar.
+
+**Neue Audiodateien erstellen** verarbeitet die Auswahl als neue FLAC-, WAV- oder MP3-Dateien. Originale bleiben erhalten. Ausgabe mit 48 kHz, WAV 24 Bit, MP3 192 kbit/s. FFmpeg/FFprobe sind im Windows-Paket enthalten. Rausch-/Brummminderung und zusätzliche Kreativeffekte sind als weitere Ausbaustufe geplant.
 
 ### 7. Dateigröße reduzieren
 
