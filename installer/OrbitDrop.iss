@@ -1,5 +1,5 @@
 #ifndef AppVersion
-#define AppVersion "0.31.0"
+#define AppVersion "0.31.1"
 #endif
 [Setup]
 AppId={{485382A0-3437-4DB8-9F23-794D4314474B}
@@ -33,3 +33,4 @@ Name: "{group}\OrbitDrop"; Filename: "{app}\OrbitDrop.exe"
 Name: "{autodesktop}\OrbitDrop"; Filename: "{app}\OrbitDrop.exe"; Tasks: desktopicon
 [Run]
 Filename: "{app}\OrbitDrop.exe"; Description: "OrbitDrop starten"; Flags: nowait postinstall skipifsilent
+

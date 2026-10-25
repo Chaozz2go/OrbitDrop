@@ -54,7 +54,7 @@ def download_link(url,mode,folder,height=0):
     if not media_link(url) or mode not in ('audio','video'):raise ValueError('Ungültiger Downloadauftrag.')
     folder=Path(folder).resolve()
     if not folder.is_dir():raise ValueError('Zielordner existiert nicht.')
-    if not backend('ffmpeg') or not backend('ffprobe'):raise ValueError('Bitte unter Tools → Konverter FFmpeg/FFprobe einrichten.')
+    if not backend('ffmpeg') or not backend('ffprobe'):raise ValueError('Bitte im Dashboard → Einrichtung FFmpeg/FFprobe prüfen und einrichten.')
     output=None
     try:
         with tempfile.TemporaryDirectory(prefix='orbit-media-') as staging:
@@ -72,13 +72,26 @@ def download_link(url,mode,folder,height=0):
         raise
 
 
-def playlist_summary(info):
+def playlist_summary(info,source_url=None):
     """Keep the playlist order, including unavailable rows, without resolving streams."""
     import re
+    from urllib.parse import urljoin
     entries=[]
     for number,entry in enumerate(info.get('entries') or [],1):
         if number>10000:raise ValueError('Die Playlist enthält mehr als 10.000 Einträge. Bitte eine kleinere Liste verwenden.')
-        entry=entry or {};title=entry.get('title') or 'Nicht verfügbar';url=media_link(entry.get('url')) or media_link(entry.get('webpage_url'))
+        entry=entry or {};title=entry.get('title') or 'Nicht verfügbar'
+        # Re-extract the public page to retain provider-specific headers and
+        # refresh expiring streams. Direct media remains a valid fallback.
+        base=media_link(info.get('webpage_url')) or media_link(source_url)
+        page=media_link(entry.get('webpage_url'))
+        # Generic multi-video pages reuse the collection page on every row.
+        # Download that page again and noplaylist would select the first video.
+        url=(page if page!=base else None) or media_link(entry.get('url'))
+        if not url and base:
+            for candidate in (entry.get('webpage_url'),entry.get('url')):
+                if isinstance(candidate,str) and candidate.startswith(('/','./','../')):
+                    url=media_link(urljoin(base,candidate))
+                    if url:break
         youtube='youtube' in str(entry.get('ie_key') or entry.get('extractor_key') or info.get('extractor_key') or info.get('extractor') or '').lower()
         identifier=str(entry.get('id') or '')
         if youtube and re.fullmatch(r'[A-Za-z0-9_-]{11}',identifier):url='https://www.youtube.com/watch?v='+identifier
@@ -132,6 +145,8 @@ def worker_main(config_path):
         report(percent,message)
     try:
         import yt_dlp
+        from yt_dlp.utils import MEDIA_EXTENSIONS
+        media_extensions=set(MEDIA_EXTENSIONS.video+MEDIA_EXTENSIONS.audio)|{'ts','mpeg','m2ts','mts','vob'}
         runtimes={}
         for name,exe in [('deno','deno'),('node','node'),('quickjs','qjs')]:
             path=backend(exe)
@@ -143,19 +158,20 @@ def worker_main(config_path):
             with yt_dlp.YoutubeDL(options) as dl:
                 info=dl.extract_info(config['url'],download=False)
                 if not info:raise ValueError('Link konnte nicht abgerufen werden. Privat, gelöscht oder nicht erreichbar.')
-                playlist=playlist_summary(info) if info.get('_type') in ('playlist','multi_video') else None
+                playlist=playlist_summary(info,config['url']) if info.get('_type') in ('playlist','multi_video') else None
             formats=info.get('formats') or [info]
             heights=sorted({int(f['height']) for f in formats if f.get('vcodec') not in (None,'none') and f.get('height')},reverse=True)
-            data={'title':info.get('title','Download'),'duration':info.get('duration'),'heights':heights,'audio':any(f.get('acodec')!='none' for f in formats),'video':any(f.get('vcodec')!='none' and (f.get('height') or f.get('ext') in ('mp4','webm','mkv','mov','m4v','avi','flv','ogv','ts')) for f in formats)}
+            data={'title':info.get('title','Download'),'duration':info.get('duration'),'heights':heights,'audio':any(f.get('acodec')!='none' for f in formats),'video':any(f.get('vcodec')!='none' and (f.get('vcodec') is not None or f.get('height') or f.get('width') or f.get('ext') in set(MEDIA_EXTENSIONS.video)|{'ts','mpeg','m2ts','mts','vob'}) for f in formats)}
             if playlist:data=playlist
         else:
             staging=Path(config['staging']);audio=config['mode']=='audio';height=config.get('height',0)
             limit=f'[height<={height}]' if height else ''
-            options.update({'playlist_items':'1','outtmpl':str(staging/'media.%(ext)s'),'progress_hooks':[hook],'postprocessor_hooks':[lambda s:report(92,'Audio/Video wird verarbeitet …')],'overwrites':False,'format':'bestaudio/best' if audio else f'bestvideo{limit}+bestaudio/best{limit}','postprocessors':[{'key':'FFmpegExtractAudio','preferredcodec':'mp3','preferredquality':'192'}] if audio else [],'merge_output_format':'mkv'})
+            options.update({'playlist_items':'1','outtmpl':str(staging/'media.%(ext)s'),'progress_hooks':[hook],'postprocessor_hooks':[lambda s:report(92,'Audio/Video wird verarbeitet …')],'overwrites':False,'format':'bestaudio/best' if audio else f'bestvideo{limit}+bestaudio/best{limit}/bestvideo{limit}','postprocessors':[{'key':'FFmpegExtractAudio','preferredcodec':'mp3','preferredquality':'192'}] if audio else [],'merge_output_format':'mkv'})
             with yt_dlp.YoutubeDL(options) as dl:info=dl.extract_info(config['url'],download=True)
-            outputs=[p for p in staging.iterdir() if p.is_file() and p.suffix.lower() in ('.mp3','.mp4','.webm','.mkv','.mov','.m4v','.avi','.flv','.ogv','.ts')]
+            outputs=[p for p in staging.iterdir() if p.is_file() and p.suffix.lower().lstrip('.') in media_extensions]
             if len(outputs)!=1:raise ValueError('Download lieferte kein eindeutiges Audio-/Video-Ergebnis.')
             data={'output':str(outputs[0]),'title':info.get('title','Download')}
         result.write_text(json.dumps(data),encoding='utf-8');return 0
     except Exception as error:
         result.write_text(json.dumps({'error':str(error)[-1800:]}),encoding='utf-8');return 1
+

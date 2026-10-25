@@ -20,7 +20,11 @@ class DownloadDialog(QDialog):
     def __init__(self,url,mode,folder,submit,parent=None):
         super().__init__(parent);self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint,True);self.submit=submit;self.inspection=None;self.inspected_url=None;self.info=None;self.closed=False;self.setWindowTitle('OrbitDrop · Link herunterladen');self.resize(650,380);self.setStyleSheet(STYLE)
         layout=QVBoxLayout(self);heading(layout,'Link herunterladen','Audio oder Video lokal speichern')
-        self.url=QLineEdit(url or '');self.url.setPlaceholderText('https://…');layout.addWidget(self.url)
+        self.url=QLineEdit(url or '');self.url.setPlaceholderText('Link von einer durch yt-dlp unterstützten Seite · https://…');layout.addWidget(self.url)
+        self.support=QLabel('Nicht nur YouTube: yt-dlp prüft auch andere Anbieter und eingebettete Medien. '
+            '<a href="https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md">Unterstützte Seiten</a>'
+            '<br>Die Abrufbarkeit hängt vom Anbieter und Inhalt ab. Keine automatische Anmeldung oder Browser-Cookie-Übernahme.')
+        self.support.setWordWrap(True);self.support.setOpenExternalLinks(True);layout.addWidget(self.support)
         self.inspect_button=QPushButton('Link prüfen');self.inspect_button.clicked.connect(self.inspect);layout.addWidget(self.inspect_button)
         self.status=QLabel('Link prüfen, dann Audio oder Video wählen.');self.status.setWordWrap(True);layout.addWidget(self.status)
         self.playlist_panel=QWidget();playlist_layout=QVBoxLayout(self.playlist_panel);playlist_layout.setContentsMargins(0,0,0,0);layout.addWidget(self.playlist_panel);self.playlist_panel.hide()
@@ -110,3 +114,4 @@ class DownloadDialog(QDialog):
         self.closed=True
         if self.inspection:self.inspection.control.cancel()
         super().done(result)
+

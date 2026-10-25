@@ -205,6 +205,8 @@ Die Erkennung läuft lokal. Beim Erstellen einer Scan-PDF werden die Seiten neu 
 
 ### 9. Audio, Videos und Playlists herunterladen
 
+OrbitDrop verwendet **yt-dlp für alle unterstützten Anbieter**, nicht nur YouTube. Auch direkte Mediendateien und eingebettete Audio-/Videoinhalte werden geprüft. Eine feste Liste erlaubter Webseiten gibt es nicht. [Unterstützte Seiten ansehen](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md). Ob ein konkreter Inhalt abrufbar ist, zeigt **Link prüfen**; Änderungen beim Anbieter, Loginpflicht oder andere Zugangsbeschränkungen können Downloads verhindern.
+
 **Einen vollständigen http(s)-Link markieren → Shift drücken.** Alternativ den Link in den Kreis ziehen oder die Download-Verwaltung im Tray öffnen. Die Konvertieren-Taste kann eine markierte Textauswahl auch ohne Datei-Drag als Link übernehmen; es startet dabei kein automatischer Download.
 
 1. **Audio laden** oder **Video laden** wählen.
@@ -213,7 +215,7 @@ Die Erkennung läuft lokal. Beim Erstellen einer Scan-PDF werden die Seiten neu 
 
 Audio wird als MP3 gespeichert. Getrennte Video-/Audiostreams werden als MKV kombiniert. Die verfügbaren Qualitäten hängen vom jeweiligen Dienst und Inhalt ab.
 
-**Playlists:** Bei einem YouTube-Playlist-Link oder einem Videolink mit Playlist zeigt OrbitDrop eine Titelliste mit Auswahlkästchen. Alle verfügbaren Einträge sind zunächst markiert. Mit **Alle auswählen**, **Keine auswählen** oder einzelnen Häkchen entscheidest du, welche Titel geladen werden. Die Suche filtert nur die Anzeige; ausgeblendete markierte Titel bleiben ausgewählt.
+**Playlists:** Bei einem von yt-dlp als Playlist oder Mediensammlung erkannten Link zeigt OrbitDrop eine Titelliste mit Auswahlkästchen. Alle verfügbaren Einträge sind zunächst markiert. Mit **Alle auswählen**, **Keine auswählen** oder einzelnen Häkchen entscheidest du, welche Titel geladen werden. Die Suche filtert nur die Anzeige; ausgeblendete markierte Titel bleiben ausgewählt.
 
 Die ausgewählten Titel werden nacheinander geladen. Ein Fehler bei einem Titel stoppt die übrigen nicht. Beim Abbrechen bleiben fertige Dateien erhalten. Bereits als privat oder gelöscht erkannte Einträge sind nicht auswählbar; weitere Sperren können erst beim Laden auffallen. Es gibt keine automatische Anmeldung oder Übernahme von Browser-Cookies. Die Prüfung ist auf 10.000 Einträge und fünf Minuten begrenzt; Unterplaylists werden nicht automatisch erweitert.
 
@@ -317,3 +319,4 @@ Gültige Daten erscheinen daneben als aufklappbarer Baum. Suche durchsucht den T
 Alle genannten Daten- und Admin-Werkzeuge arbeiten lokal. Die bestehenden Medienwerkzeuge und die Radialoptik bleiben erhalten. Neue Menüpunkte lassen sich wie gewohnt in den Einstellungen ausblenden.
 
 **Updateprüfung im Tray:** Rechtsklick auf das OrbitDrop-Symbol → **Nach Updates suchen** öffnet die Updates-Seite im Dashboard und startet die Prüfung. Dort lassen sich verfügbare Updates herunterladen und installieren.
+
